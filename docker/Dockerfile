@@ -143,6 +143,10 @@ RUN if [ "$RAILS_ENV" != "production" ]; then \
 
 COPY --from=pre-builder /gems/ /gems/
 COPY --from=pre-builder /app /app
+# DAR PERMISSÃO DE EXECUÇÃO
+RUN chmod +x docker/entrypoints/rails.sh
+# E, SE TIVER, TAMBÉM:
+# RUN chmod +x docker/entrypoints/rails.sh docker/entrypoints/sidekiq.sh
 
 # Copy .git_sha file from pre-builder stage
 COPY --from=pre-builder /app/.git_sha /app/.git_sha
