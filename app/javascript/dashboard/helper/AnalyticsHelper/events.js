@@ -99,6 +99,7 @@ export const OPEN_AI_EVENTS = Object.freeze({
   ADDED_AI_INTEGRATION_VIA_CTA_BUTTON:
     'OpenAI: Added AI integration via CTA button',
   DISMISS_AI_SUGGESTION: 'OpenAI: Dismiss AI suggestions',
+  CONVERSATION_ANALYSIS: 'OpenAI: Generated conversation analysis',
 });
 
 export const COPILOT_EVENTS = Object.freeze({

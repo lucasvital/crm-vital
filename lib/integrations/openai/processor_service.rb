@@ -9,6 +9,10 @@ class Integrations::Openai::ProcessorService < Integrations::OpenaiBaseService
     make_api_call(summarize_body)
   end
 
+  def conversation_analysis_message
+    make_api_call(conversation_analysis_body)
+  end
+
   def rephrase_message
     make_api_call(build_api_call_body("#{AGENT_INSTRUCTION} Please rephrase the following response. " \
                                       "#{LANGUAGE_INSTRUCTION}"))
@@ -118,6 +122,17 @@ class Integrations::Openai::ProcessorService < Integrations::OpenaiBaseService
       messages: [
         { role: 'system',
           content: prompt_from_file('summary', enterprise: false) },
+        { role: 'user', content: conversation_messages }
+      ]
+    }.to_json
+  end
+
+  def conversation_analysis_body
+    {
+      model: GPT_MODEL,
+      messages: [
+        { role: 'system',
+          content: prompt_from_file('conversation_analysis', enterprise: false) },
         { role: 'user', content: conversation_messages }
       ]
     }.to_json

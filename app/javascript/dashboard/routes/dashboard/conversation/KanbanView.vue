@@ -89,55 +89,14 @@ const isDropping = ref(false);
 const movingConversation = ref(null);
 
 const stageBadgeIconColor = stage => {
-  switch (stage) {
-    case 'new':
-      return 'text-n-slate-11';
-    case 'qualified':
-      return 'text-n-amber-10';
-    case 'proposal':
-      return 'text-n-blue-10';
-    case 'won':
-      return 'text-n-green-10';
-    case 'lost':
-      return 'text-n-red-10';
-    default:
-      return 'text-n-slate-11';
-  }
+  // Removido: cores específicas por etapa
+  return 'text-n-slate-11';
 };
 
-// Cores suaves por etapa (minimalista)
+// Removido: cores suaves por etapa
 const stageHeaderBgClass = stage => {
-  switch (stage) {
-    case 'new':
-      return 'bg-n-slate-2';
-    case 'qualified':
-      return 'bg-n-amber-2';
-    case 'proposal':
-      return 'bg-n-blue-2';
-    case 'won':
-      return 'bg-n-green-2';
-    case 'lost':
-      return 'bg-n-red-2';
-    default:
-      return 'bg-n-solid-2';
-  }
-};
-
-const stageAccentBgClass = stage => {
-  switch (stage) {
-    case 'new':
-      return 'bg-n-slate-7';
-    case 'qualified':
-      return 'bg-n-amber-8';
-    case 'proposal':
-      return 'bg-n-blue-8';
-    case 'won':
-      return 'bg-n-green-8';
-    case 'lost':
-      return 'bg-n-red-8';
-    default:
-      return 'bg-n-slate-7';
-  }
+  // Removido: cores específicas por etapa
+  return 'bg-n-solid-2';
 };
 
 const removeFromStage = (stage, id) => {
@@ -273,7 +232,6 @@ const getPreviewText = conversation => {
       >
         <!-- Header minimalista da coluna -->
         <div :class="['sticky top-0 z-10 relative backdrop-blur-sm rounded-t-2xl border-b border-n-alpha-2', stageHeaderBgClass(stage)]">
-          <span :class="['absolute left-0 top-0 h-0.5 w-full rounded-t-2xl', stageAccentBgClass(stage)]" />
           <div class="flex items-center justify-between px-4 pt-3 pb-2">
             <div class="flex items-center gap-2">
               <span class="text-sm font-semibold text-n-slate-12">
