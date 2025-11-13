@@ -263,7 +263,7 @@ const getPreviewText = conversation => {
       <div
         v-for="stage in STAGES"
         :key="stage"
-        class="flex w-[320px] flex-col rounded-xl bg-n-solid-1/60 shadow-sm hover:shadow-md transition-shadow"
+        class="flex w-[320px] flex-col rounded-2xl bg-n-solid-1/70 shadow-sm hover:shadow-md transition-shadow"
         :class="[dragOverStage === stage ? 'ring-1 ring-n-brand' : 'ring-1 ring-transparent hover:ring-n-alpha-2']"
         role="list"
         :aria-label="columnTitle(stage)"
@@ -271,30 +271,27 @@ const getPreviewText = conversation => {
         @dragover="onDragOver(stage, $event)"
         @drop="onDrop(stage, $event)"
       >
-        <div :class="['sticky top-0 z-10 flex items-center justify-between border-b border-n-alpha-2 px-3 py-2 rounded-t-xl relative backdrop-blur-sm', stageHeaderBgClass(stage)]">
-          <!-- Accent discreto no topo da coluna -->
-          <span :class="['absolute left-0 top-0 h-0.5 w-full rounded-t-xl', stageAccentBgClass(stage)]" />
-          <div class="flex items-center gap-2">
-            <span class="text-sm font-semibold text-n-slate-12">
-              {{ columnTitle(stage) }}
-            </span>
-            <span
-              class="inline-flex items-center justify-center rounded-full bg-n-solid-2 px-2 py-0.5 text-xs font-medium text-n-slate-11"
-            >
+        <!-- Header minimalista da coluna -->
+        <div :class="['sticky top-0 z-10 relative backdrop-blur-sm rounded-t-2xl border-b border-n-alpha-2', stageHeaderBgClass(stage)]">
+          <span :class="['absolute left-0 top-0 h-0.5 w-full rounded-t-2xl', stageAccentBgClass(stage)]" />
+          <div class="flex items-center justify-between px-4 pt-3 pb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-semibold text-n-slate-12">
+                {{ columnTitle(stage) }}
+              </span>
+              <span class="text-[11px] text-n-slate-11">R$0</span>
+            </div>
+            <div class="inline-flex items-center justify-center rounded-full bg-n-solid-2 text-n-slate-12 size-6 text-xs font-semibold">
               {{ state[stage].items.length }}
-            </span>
+            </div>
           </div>
-          <Spinner
-            v-if="state[stage].loading"
-            class="size-4 text-n-brand"
-          />
         </div>
 
         <transition-group name="kanban" tag="ul" class="flex flex-1 min-h-0 flex-col gap-3 overflow-y-auto px-3 py-3 scroll-smooth">
           <li
             v-for="conversation in state[stage].items"
             :key="conversation.id"
-            class="flex flex-col gap-2 rounded-lg bg-n-solid-2 p-3 ring-1 ring-n-alpha-2 hover:ring-n-strong shadow-sm hover:shadow-md transition"
+            class="flex flex-col gap-2 rounded-xl bg-n-solid-2 p-3 ring-1 ring-n-alpha-2 hover:ring-n-strong shadow-sm hover:shadow-md transition"
             draggable="true"
             role="listitem"
             :aria-grabbed="movingConversation === conversation.id"
@@ -302,23 +299,17 @@ const getPreviewText = conversation => {
             @dragstart="onDragStart(conversation, stage, $index, $event)"
             @dragend="onDragEnd"
           >
-            <!-- Header do card: tag da etapa + avatar fantasma à direita -->
+            <!-- Linha superior: tag de etapa + avatar fantasma -->
             <div class="flex items-center justify-between">
-              <span
-                class="inline-flex items-center gap-1 rounded-md bg-n-solid-1 px-2 py-0.5 text-[11px] font-medium text-n-slate-11 ring-1 ring-n-alpha-1"
-                :aria-label="t('KANBAN.BADGE_STAGE', { stage: columnTitle(stage) })"
-              >
+              <div class="inline-flex items-center gap-1 rounded-full bg-n-solid-1 px-2 py-0.5 text-[11px] font-medium text-n-slate-11 ring-1 ring-n-alpha-1">
                 <span :class="['i-lucide-flag', 'size-3', stageBadgeIconColor(stage)]" />
                 {{ columnTitle(stage) }}
-              </span>
-              <span
-                class="i-lucide-user size-5 rounded-full bg-n-solid-2 text-n-slate-10 inline-flex items-center justify-center"
-                aria-hidden="true"
-              />
+              </div>
+              <div class="i-lucide-user size-6 rounded-full bg-n-solid-2 text-n-slate-10 inline-flex items-center justify-center" aria-hidden="true" />
             </div>
 
             <!-- Linha com avatar pequeno e nome (mesmo padrão dos chips pequenos) -->
-            <div class="mt-2 flex items-center gap-2 h-7">
+            <div class="mt-1 flex items-center gap-2 h-7">
               <Avatar
                 :name="conversation.meta?.sender?.name"
                 :src="conversation.meta?.sender?.thumbnail"
@@ -326,10 +317,10 @@ const getPreviewText = conversation => {
                 rounded-full
               />
               <div class="flex min-w-0 flex-col">
-                <span class="text-sm leading-7 font-medium text-n-slate-12 truncate max-w-[180px]">
+                <span class="text-sm leading-7 font-medium text-n-slate-12 truncate">
                   {{ conversation.meta?.sender?.name || t('KANBAN.CARDS.NO_NAME') }}
                 </span>
-                <span class="text-[11px] -mt-1 text-n-slate-11 truncate max-w-[180px]">
+                <span class="text-[11px] -mt-1 text-n-slate-11 truncate">
                   {{ t('KANBAN.CARDS.INBOX', { inbox: inboxName(conversation.inbox_id) }) }}
                 </span>
               </div>
