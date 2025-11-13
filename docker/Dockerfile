@@ -96,6 +96,7 @@ RUN rm -rf /gems/ruby/3.4.0/cache/*.gem \
   && rm .gitignore
 
 # final build stage
+# final build stage
 FROM ruby:3.4.4-alpine3.21
 
 ARG NODE_VERSION="23.7.0"
@@ -143,14 +144,11 @@ RUN if [ "$RAILS_ENV" != "production" ]; then \
 
 COPY --from=pre-builder /gems/ /gems/
 COPY --from=pre-builder /app /app
-# DAR PERMISSÃO DE EXECUÇÃO
-RUN chmod +x docker/entrypoints/rails.sh
-# E, SE TIVER, TAMBÉM:
-# RUN chmod +x docker/entrypoints/rails.sh docker/entrypoints/sidekiq.sh
-
-# Copy .git_sha file from pre-builder stage
 COPY --from=pre-builder /app/.git_sha /app/.git_sha
 
 WORKDIR /app
+
+# Aqui: aplicar chmod com caminho ABSOLUTO (como vimos dentro do container)
+RUN chmod +x /app/docker/entrypoints/rails.sh /app/docker/entrypoints/vite.sh
 
 EXPOSE 3000
