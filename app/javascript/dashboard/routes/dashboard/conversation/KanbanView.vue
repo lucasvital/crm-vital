@@ -82,30 +82,96 @@ const getConversationRoute = conversationId =>
     conversation_id: conversationId,
   });
 
-const nextStageOptions = stage =>
-  STAGES.filter(item => item !== stage).map(s => ({
-    value: s,
-    label: columnTitle(s),
-  }));
-
+// DnD
+const dragItem = ref(null); // { id, fromStage, index }
+const dragOverStage = ref(null);
+const isDropping = ref(false);
 const movingConversation = ref(null);
 
-const onChangeStage = async (conversation, targetStage) => {
-  if (!targetStage) return;
+const stageBadgeIconColor = stage => {
+  switch (stage) {
+    case 'new':
+      return 'text-n-slate-11';
+    case 'qualified':
+      return 'text-n-amber-10';
+    case 'proposal':
+      return 'text-n-blue-10';
+    case 'won':
+      return 'text-n-green-10';
+    case 'lost':
+      return 'text-n-red-10';
+    default:
+      return 'text-n-slate-11';
+  }
+};
 
-  movingConversation.value = conversation.id;
+const removeFromStage = (stage, id) => {
+  const list = state[stage].items;
+  const idx = list.findIndex(c => c.id === id);
+  if (idx >= 0) list.splice(idx, 1);
+};
+
+const addToStage = (stage, conversation, atTop = true) => {
+  const list = state[stage].items;
+  if (atTop) list.unshift(conversation);
+  else list.push(conversation);
+};
+
+const onDragStart = (conversation, stage, index, event) => {
+  dragItem.value = { id: conversation.id, fromStage: stage, index };
+  event.dataTransfer.setData(
+    'text/plain',
+    JSON.stringify({ id: conversation.id, fromStage: stage })
+  );
+  event.dataTransfer.effectAllowed = 'move';
+};
+
+const onDragOver = (stage, event) => {
+  event.preventDefault();
+  dragOverStage.value = stage;
+  event.dataTransfer.dropEffect = 'move';
+};
+
+const onDragEnd = () => {
+  dragItem.value = null;
+  dragOverStage.value = null;
+};
+
+const onDrop = async (toStage, event) => {
+  event.preventDefault();
+  if (!dragItem.value) return;
+
   try {
-    const currentAttrs = conversation.custom_attributes || {};
+    isDropping.value = true;
+    const { id, fromStage } = dragItem.value;
+    if (fromStage === toStage) return;
+
+    const sourceList = state[fromStage].items;
+    const conv = sourceList.find(c => c.id === id);
+    if (!conv) return;
+
+    // Update otimista
+    removeFromStage(fromStage, id);
+    addToStage(toStage, {
+      ...conv,
+      custom_attributes: { ...conv.custom_attributes, deal_stage: toStage },
+    });
+
+    // Persistência
+    movingConversation.value = id;
+    const currentAttrs = conv.custom_attributes || {};
     await ConversationApi.updateCustomAttributes({
-      conversationId: conversation.id,
-      customAttributes: { ...currentAttrs, deal_stage: targetStage },
+      conversationId: id,
+      customAttributes: { ...currentAttrs, deal_stage: toStage },
     });
     alert(t('KANBAN.ALERTS.STATUS_UPDATED'));
-    await refreshBoard();
-  } catch (err) {
+  } catch (e) {
     alert(t('KANBAN.ALERTS.STATUS_FAILED'));
+    await refreshBoard();
   } finally {
     movingConversation.value = null;
+    isDropping.value = false;
+    onDragEnd();
   }
 };
 
@@ -117,6 +183,15 @@ const inboxName = id => {
   const list = inboxes.value || [];
   const match = list.find(inbox => Number(inbox.id) === Number(id));
   return match?.name || t('KANBAN.CARDS.UNKNOWN_INBOX');
+};
+
+const getPreviewText = conversation => {
+  const msg =
+    conversation?.messages?.[0]?.content ||
+    conversation?.last_non_activity_message?.content ||
+    '';
+  // garante que imagens/HTML não quebrem o layout
+  return String(msg || '').replace(/<[^>]+>/g, '');
 };
 </script>
 
@@ -154,8 +229,14 @@ const inboxName = id => {
         v-for="stage in STAGES"
         :key="stage"
         class="flex w-[320px] flex-col rounded-lg border border-n-border bg-n-solid-1"
+        :class="[dragOverStage === stage ? 'ring-1 ring-n-brand' : '']"
+        role="list"
+        :aria-label="columnTitle(stage)"
+        :aria-dropeffect="'move'"
+        @dragover="onDragOver(stage, $event)"
+        @drop="onDrop(stage, $event)"
       >
-        <div class="flex items-center justify-between border-b border-n-border px-4 py-3">
+        <div class="flex items-center justify-between border-b border-n-border px-4 py-3 bg-n-solid-2">
           <div class="flex items-center gap-2">
             <span class="text-sm font-semibold text-n-slate-12">
               {{ columnTitle(stage) }}
@@ -172,36 +253,53 @@ const inboxName = id => {
           />
         </div>
 
-        <ul class="flex flex-1 flex-col gap-3 overflow-y-auto px-4 py-3">
+        <transition-group name="kanban" tag="ul" class="flex flex-1 flex-col gap-3 overflow-y-auto px-4 py-3">
           <li
             v-for="conversation in state[stage].items"
             :key="conversation.id"
-            class="flex flex-col gap-3 rounded-md border border-n-border bg-n-solid-2 p-3 shadow-sm transition hover:border-n-strong"
+            class="flex flex-col gap-2 rounded-md border border-n-border bg-n-solid-2 p-3 shadow-sm transition hover:border-n-strong"
+            draggable="true"
+            role="listitem"
+            :aria-grabbed="movingConversation === conversation.id"
+            :title="t('KANBAN_A11Y.DRAG_HINT')"
+            @dragstart="onDragStart(conversation, stage, $index, $event)"
+            @dragend="onDragEnd"
           >
-            <div class="flex items-center gap-3">
+            <!-- Header do card: tag da etapa + avatar fantasma à direita -->
+            <div class="flex items-center justify-between">
+              <span
+                class="inline-flex items-center gap-1 rounded-md bg-n-solid-1 px-2 py-0.5 text-[11px] font-medium text-n-slate-11 ring-1 ring-n-alpha-1"
+                :aria-label="t('KANBAN.BADGE_STAGE', { stage: columnTitle(stage) })"
+              >
+                <span :class="['i-lucide-flag', 'size-3', stageBadgeIconColor(stage)]" />
+                {{ columnTitle(stage) }}
+              </span>
+              <span
+                class="i-lucide-user size-5 rounded-full bg-n-solid-2 text-n-slate-10 inline-flex items-center justify-center"
+                aria-hidden="true"
+              />
+            </div>
+
+            <!-- Linha com avatar pequeno e nome (mesmo padrão dos chips pequenos) -->
+            <div class="mt-2 flex items-center gap-2 h-7">
               <Avatar
                 :name="conversation.meta?.sender?.name"
                 :src="conversation.meta?.sender?.thumbnail"
-                size="32px"
+                :size="20"
+                rounded-full
               />
-              <div class="flex flex-col">
-                <span class="text-sm font-medium text-n-slate-12">
+              <div class="flex min-w-0 flex-col">
+                <span class="text-sm leading-7 font-medium text-n-slate-12 truncate max-w-[180px]">
                   {{ conversation.meta?.sender?.name || t('KANBAN.CARDS.NO_NAME') }}
                 </span>
-                <span class="text-xs text-n-slate-11">
+                <span class="text-[11px] -mt-1 text-n-slate-11 truncate max-w-[180px]">
                   {{ t('KANBAN.CARDS.INBOX', { inbox: inboxName(conversation.inbox_id) }) }}
                 </span>
               </div>
             </div>
 
             <div class="rounded-md bg-n-solid-3 p-2 text-xs text-n-slate-12">
-              <p class="line-clamp-3">
-                {{
-                  conversation.messages?.[0]?.content ||
-                  conversation.last_non_activity_message?.content ||
-                  t('KANBAN.CARDS.NO_PREVIEW')
-                }}
-              </p>
+              <p class="truncate">{{ getPreviewText(conversation) || t('KANBAN.CARDS.NO_PREVIEW') }}</p>
             </div>
 
             <div class="flex items-center justify-between text-xs text-n-slate-11">
@@ -216,49 +314,16 @@ const inboxName = id => {
                 {{ t('KANBAN.CARDS.OPEN_CONVERSATION') }}
               </router-link>
             </div>
-
-            <div class="flex flex-col gap-2">
-              <label
-                class="text-xs font-medium text-n-slate-11"
-                :for="`kanban-status-${conversation.id}`"
-              >
-                {{ t('KANBAN.CARDS.MOVE_TO') }}
-              </label>
-              <select
-                :id="`kanban-status-${conversation.id}`"
-                class="w-full rounded-md border border-n-border bg-n-solid-1 px-2 py-1 text-sm text-n-slate-12 focus:border-n-brand focus:outline-none focus:ring-1 focus:ring-n-brand"
-                :disabled="movingConversation === conversation.id"
-                @change="event => onChangeStage(conversation, event.target.value)"
-              >
-                <option selected disabled value="">
-                  {{ t('KANBAN.CARDS.SELECT_STATUS') }}
-                </option>
-                <option
-                  v-for="option in nextStageOptions(stage)"
-                  :key="option.value"
-                  :value="option.value"
-                >
-                  {{ option.label }}
-                </option>
-              </select>
-            </div>
-
-            <div
-              v-if="movingConversation === conversation.id"
-              class="flex items-center justify-end text-xs text-n-slate-11"
-            >
-              <Spinner class="mr-2 size-3 text-n-brand" />
-              {{ t('KANBAN.CARDS.UPDATING') }}
-            </div>
           </li>
 
           <li
             v-if="!state[stage].items.length && !state[stage].loading"
             class="rounded-md border border-dashed border-n-border bg-n-solid-2 p-3 text-center text-xs text-n-slate-11"
+            :title="t('KANBAN_A11Y.DROP_TO', { stage: columnTitle(stage) })"
           >
             {{ t('KANBAN.CARDS.EMPTY_STATE') }}
           </li>
-        </ul>
+        </transition-group>
       </div>
     </div>
   </div>

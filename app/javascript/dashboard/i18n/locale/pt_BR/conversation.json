@@ -286,6 +286,42 @@
       }
     }
   },
+  "KANBAN": {
+    "TITLE": "Kanban Board",
+    "DESCRIPTION": "Visualize e gerencie negócios criados a partir das conversas.",
+    "CTA": { "REFRESH": "Atualizar" },
+    "COLUMNS": {
+      "NEW": "Novo",
+      "QUALIFIED": "Qualificado",
+      "PROPOSAL": "Proposta",
+      "WON": "Ganho",
+      "LOST": "Perdido"
+    },
+    "ALERTS": {
+      "FETCH_FAILED": "Não foi possível carregar o Kanban.",
+      "STATUS_UPDATED": "Etapa atualizada.",
+      "STATUS_FAILED": "Não foi possível atualizar a etapa."
+    },
+    "CARDS": {
+      "NO_NAME": "Contato sem nome",
+      "UNKNOWN_INBOX": "Caixa desconhecida",
+      "INBOX": "Caixa: {inbox}",
+      "NO_PREVIEW": "Sem mensagens recentes",
+      "OPEN_CONVERSATION": "Ver conversa",
+      "MOVE_TO": "Mover para etapa",
+      "SELECT_STATUS": "Selecione uma etapa",
+      "EMPTY_STATE": "Sem conversas aqui ainda",
+      "UPDATING": "Atualizando..."
+    },
+    "OPEN_IN_KANBAN": "Abrir Kanban",
+    "CREATE_DEAL": "Criar negócio",
+    "DEAL_CREATED": "Negócio criado e adicionado ao Kanban",
+    "BADGE_STAGE": "Etapa: {stage}"
+  },
+  "KANBAN_A11Y": {
+    "DRAG_HINT": "Arraste o cartão para outra coluna para atualizar a etapa.",
+    "DROP_TO": "Solte aqui para mover para {stage}"
+  },
   "EMAIL_TRANSCRIPT": {
     "TITLE": "Enviar transcrição de conversa",
     "DESC": "Enviar uma cópia da transcrição da conversa para o endereço de e-mail especificado",

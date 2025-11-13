@@ -364,6 +364,13 @@
     "CREATE_DEAL": "Create deal",
     "DEAL_CREATED": "Deal created and added to Kanban"
   },
+  "KANBAN_A11Y": {
+    "DRAG_HINT": "Drag the card to another stage to update the deal.",
+    "DROP_TO": "Drop here to move to {stage}"
+  },
+  "KANBAN": {
+    "BADGE_STAGE": "Stage: {stage}"
+  },
   "CONVERSATION_SIDEBAR": {
     "ASSIGNEE_LABEL": "Assigned Agent",
     "SELF_ASSIGN": "Assign to me",
