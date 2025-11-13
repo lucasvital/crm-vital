@@ -105,6 +105,41 @@ const stageBadgeIconColor = stage => {
   }
 };
 
+// Cores suaves por etapa (minimalista)
+const stageHeaderBgClass = stage => {
+  switch (stage) {
+    case 'new':
+      return 'bg-n-slate-2';
+    case 'qualified':
+      return 'bg-n-amber-2';
+    case 'proposal':
+      return 'bg-n-blue-2';
+    case 'won':
+      return 'bg-n-green-2';
+    case 'lost':
+      return 'bg-n-red-2';
+    default:
+      return 'bg-n-solid-2';
+  }
+};
+
+const stageAccentBgClass = stage => {
+  switch (stage) {
+    case 'new':
+      return 'bg-n-slate-7';
+    case 'qualified':
+      return 'bg-n-amber-8';
+    case 'proposal':
+      return 'bg-n-blue-8';
+    case 'won':
+      return 'bg-n-green-8';
+    case 'lost':
+      return 'bg-n-red-8';
+    default:
+      return 'bg-n-slate-7';
+  }
+};
+
 const removeFromStage = (stage, id) => {
   const list = state[stage].items;
   const idx = list.findIndex(c => c.id === id);
@@ -224,19 +259,21 @@ const getPreviewText = conversation => {
       <Spinner class="text-n-brand" />
     </div>
 
-    <div v-else class="flex flex-1 gap-4 overflow-x-auto pb-4">
+    <div v-else class="flex flex-1 gap-6 overflow-x-auto pb-4">
       <div
         v-for="stage in STAGES"
         :key="stage"
-        class="flex w-[320px] flex-col rounded-lg border border-n-border bg-n-solid-1"
-        :class="[dragOverStage === stage ? 'ring-1 ring-n-brand' : '']"
+        class="flex w-[320px] flex-col rounded-xl bg-n-solid-1/60 shadow-sm hover:shadow-md transition-shadow"
+        :class="[dragOverStage === stage ? 'ring-1 ring-n-brand' : 'ring-1 ring-transparent hover:ring-n-alpha-2']"
         role="list"
         :aria-label="columnTitle(stage)"
         :aria-dropeffect="'move'"
         @dragover="onDragOver(stage, $event)"
         @drop="onDrop(stage, $event)"
       >
-        <div class="flex items-center justify-between border-b border-n-border px-4 py-3 bg-n-solid-2">
+        <div :class="['sticky top-0 z-10 flex items-center justify-between border-b border-n-alpha-2 px-3 py-2 rounded-t-xl relative backdrop-blur-sm', stageHeaderBgClass(stage)]">
+          <!-- Accent discreto no topo da coluna -->
+          <span :class="['absolute left-0 top-0 h-0.5 w-full rounded-t-xl', stageAccentBgClass(stage)]" />
           <div class="flex items-center gap-2">
             <span class="text-sm font-semibold text-n-slate-12">
               {{ columnTitle(stage) }}
@@ -253,11 +290,11 @@ const getPreviewText = conversation => {
           />
         </div>
 
-        <transition-group name="kanban" tag="ul" class="flex flex-1 flex-col gap-3 overflow-y-auto px-4 py-3">
+        <transition-group name="kanban" tag="ul" class="flex flex-1 min-h-0 flex-col gap-3 overflow-y-auto px-3 py-3 scroll-smooth">
           <li
             v-for="conversation in state[stage].items"
             :key="conversation.id"
-            class="flex flex-col gap-2 rounded-md border border-n-border bg-n-solid-2 p-3 shadow-sm transition hover:border-n-strong"
+            class="flex flex-col gap-2 rounded-lg bg-n-solid-2 p-3 ring-1 ring-n-alpha-2 hover:ring-n-strong shadow-sm hover:shadow-md transition"
             draggable="true"
             role="listitem"
             :aria-grabbed="movingConversation === conversation.id"
