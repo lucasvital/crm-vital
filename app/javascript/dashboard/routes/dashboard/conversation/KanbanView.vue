@@ -9,6 +9,9 @@ import wootConstants from 'dashboard/constants/globals';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 import Avatar from 'next/avatar/Avatar.vue';
 import CreateDealModal from 'dashboard/components/widgets/conversation/CreateDealModal.vue';
+import PriorityMark from 'dashboard/components/widgets/conversation/PriorityMark.vue';
+import TimeAgo from 'dashboard/components/ui/TimeAgo.vue';
+import CardLabels from 'dashboard/components/widgets/conversation/conversationCardComponents/CardLabels.vue';
 
 const { t } = useI18n();
 const { accountScopedRoute } = useAccount();
@@ -100,6 +103,22 @@ const stageBadgeIconColor = stage => {
 const stageHeaderBgClass = stage => {
   // Removido: cores específicas por etapa
   return 'bg-n-solid-2';
+};
+
+const getPriority = conversation => {
+  const p = conversation?.priority;
+  if (typeof p === 'number') {
+    return ['low', 'medium', 'high', 'urgent'][p] || '';
+  }
+  return p || '';
+};
+
+const getConversationLabels = conversation => {
+  return (
+    conversation?.label_list ||
+    conversation?.cached_label_list_array ||
+    []
+  );
 };
 
 const formatCurrency = (amount, currency = 'BRL') => {
@@ -351,7 +370,7 @@ const onEditSubmit = async payload => {
                 <span :class="['i-lucide-flag', 'size-3', stageBadgeIconColor(stage)]" />
                 {{ columnTitle(stage) }}
               </div>
-              <div class="i-lucide-user size-6 rounded-full bg-n-solid-2 text-n-slate-10 inline-flex items-center justify-center" aria-hidden="true" />
+              <PriorityMark :priority="getPriority(conversation)" />
             </div>
 
             <!-- Linha com avatar pequeno e nome (mesmo padrão dos chips pequenos) -->
@@ -362,6 +381,9 @@ const onEditSubmit = async payload => {
                 :size="20"
                 rounded-full
               />
+              <span v-if="conversation.unread_count > 0" class="inline-flex items-center justify-center rounded-full bg-n-ruby-4 text-n-ruby-12 ring-1 ring-n-ruby-8 min-w-[18px] h-[18px] text-[11px] px-1">
+                {{ conversation.unread_count }}
+              </span>
               <div class="flex min-w-0 flex-col">
                 <span class="text-sm leading-7 font-medium text-n-slate-12 truncate">
                   {{ conversation.meta?.sender?.name || t('KANBAN.CARDS.NO_NAME') }}
@@ -373,10 +395,17 @@ const onEditSubmit = async payload => {
             </div>
 
             <div class="rounded-md bg-n-solid-3 p-2 text-xs text-n-slate-12">
-              <p class="truncate">{{ getPreviewText(conversation) || t('KANBAN.CARDS.NO_PREVIEW') }}</p>
+              <p class="line-clamp-2">{{ getPreviewText(conversation) || t('KANBAN.CARDS.NO_PREVIEW') }}</p>
               <p v-if="getDealAmountText(conversation)" class="mt-1 font-medium text-n-slate-12">
                 {{ getDealAmountText(conversation) }}
               </p>
+            </div>
+
+            <div v-if="conversation.custom_attributes?.lead_score !== undefined"
+                 :class="[ 'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 w-fit', conversation.custom_attributes.lead_qualified ? 'bg-n-amber-4 text-n-amber-12 ring-n-amber-8' : 'bg-n-ruby-4 text-n-ruby-12 ring-n-ruby-8' ]">
+              {{ $t('CONVERSATION.HEADER.LEAD_SCORE') }}: {{ conversation.custom_attributes.lead_score }}
+              <span v-if="conversation.custom_attributes.lead_qualified" class="ml-1">{{ $t('CONVERSATION.HEADER.QUALIFIED') }}</span>
+              <span v-else class="ml-1">{{ $t('CONVERSATION.HEADER.NOT_QUALIFIED') }}</span>
             </div>
 
             <div class="flex items-center justify-between text-xs text-n-slate-11">
@@ -395,6 +424,12 @@ const onEditSubmit = async payload => {
               >
                 {{ t('KANBAN.CARDS.OPEN_CONVERSATION') }}
               </router-link>
+              <TimeAgo
+                v-if="conversation.last_activity_at"
+                :last-activity-timestamp="conversation.last_activity_at"
+                :created-at-timestamp="conversation.created_at"
+                :is-auto-refresh-enabled="true"
+              />
             </div>
           </li>
 
