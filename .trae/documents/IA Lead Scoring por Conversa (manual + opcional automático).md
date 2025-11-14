@@ -56,3 +56,8 @@
 - UI: botão e exibição do resultado.
 
 Se aprovado, implemento a Fase 1 (botão manual + persistência) usando exatamente essa estrutura e deixo a configuração de auto como opcional para etapa seguinte.
+
+## Qual fluxo escolho?
+- “Nota privada” é o mais direto e robusto, pois:
+  - Usa o que já existe (push/email por mensagem).
+  - Mostra o contexto na conversa para quem abrir.
