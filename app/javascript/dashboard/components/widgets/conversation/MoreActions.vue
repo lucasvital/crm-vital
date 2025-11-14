@@ -10,6 +10,7 @@ import { useAccount } from 'dashboard/composables/useAccount';
 import { useConversationLabels } from 'dashboard/composables/useConversationLabels';
 import ConversationApi from 'dashboard/api/inbox/conversation';
 import EmailTranscriptModal from './EmailTranscriptModal.vue';
+import CreateDealModal from './CreateDealModal.vue';
 import ResolveAction from '../../buttons/ResolveAction.vue';
 import ButtonV4 from 'dashboard/components-next/button/Button.vue';
 import DropdownMenu from 'dashboard/components-next/dropdown-menu/DropdownMenu.vue';
@@ -29,6 +30,7 @@ const { savedLabels, onUpdateLabels } = useConversationLabels();
 
 const [showEmailActionsModal, toggleEmailModal] = useToggle(false);
 const [showActionsDropdown, toggleDropdown] = useToggle(false);
+const [showCreateDealModal, toggleCreateDealModal] = useToggle(false);
 
 const currentChat = computed(() => store.getters.getSelectedChat);
 
@@ -89,16 +91,7 @@ const handleActionClick = async ({ action }) => {
   } else if (action === 'open_kanban') {
     router.push(accountScopedRoute('conversation_kanban'));
   } else if (action === 'create_deal') {
-    // adiciona label 'deal' e inicia etapa 'new'
-    const conversationId = currentChat.value.id;
-    const labels = Array.from(new Set([...(savedLabels.value || []), 'deal']));
-    await onUpdateLabels(labels);
-    const currentAttrs = currentChat.value.custom_attributes || {};
-    await ConversationApi.updateCustomAttributes({
-      conversationId,
-      customAttributes: { ...currentAttrs, deal_stage: 'new' },
-    });
-    useAlert(t('KANBAN.DEAL_CREATED'));
+    toggleCreateDealModal(true);
   }
 };
 
@@ -156,5 +149,32 @@ onUnmounted(() => {
       :current-chat="currentChat"
       @cancel="toggleEmailModal"
     />
+    <CreateDealModal
+      v-if="showCreateDealModal"
+      :show="showCreateDealModal"
+      :current-chat="currentChat"
+      @cancel="() => toggleCreateDealModal(false)"
+      @submit="onDealSubmit"
+    />
   </div>
 </template>
+const onDealSubmit = async payload => {
+  const conversationId = currentChat.value.id;
+  const labels = Array.from(new Set([...(savedLabels.value || []), 'deal']));
+  await onUpdateLabels(labels);
+  const currentAttrs = currentChat.value.custom_attributes || {};
+  await ConversationApi.updateCustomAttributes({
+    conversationId,
+    customAttributes: {
+      ...currentAttrs,
+      deal_stage: 'new',
+      deal_title: payload.title,
+      deal_amount: payload.amount,
+      deal_currency: payload.currency,
+      deal_close_date: payload.closeDate,
+      deal_notes: payload.notes,
+    },
+  });
+  toggleCreateDealModal(false);
+  useAlert(t('KANBAN.DEAL_CREATED'));
+};

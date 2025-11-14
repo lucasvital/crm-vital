@@ -8,7 +8,6 @@ import ConversationApi from 'dashboard/api/inbox/conversation';
 import wootConstants from 'dashboard/constants/globals';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 import Avatar from 'next/avatar/Avatar.vue';
-import TimeAgo from 'dashboard/components/ui/TimeAgo.vue';
 
 const { t } = useI18n();
 const { accountScopedRoute } = useAccount();
@@ -99,6 +98,40 @@ const stageHeaderBgClass = stage => {
   return 'bg-n-solid-2';
 };
 
+const formatCurrency = (amount, currency = 'BRL') => {
+  try {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 2,
+    }).format(Number(amount || 0));
+  } catch (_) {
+    return `R$ ${Number(amount || 0).toFixed(2)}`;
+  }
+};
+
+const stageTotal = stage => {
+  const items = state[stage]?.items || [];
+  const totalsByCurrency = items.reduce((acc, c) => {
+    const ca = c?.custom_attributes || {};
+    const amt = Number(ca.deal_amount || 0);
+    const cur = ca.deal_currency || 'BRL';
+    if (!acc[cur]) acc[cur] = 0;
+    acc[cur] += isNaN(amt) ? 0 : amt;
+    return acc;
+  }, {});
+  const [currency, amount] = Object.entries(totalsByCurrency)[0] || ['BRL', 0];
+  return formatCurrency(amount, currency);
+};
+
+const getDealAmountText = conversation => {
+  const ca = conversation?.custom_attributes || {};
+  const amt = Number(ca.deal_amount || 0);
+  if (!amt || isNaN(amt)) return '';
+  const cur = ca.deal_currency || 'BRL';
+  return formatCurrency(amt, cur);
+};
+
 const removeFromStage = (stage, id) => {
   const list = state[stage].items;
   const idx = list.findIndex(c => c.id === id);
@@ -181,9 +214,10 @@ const inboxName = id => {
 
 const getPreviewText = conversation => {
   const msg =
-    conversation?.messages?.[0]?.content ||
     conversation?.last_non_activity_message?.content ||
-    '';
+    (Array.isArray(conversation?.messages)
+      ? (conversation.messages.find(m => m.message_type !== 'activity')?.content || '')
+      : '');
   // garante que imagens/HTML não quebrem o layout
   return String(msg || '').replace(/<[^>]+>/g, '');
 };
@@ -237,7 +271,7 @@ const getPreviewText = conversation => {
               <span class="text-sm font-semibold text-n-slate-12">
                 {{ columnTitle(stage) }}
               </span>
-              <span class="text-[11px] text-n-slate-11">R$0</span>
+              <span class="text-[11px] text-n-slate-11">{{ stageTotal(stage) }}</span>
             </div>
             <div class="inline-flex items-center justify-center rounded-full bg-n-solid-2 text-n-slate-12 size-6 text-xs font-semibold">
               {{ state[stage].items.length }}
@@ -286,13 +320,12 @@ const getPreviewText = conversation => {
 
             <div class="rounded-md bg-n-solid-3 p-2 text-xs text-n-slate-12">
               <p class="truncate">{{ getPreviewText(conversation) || t('KANBAN.CARDS.NO_PREVIEW') }}</p>
+              <p v-if="getDealAmountText(conversation)" class="mt-1 font-medium text-n-slate-12">
+                {{ getDealAmountText(conversation) }}
+              </p>
             </div>
 
-            <div class="flex items-center justify-between text-xs text-n-slate-11">
-              <TimeAgo
-                :timestamp="conversation.last_activity_at"
-                :tooltip="true"
-              />
+            <div class="flex items-center justify-end text-xs text-n-slate-11">
               <router-link
                 class="font-medium text-n-brand hover:underline"
                 :to="getConversationRoute(conversation.id)"

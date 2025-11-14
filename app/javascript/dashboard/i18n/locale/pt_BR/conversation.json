@@ -316,7 +316,26 @@
     "OPEN_IN_KANBAN": "Abrir Kanban",
     "CREATE_DEAL": "Criar negócio",
     "DEAL_CREATED": "Negócio criado e adicionado ao Kanban",
-    "BADGE_STAGE": "Etapa: {stage}"
+    "BADGE_STAGE": "Etapa: {stage}",
+    "FORM": {
+      "TITLE": "Criar negócio",
+      "DESC": "Informe os detalhes do negócio vinculado a esta conversa.",
+      "FIELDS": {
+        "TITLE": "Título do negócio",
+        "AMOUNT": "Valor",
+        "CURRENCY": "Moeda",
+        "CLOSE_DATE": "Data de fechamento",
+        "NOTES": "Notas"
+      },
+      "PLACEHOLDERS": {
+        "TITLE": "Ex.: Proposta ACME",
+        "AMOUNT": "Ex.: 25000",
+        "CLOSE_DATE": "Selecione uma data",
+        "NOTES": "Observações adicionais"
+      },
+      "SUBMIT": "Criar",
+      "CANCEL": "Cancelar"
+    }
   },
   "KANBAN_A11Y": {
     "DRAG_HINT": "Arraste o cartão para outra coluna para atualizar a etapa.",

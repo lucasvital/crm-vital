@@ -362,7 +362,26 @@
     },
     "OPEN_IN_KANBAN": "Open Kanban",
     "CREATE_DEAL": "Create deal",
-    "DEAL_CREATED": "Deal created and added to Kanban"
+    "DEAL_CREATED": "Deal created and added to Kanban",
+    "FORM": {
+      "TITLE": "Create deal",
+      "DESC": "Provide the deal details linked to this conversation.",
+      "FIELDS": {
+        "TITLE": "Deal title",
+        "AMOUNT": "Amount",
+        "CURRENCY": "Currency",
+        "CLOSE_DATE": "Close date",
+        "NOTES": "Notes"
+      },
+      "PLACEHOLDERS": {
+        "TITLE": "e.g. ACME Proposal",
+        "AMOUNT": "e.g. 25000",
+        "CLOSE_DATE": "Select a date",
+        "NOTES": "Additional notes"
+      },
+      "SUBMIT": "Create",
+      "CANCEL": "Cancel"
+    }
   },
   "KANBAN_A11Y": {
     "DRAG_HINT": "Drag the card to another stage to update the deal.",
