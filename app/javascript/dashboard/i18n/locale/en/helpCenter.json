@@ -693,9 +693,9 @@
       "TITLE": "Create new portal",
       "DESCRIPTION": "Give your portal a name and create a user-friendly URL slug. You can modify both later in the settings.",
       "CONFIRM_BUTTON_LABEL": "Create",
-      "NAME": {
-        "LABEL": "Name",
-        "PLACEHOLDER": "User Guide | Chatwoot",
+        "NAME": {
+          "LABEL": "Name",
+          "PLACEHOLDER": "User Guide | VitalisChat",
         "MESSAGE": "Choose an name for your portal.",
         "ERROR": "Name is required"
       },
