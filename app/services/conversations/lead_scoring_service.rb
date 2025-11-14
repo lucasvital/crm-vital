@@ -42,6 +42,7 @@ class Conversations::LeadScoringService
 
     apply_labels_for_score(qualified)
     apply_priority_for_score(score)
+    create_private_note(score, reasons) if qualified
   end
 
   def apply_labels_for_score(qualified)
@@ -58,7 +59,8 @@ class Conversations::LeadScoringService
     label = @conversation.account.labels.find_or_initialize_by(title: title)
     label.color ||= color
     label.description ||= description
-    label.save! if label.changed?
+    label.show_on_sidebar = true if label.show_on_sidebar.nil?
+    label.save! if label.new_record? || label.changed?
   end
 
   def apply_priority_for_score(score)
@@ -77,5 +79,14 @@ class Conversations::LeadScoringService
     return if desired.nil?
 
     @conversation.toggle_priority(desired)
+  end
+
+  def create_private_note(score, reasons)
+    content = "Lead qualificado — Score: #{score}. Motivos: #{reasons.join(', ')}."
+    Messages::MessageBuilder.new(
+      nil,
+      @conversation.reload,
+      { content: content, private: true, message_type: 'outgoing', content_attributes: { lead_scoring: true } }
+    ).perform
   end
 end
