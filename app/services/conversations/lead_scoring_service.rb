@@ -41,6 +41,7 @@ class Conversations::LeadScoringService
     }))
 
     apply_labels_for_score(score, qualified)
+    apply_priority_for_score(score, qualified)
   end
 
   def apply_labels_for_score(score, qualified)
@@ -66,5 +67,31 @@ class Conversations::LeadScoringService
     return '#22c55e' if score >= 70
     return '#f59e0b' if score >= 40
     '#ef4444'
+  end
+
+  def apply_priority_for_score(score, qualified)
+    desired = if qualified
+                if score >= 85
+                  'urgent'
+                elsif score >= 70
+                  'high'
+                elsif score >= 50
+                  'medium'
+                else
+                  'low'
+                end
+              else
+                if score >= 70
+                  'medium'
+                elsif score >= 40
+                  'low'
+                else
+                  nil
+                end
+              end
+
+    return if desired.nil?
+
+    @conversation.toggle_priority(desired)
   end
 end
