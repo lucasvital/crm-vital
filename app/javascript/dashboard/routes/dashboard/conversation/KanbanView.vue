@@ -8,6 +8,7 @@ import ConversationApi from 'dashboard/api/inbox/conversation';
 import wootConstants from 'dashboard/constants/globals';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 import Avatar from 'next/avatar/Avatar.vue';
+import CreateDealModal from 'dashboard/components/widgets/conversation/CreateDealModal.vue';
 
 const { t } = useI18n();
 const { accountScopedRoute } = useAccount();
@@ -86,6 +87,9 @@ const dragItem = ref(null); // { id, fromStage, index }
 const dragOverStage = ref(null);
 const isDropping = ref(false);
 const movingConversation = ref(null);
+const showEditDealModal = ref(false);
+const selectedConversation = ref(null);
+const initialValues = ref({});
 
 const stageBadgeIconColor = stage => {
   // Removido: cores específicas por etapa
@@ -218,8 +222,57 @@ const getPreviewText = conversation => {
     (Array.isArray(conversation?.messages)
       ? (conversation.messages.find(m => m.message_type !== 'activity')?.content || '')
       : '');
-  // garante que imagens/HTML não quebrem o layout
   return String(msg || '').replace(/<[^>]+>/g, '');
+};
+
+const onCardClick = (conversation, event) => {
+  const anchor = event?.target?.closest('a');
+  if (anchor) return;
+  selectedConversation.value = conversation;
+  const ca = conversation?.custom_attributes || {};
+  initialValues.value = {
+    title: ca.deal_title || '',
+    amount: ca.deal_amount || '',
+    currency: ca.deal_currency || 'BRL',
+    closeDate: ca.deal_close_date || '',
+    notes: ca.deal_notes || '',
+  };
+  showEditDealModal.value = true;
+};
+
+const onEditSubmit = async payload => {
+  if (!selectedConversation.value) return;
+  const id = selectedConversation.value.id;
+  const ca = selectedConversation.value.custom_attributes || {};
+  await ConversationApi.updateCustomAttributes({
+    conversationId: id,
+    customAttributes: {
+      ...ca,
+      deal_title: payload.title,
+      deal_amount: payload.amount,
+      deal_currency: payload.currency,
+      deal_close_date: payload.closeDate,
+      deal_notes: payload.notes,
+    },
+  });
+  const stage = ca.deal_stage || 'new';
+  const list = state[stage]?.items || [];
+  const idx = list.findIndex(c => c.id === id);
+  if (idx >= 0) {
+    list[idx] = {
+      ...list[idx],
+      custom_attributes: {
+        ...list[idx].custom_attributes,
+        deal_title: payload.title,
+        deal_amount: payload.amount,
+        deal_currency: payload.currency,
+        deal_close_date: payload.closeDate,
+        deal_notes: payload.notes,
+      },
+    };
+  }
+  showEditDealModal.value = false;
+  alert(t('KANBAN.ALERTS.STATUS_UPDATED'));
 };
 </script>
 
@@ -290,6 +343,7 @@ const getPreviewText = conversation => {
             :title="t('KANBAN_A11Y.DRAG_HINT')"
             @dragstart="onDragStart(conversation, stage, $index, $event)"
             @dragend="onDragEnd"
+            @click="onCardClick(conversation, $event)"
           >
             <!-- Linha superior: tag de etapa + avatar fantasma -->
             <div class="flex items-center justify-between">
@@ -345,6 +399,17 @@ const getPreviewText = conversation => {
         </transition-group>
       </div>
     </div>
+    <CreateDealModal
+      v-if="showEditDealModal"
+      :show="showEditDealModal"
+      :current-chat="selectedConversation"
+      :initial-values="initialValues"
+      title-key="KANBAN.FORM.EDIT_TITLE"
+      desc-key="KANBAN.FORM.EDIT_DESC"
+      submit-key="KANBAN.FORM.UPDATE"
+      @cancel="() => (showEditDealModal = false)"
+      @submit="onEditSubmit"
+    />
   </div>
 </template>
 

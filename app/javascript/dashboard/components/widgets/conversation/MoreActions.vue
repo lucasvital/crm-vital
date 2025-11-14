@@ -115,6 +115,27 @@ onUnmounted(() => {
   emitter.off(CMD_UNMUTE_CONVERSATION, unmute);
   emitter.off(CMD_SEND_TRANSCRIPT, toggleEmailModal);
 });
+
+const onDealSubmit = async payload => {
+  const conversationId = currentChat.value.id;
+  const labels = Array.from(new Set([...(savedLabels.value || []), 'deal']));
+  await onUpdateLabels(labels);
+  const currentAttrs = currentChat.value.custom_attributes || {};
+  await ConversationApi.updateCustomAttributes({
+    conversationId,
+    customAttributes: {
+      ...currentAttrs,
+      deal_stage: 'new',
+      deal_title: payload.title,
+      deal_amount: payload.amount,
+      deal_currency: payload.currency,
+      deal_close_date: payload.closeDate,
+      deal_notes: payload.notes,
+    },
+  });
+  toggleCreateDealModal(false);
+  useAlert(t('KANBAN.DEAL_CREATED'));
+};
 </script>
 
 <template>
@@ -158,23 +179,3 @@ onUnmounted(() => {
     />
   </div>
 </template>
-const onDealSubmit = async payload => {
-  const conversationId = currentChat.value.id;
-  const labels = Array.from(new Set([...(savedLabels.value || []), 'deal']));
-  await onUpdateLabels(labels);
-  const currentAttrs = currentChat.value.custom_attributes || {};
-  await ConversationApi.updateCustomAttributes({
-    conversationId,
-    customAttributes: {
-      ...currentAttrs,
-      deal_stage: 'new',
-      deal_title: payload.title,
-      deal_amount: payload.amount,
-      deal_currency: payload.currency,
-      deal_close_date: payload.closeDate,
-      deal_notes: payload.notes,
-    },
-  });
-  toggleCreateDealModal(false);
-  useAlert(t('KANBAN.DEAL_CREATED'));
-};

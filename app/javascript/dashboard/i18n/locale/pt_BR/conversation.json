@@ -320,6 +320,8 @@
     "FORM": {
       "TITLE": "Criar negócio",
       "DESC": "Informe os detalhes do negócio vinculado a esta conversa.",
+      "EDIT_TITLE": "Editar negócio",
+      "EDIT_DESC": "Atualize os detalhes do negócio desta conversa.",
       "FIELDS": {
         "TITLE": "Título do negócio",
         "AMOUNT": "Valor",
@@ -334,6 +336,7 @@
         "NOTES": "Observações adicionais"
       },
       "SUBMIT": "Criar",
+      "UPDATE": "Salvar",
       "CANCEL": "Cancelar"
     }
   },

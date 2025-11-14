@@ -366,6 +366,8 @@
     "FORM": {
       "TITLE": "Create deal",
       "DESC": "Provide the deal details linked to this conversation.",
+      "EDIT_TITLE": "Edit deal",
+      "EDIT_DESC": "Update the deal details for this conversation.",
       "FIELDS": {
         "TITLE": "Deal title",
         "AMOUNT": "Amount",
@@ -380,6 +382,7 @@
         "NOTES": "Additional notes"
       },
       "SUBMIT": "Create",
+      "UPDATE": "Save",
       "CANCEL": "Cancel"
     }
   },

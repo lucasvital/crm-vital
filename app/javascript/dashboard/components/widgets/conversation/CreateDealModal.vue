@@ -8,6 +8,10 @@ export default {
   props: {
     show: { type: Boolean, default: false },
     currentChat: { type: Object, default: () => ({}) },
+    initialValues: { type: Object, default: () => ({}) },
+    titleKey: { type: String, default: 'KANBAN.FORM.TITLE' },
+    descKey: { type: String, default: 'KANBAN.FORM.DESC' },
+    submitKey: { type: String, default: 'KANBAN.FORM.SUBMIT' },
   },
   emits: ['cancel', 'update:show', 'submit'],
   setup() {
@@ -22,6 +26,20 @@ export default {
       notes: '',
       isSubmitting: false,
     };
+  },
+  watch: {
+    initialValues: {
+      handler(val) {
+        if (!val) return;
+        this.title = val.title || '';
+        this.amount = val.amount != null ? String(val.amount) : '';
+        this.currency = val.currency || 'BRL';
+        this.closeDate = val.closeDate || '';
+        this.notes = val.notes || '';
+      },
+      deep: true,
+      immediate: true,
+    },
   },
   validations() {
     return {
@@ -77,8 +95,8 @@ export default {
   <woot-modal v-model:show="localShow" :on-close="onCancel">
     <div class="flex flex-col h-auto overflow-auto">
       <woot-modal-header
-        :header-title="$t('KANBAN.FORM.TITLE')"
-        :header-content="$t('KANBAN.FORM.DESC')"
+        :header-title="$t(titleKey)"
+        :header-content="$t(descKey)"
       />
       <form class="w-full" @submit.prevent="onSubmit">
         <div class="grid grid-cols-2 gap-4">
@@ -145,7 +163,7 @@ export default {
           />
           <NextButton
             type="submit"
-            :label="$t('KANBAN.FORM.SUBMIT')"
+            :label="$t(submitKey)"
             :disabled="!isFormValid || isSubmitting"
           />
         </div>
