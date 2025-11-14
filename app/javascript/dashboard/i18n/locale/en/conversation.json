@@ -106,7 +106,9 @@
       "LEAD_SCORING_STARTED": "Lead analysis started",
       "LEAD_SCORE": "Score",
       "QUALIFIED": "Qualified",
-      "NOT_QUALIFIED": "Not qualified"
+      "NOT_QUALIFIED": "Not qualified",
+      "ANALYZE_CONVERSATION": "Analyze conversation (AI)",
+      "ANALYSIS_NOTE_ADDED": "Analysis added to notes"
     },
     "RESOLVE_DROPDOWN": {
       "MARK_PENDING": "Mark as pending",

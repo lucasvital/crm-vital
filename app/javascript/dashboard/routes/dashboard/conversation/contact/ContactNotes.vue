@@ -3,7 +3,6 @@ import { watch, computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
-import { useAI } from 'dashboard/composables/useAI';
 import { useAlert } from 'dashboard/composables';
 
 import Editor from 'dashboard/components-next/Editor/Editor.vue';
@@ -20,21 +19,13 @@ const store = useStore();
 const currentUser = useMapGetter('getCurrentUser');
 const uiFlags = useMapGetter('contactNotes/getUIFlags');
 const notesByContact = useMapGetter('contactNotes/getAllNotesByContactId');
-const currentChat = useMapGetter('getSelectedChat');
-
-const {
-  processEvent,
-  isAIIntegrationEnabled,
-  fetchIntegrationsIfRequired,
-  recordAnalytics,
-} = useAI();
+// Removed AI analyze from Contact Notes; available in MoreActions
 
 const isFetchingNotes = computed(() => uiFlags.value.isFetching);
 const isCreatingNote = computed(() => uiFlags.value.isCreating);
 const contactId = computed(() => props.contactId);
 const noteContent = ref('');
 const shouldShowCreateModal = ref(false);
-const isAnalyzing = ref(false);
 const notes = computed(() => {
   if (!contactId.value) {
     return [];
@@ -87,62 +78,6 @@ const onDelete = noteId => {
   });
 };
 
-const canAnalyzeWithAI = computed(
-  () => isAIIntegrationEnabled.value && !!contactId.value
-);
-
-const analyzeButtonLabel = computed(() =>
-  isAnalyzing.value
-    ? t('CONTACTS_LAYOUT.SIDEBAR.NOTES.ANALYSIS_IN_PROGRESS')
-    : t('CONTACTS_LAYOUT.SIDEBAR.NOTES.ANALYZE_WITH_AI')
-);
-
-const analyzeButtonTooltip = computed(() => {
-  if (!isAIIntegrationEnabled.value) {
-    return t('CONTACTS_LAYOUT.SIDEBAR.NOTES.ANALYZE_WITH_AI_DISABLED');
-  }
-  return '';
-});
-
-const analyzeConversationWithAI = async () => {
-  if (
-    !canAnalyzeWithAI.value ||
-    isAnalyzing.value ||
-    isFetchingNotes.value
-  ) {
-    return;
-  }
-
-  isAnalyzing.value = true;
-  try {
-    await fetchIntegrationsIfRequired();
-    const analysis = await processEvent('conversation_analysis');
-
-    if (!analysis || !analysis.trim()) {
-      useAlert(t('CONTACTS_LAYOUT.SIDEBAR.NOTES.ANALYSIS_ERROR'));
-      return;
-    }
-
-    const formattedContent = `${t(
-      'CONTACTS_LAYOUT.SIDEBAR.NOTES.ANALYSIS_NOTE_TITLE'
-    )}\n\n${analysis.trim()}`;
-
-    await store.dispatch('contactNotes/create', {
-      content: formattedContent,
-      contactId: contactId.value,
-    });
-
-    recordAnalytics('conversation_analysis', {
-      conversation_id: currentChat.value?.id,
-    });
-
-    useAlert(t('CONTACTS_LAYOUT.SIDEBAR.NOTES.ANALYSIS_SUCCESS'));
-  } catch (error) {
-    useAlert(t('CONTACTS_LAYOUT.SIDEBAR.NOTES.ANALYSIS_ERROR'));
-  } finally {
-    isAnalyzing.value = false;
-  }
-};
 
 const keyboardEvents = {
   '$mod+Enter': {
@@ -176,16 +111,6 @@ watch(
           :label="$t('CONTACTS_LAYOUT.SIDEBAR.NOTES.ADD_NOTE')"
           :disabled="!contactId || isFetchingNotes"
           @click="openCreateModal"
-        />
-        <NextButton
-          ghost
-          xs
-          icon="i-lucide-sparkles"
-          :label="analyzeButtonLabel"
-          :is-loading="isAnalyzing"
-          :disabled="!canAnalyzeWithAI || isFetchingNotes || isAnalyzing"
-          v-tooltip="analyzeButtonTooltip"
-          @click="analyzeConversationWithAI"
         />
       </div>
     </div>

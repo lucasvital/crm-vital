@@ -106,7 +106,9 @@
       "LEAD_SCORING_STARTED": "Análise de lead iniciada",
       "LEAD_SCORE": "Score",
       "QUALIFIED": "Qualificado",
-      "NOT_QUALIFIED": "Não qualificado"
+      "NOT_QUALIFIED": "Não qualificado",
+      "ANALYZE_CONVERSATION": "Analisar conversa (IA)",
+      "ANALYSIS_NOTE_ADDED": "Análise adicionada às notas"
     },
     "RESOLVE_DROPDOWN": {
       "MARK_PENDING": "Deixar pendente",
@@ -295,7 +297,7 @@
     }
   },
   "KANBAN": {
-    "TITLE": "Kanban Board",
+    "TITLE": "Kanban",
     "DESCRIPTION": "Visualize e gerencie negócios criados a partir das conversas.",
     "CTA": { "REFRESH": "Atualizar" },
     "COLUMNS": {

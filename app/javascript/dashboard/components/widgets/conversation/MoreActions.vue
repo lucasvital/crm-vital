@@ -14,6 +14,8 @@ import CreateDealModal from './CreateDealModal.vue';
 import ResolveAction from '../../buttons/ResolveAction.vue';
 import ButtonV4 from 'dashboard/components-next/button/Button.vue';
 import DropdownMenu from 'dashboard/components-next/dropdown-menu/DropdownMenu.vue';
+import { useAI } from 'dashboard/composables/useAI';
+import MessageApi from 'dashboard/api/inbox/message';
 
 import {
   CMD_MUTE_CONVERSATION,
@@ -33,6 +35,7 @@ const [showActionsDropdown, toggleDropdown] = useToggle(false);
 const [showCreateDealModal, toggleCreateDealModal] = useToggle(false);
 
 const currentChat = computed(() => store.getters.getSelectedChat);
+const ai = useAI();
 
 const actionMenuItems = computed(() => {
   const items = [];
@@ -81,6 +84,13 @@ const actionMenuItems = computed(() => {
     value: 'lead_scoring',
   });
 
+  items.push({
+    icon: 'i-lucide-brain',
+    label: t('CONVERSATION.HEADER.ANALYZE_CONVERSATION'),
+    action: 'analyze_conversation',
+    value: 'analyze_conversation',
+  });
+
   return items;
 });
 
@@ -102,6 +112,18 @@ const handleActionClick = async ({ action }) => {
   } else if (action === 'lead_scoring') {
     await ConversationApi.leadScoring(currentChat.value.id);
     useAlert(t('CONVERSATION.HEADER.LEAD_SCORING_STARTED'));
+  } else if (action === 'analyze_conversation') {
+    await ai.fetchIntegrationsIfRequired();
+    const analysis = await ai.processEvent('conversation_analysis');
+    if (analysis) {
+      await MessageApi.create({
+        conversationId: currentChat.value.id,
+        message: analysis,
+        private: true,
+        contentAttributes: { ai_analysis: true },
+      });
+      useAlert(t('CONVERSATION.HEADER.ANALYSIS_NOTE_ADDED'));
+    }
   }
 };
 
