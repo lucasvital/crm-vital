@@ -282,6 +282,9 @@
       "CONTACT": "Contact",
       "COPILOT": "Copilot"
     },
+    "CONTACT_PANEL": {
+      "LEAD_REASONS": "Score reasons"
+    },
     "INBOX": {
       "WHATSAPP_PROVIDER_CONNECTION": {
         "NOT_CONNECTED": "WhatsApp is not connected. Please link your device again.",

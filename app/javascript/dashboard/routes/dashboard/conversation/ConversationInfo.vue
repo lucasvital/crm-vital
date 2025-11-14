@@ -80,6 +80,18 @@ const staticElements = computed(() =>
       key: 'static-ip-address',
       type: 'static_attribute',
     },
+    {
+      content: computed(() => props.conversationAttributes.lead_score),
+      title: 'CONVERSATION.HEADER.LEAD_SCORE',
+      key: 'static-lead-score',
+      type: 'static_attribute',
+    },
+    {
+      content: computed(() => (props.conversationAttributes.lead_reasons || []).join(', ')),
+      title: 'CONTACT_PANEL.LEAD_REASONS',
+      key: 'static-lead-reasons',
+      type: 'static_attribute',
+    },
   ].filter(attribute => !!attribute.content.value)
 );
 </script>

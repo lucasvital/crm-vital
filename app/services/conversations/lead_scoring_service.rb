@@ -44,11 +44,27 @@ class Conversations::LeadScoringService
   end
 
   def apply_labels_for_score(score, qualified)
-    label_score = "Score #{score}"
-    status_label = qualified ? 'Lead: Qualificado' : 'Lead: Não qualificado'
+    score_label = "score-#{score}"
+    status_label = qualified ? 'lead-qualificado' : 'lead-nao-qualificado'
+
+    ensure_account_label(score_label, color_for_score(score), "Lead scoring (#{score})")
+    ensure_account_label(status_label, qualified ? '#22c55e' : '#ef4444', 'Status de qualificação do lead')
 
     labels = @conversation.label_list || []
-    updated = (labels + [label_score, status_label]).uniq
+    updated = (labels + [score_label, status_label]).uniq
     @conversation.update_labels(updated)
+  end
+
+  def ensure_account_label(title, color, description)
+    label = @conversation.account.labels.find_or_initialize_by(title: title)
+    label.color ||= color
+    label.description ||= description
+    label.save! if label.changed?
+  end
+
+  def color_for_score(score)
+    return '#22c55e' if score >= 70
+    return '#f59e0b' if score >= 40
+    '#ef4444'
   end
 end

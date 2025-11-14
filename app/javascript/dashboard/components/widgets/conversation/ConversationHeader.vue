@@ -139,11 +139,11 @@ const hasSlaPolicyId = computed(() => props.chat?.sla_policy_id);
             {{ snoozedDisplayText }}
           </span>
           <span v-if="chat?.custom_attributes?.lead_score !== undefined"
-                class="inline-flex items-center gap-1 rounded-full bg-n-solid-2 px-2 py-0.5 text-[11px] font-medium text-n-slate-12 ring-1 ring-n-alpha-1">
-            <span class="i-lucide-sparkles size-3" />
+                v-tooltip="(chat.custom_attributes.lead_reasons || []).join(', ')"
+                :class="[ 'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1', chat.custom_attributes.lead_qualified ? 'bg-n-green-3 text-n-green-12 ring-n-green-8' : 'bg-n-red-3 text-n-red-12 ring-n-red-8' ]">
             {{ $t('CONVERSATION.HEADER.LEAD_SCORE') }}: {{ chat.custom_attributes.lead_score }}
-            <span v-if="chat.custom_attributes.lead_qualified" class="ml-1 text-n-green-11">{{ $t('CONVERSATION.HEADER.QUALIFIED') }}</span>
-            <span v-else class="ml-1 text-n-red-11">{{ $t('CONVERSATION.HEADER.NOT_QUALIFIED') }}</span>
+            <span v-if="chat.custom_attributes.lead_qualified" class="ml-1">{{ $t('CONVERSATION.HEADER.QUALIFIED') }}</span>
+            <span v-else class="ml-1">{{ $t('CONVERSATION.HEADER.NOT_QUALIFIED') }}</span>
           </span>
         </div>
       </div>
