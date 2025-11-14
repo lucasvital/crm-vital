@@ -101,9 +101,7 @@
         "RT": "RT {status}",
         "MISSED": "missed",
         "DUE": "due"
-      }
-    },
-    "HEADER": {
+      },
       "LEAD_SCORING": "Analyze lead (AI)",
       "LEAD_SCORING_STARTED": "Lead analysis started",
       "LEAD_SCORE": "Score",

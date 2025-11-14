@@ -101,9 +101,7 @@
         "RT": "RT {status}",
         "MISSED": "perdidas",
         "DUE": "venceu"
-      }
-    },
-    "HEADER": {
+      },
       "LEAD_SCORING": "Analisar lead (IA)",
       "LEAD_SCORING_STARTED": "Análise de lead iniciada",
       "LEAD_SCORE": "Score",
