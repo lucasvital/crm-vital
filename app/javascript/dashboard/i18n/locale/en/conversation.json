@@ -103,6 +103,13 @@
         "DUE": "due"
       }
     },
+    "HEADER": {
+      "LEAD_SCORING": "Analyze lead (AI)",
+      "LEAD_SCORING_STARTED": "Lead analysis started",
+      "LEAD_SCORE": "Score",
+      "QUALIFIED": "Qualified",
+      "NOT_QUALIFIED": "Not qualified"
+    },
     "RESOLVE_DROPDOWN": {
       "MARK_PENDING": "Mark as pending",
       "SNOOZE_UNTIL": "Snooze",

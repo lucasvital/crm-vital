@@ -6,7 +6,7 @@ class Integrations::OpenaiBaseService
   TOKEN_LIMIT = 400_000
   GPT_MODEL = ENV.fetch('OPENAI_GPT_MODEL', 'gpt-4o-mini').freeze
 
-  ALLOWED_EVENT_NAMES = %w[rephrase summarize reply_suggestion conversation_analysis fix_spelling_grammar shorten expand make_friendly make_formal simplify].freeze
+  ALLOWED_EVENT_NAMES = %w[rephrase summarize reply_suggestion conversation_analysis fix_spelling_grammar shorten expand make_friendly make_formal simplify lead_scoring].freeze
   CACHEABLE_EVENTS = %w[].freeze
 
   pattr_initialize [:hook!, :event!]

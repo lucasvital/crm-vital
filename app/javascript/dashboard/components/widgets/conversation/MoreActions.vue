@@ -74,6 +74,13 @@ const actionMenuItems = computed(() => {
     value: 'create_deal',
   });
 
+  items.push({
+    icon: 'i-lucide-sparkles',
+    label: t('CONVERSATION.HEADER.LEAD_SCORING'),
+    action: 'lead_scoring',
+    value: 'lead_scoring',
+  });
+
   return items;
 });
 
@@ -92,6 +99,9 @@ const handleActionClick = async ({ action }) => {
     router.push(accountScopedRoute('conversation_kanban'));
   } else if (action === 'create_deal') {
     toggleCreateDealModal(true);
+  } else if (action === 'lead_scoring') {
+    await ConversationApi.leadScoring(currentChat.value.id);
+    useAlert(t('CONVERSATION.HEADER.LEAD_SCORING_STARTED'));
   }
 };
 

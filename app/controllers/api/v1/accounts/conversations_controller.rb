@@ -128,6 +128,11 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
     @conversation.save!
   end
 
+  def lead_scoring
+    LeadScoringJob.perform_later(@conversation.id)
+    head :accepted
+  end
+
   def destroy
     authorize @conversation, :destroy?
     ::DeleteObjectJob.perform_later(@conversation, Current.user, request.ip)

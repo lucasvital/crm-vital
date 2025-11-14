@@ -103,6 +103,13 @@
         "DUE": "venceu"
       }
     },
+    "HEADER": {
+      "LEAD_SCORING": "Analisar lead (IA)",
+      "LEAD_SCORING_STARTED": "Análise de lead iniciada",
+      "LEAD_SCORE": "Score",
+      "QUALIFIED": "Qualificado",
+      "NOT_QUALIFIED": "Não qualificado"
+    },
     "RESOLVE_DROPDOWN": {
       "MARK_PENDING": "Deixar pendente",
       "SNOOZE_UNTIL": "Adiar",

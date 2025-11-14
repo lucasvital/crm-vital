@@ -141,6 +141,10 @@ class ConversationApi extends ApiClient {
   delete(conversationId) {
     return axios.delete(`${this.url}/${conversationId}`);
   }
+
+  leadScoring(conversationId) {
+    return axios.post(`${this.url}/${conversationId}/lead_scoring`);
+  }
 }
 
 export default new ConversationApi();

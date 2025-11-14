@@ -13,6 +13,10 @@ class Integrations::Openai::ProcessorService < Integrations::OpenaiBaseService
     make_api_call(conversation_analysis_body)
   end
 
+  def lead_scoring_message
+    make_api_call(lead_scoring_body)
+  end
+
   def rephrase_message
     make_api_call(build_api_call_body("#{AGENT_INSTRUCTION} Please rephrase the following response. " \
                                       "#{LANGUAGE_INSTRUCTION}"))
@@ -137,6 +141,24 @@ class Integrations::Openai::ProcessorService < Integrations::OpenaiBaseService
 
     {
       model: GPT_MODEL,
+      messages: [
+        { role: 'system', content: system_prompt },
+        { role: 'user', content: conversation_messages }
+      ]
+    }.to_json
+  end
+
+  def lead_scoring_body
+    locale_hint = I18n.locale
+    system_prompt = <<~PROMPT
+      #{prompt_from_file('lead_scoring', enterprise: false)}
+
+      The current app locale is "#{locale_hint}". Always respond using this locale's language.
+    PROMPT
+
+    {
+      model: GPT_MODEL,
+      response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: system_prompt },
         { role: 'user', content: conversation_messages }
