@@ -307,6 +307,7 @@
       "UNKNOWN_INBOX": "Caixa desconhecida",
       "INBOX": "Caixa: {inbox}",
       "NO_PREVIEW": "Sem mensagens recentes",
+      "UNKNOWN_ASSIGNEE": "Agente desconhecido",
       "OPEN_CONVERSATION": "Ver conversa",
       "MOVE_TO": "Mover para etapa",
       "SELECT_STATUS": "Selecione uma etapa",

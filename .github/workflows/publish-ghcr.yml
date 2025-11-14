@@ -2,8 +2,24 @@ name: Build and publish container to GHCR
 
 on:
   push:
-    branches: [ "main" ]    # ajuste se sua default branch for outra
-    tags: [ "*" ]           # publica quando criar qualquer tag (ex: 1.0.1 ou v1.0.1)
+    branches: [ "main", "homolog" ]
+    tags: [ "*" ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Tag semver (ex.: 0.0.1)"
+        required: false
+        type: string
+      tag_homolog:
+        description: "Criar tag homolog"
+        required: false
+        type: boolean
+        default: false
+      promote_latest:
+        description: "Promover digest construído para latest"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -40,18 +56,51 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=tag
             type=sha
+            type=semver,pattern={{version}}
+
+      - name: Compute extra tags
+        id: extra_tags
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          EXTRA_TAGS=""
+          if [ -n "${{ inputs.version }}" ]; then
+            EXTRA_TAGS="$EXTRA_TAGS\nghcr.io/${{ github.repository_owner }}/chat-vital:${{ inputs.version }}"
+          fi
+          if [ "${{ inputs.tag_homolog }}" = "true" ]; then
+            EXTRA_TAGS="$EXTRA_TAGS\nghcr.io/${{ github.repository_owner }}/chat-vital:homolog"
+          fi
+          echo "EXTRA_TAGS<<EOF" >> $GITHUB_ENV
+          echo -e "$EXTRA_TAGS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Build and push
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile
           push: true
           platforms: linux/amd64
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ${{ env.EXTRA_TAGS }}
           labels: ${{ steps.meta.outputs.labels }}
           provenance: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Tag homolog by digest
+        if: ${{ github.ref == 'refs/heads/homolog' }}
+        run: |
+          docker buildx imagetools create \
+            -t ghcr.io/${{ github.repository_owner }}/chat-vital:homolog \
+            ghcr.io/${{ github.repository_owner }}/chat-vital@${{ steps.build.outputs.digest }}
+
+      - name: Promote latest by digest
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.promote_latest == true }}
+        run: |
+          docker buildx imagetools create \
+            -t ghcr.io/${{ github.repository_owner }}/chat-vital:latest \
+            ghcr.io/${{ github.repository_owner }}/chat-vital@${{ steps.build.outputs.digest }}
 
 

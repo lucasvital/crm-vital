@@ -354,6 +354,7 @@
       "UNKNOWN_INBOX": "Unknown inbox",
       "INBOX": "Inbox: {inbox}",
       "NO_PREVIEW": "No recent messages",
+      "UNKNOWN_ASSIGNEE": "Unknown assignee",
       "OPEN_CONVERSATION": "View conversation",
       "MOVE_TO": "Move to stage",
       "SELECT_STATUS": "Select a stage",

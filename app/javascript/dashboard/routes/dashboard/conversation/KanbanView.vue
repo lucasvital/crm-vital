@@ -309,7 +309,7 @@ const onEditSubmit = async payload => {
       <div
         v-for="stage in STAGES"
         :key="stage"
-        class="flex w-[320px] flex-col rounded-2xl bg-n-solid-1/70 shadow-sm hover:shadow-md transition-shadow"
+        class="flex w-[320px] shrink-0 flex-col rounded-2xl bg-n-solid-1/70 shadow-sm hover:shadow-md transition-shadow"
         :class="[dragOverStage === stage ? 'ring-1 ring-n-brand' : 'ring-1 ring-transparent hover:ring-n-alpha-2']"
         role="list"
         :aria-label="columnTitle(stage)"
@@ -379,7 +379,16 @@ const onEditSubmit = async payload => {
               </p>
             </div>
 
-            <div class="flex items-center justify-end text-xs text-n-slate-11">
+            <div class="flex items-center justify-between text-xs text-n-slate-11">
+              <div class="flex items-center gap-2 min-w-0">
+                <Avatar
+                  :name="conversation.meta?.assignee?.name"
+                  :src="conversation.meta?.assignee?.thumbnail"
+                  :size="18"
+                  rounded-full
+                />
+                <span class="truncate">{{ conversation.meta?.assignee?.name || t('KANBAN.CARDS.UNKNOWN_ASSIGNEE') }}</span>
+              </div>
               <router-link
                 class="font-medium text-n-brand hover:underline"
                 :to="getConversationRoute(conversation.id)"
