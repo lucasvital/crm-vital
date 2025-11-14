@@ -128,11 +128,17 @@ class Integrations::Openai::ProcessorService < Integrations::OpenaiBaseService
   end
 
   def conversation_analysis_body
+    locale_hint = I18n.locale
+    system_prompt = <<~PROMPT
+      #{prompt_from_file('conversation_analysis', enterprise: false)}
+
+      The current app locale is "#{locale_hint}". Always respond using this locale's language.
+    PROMPT
+
     {
       model: GPT_MODEL,
       messages: [
-        { role: 'system',
-          content: prompt_from_file('conversation_analysis', enterprise: false) },
+        { role: 'system', content: system_prompt },
         { role: 'user', content: conversation_messages }
       ]
     }.to_json
