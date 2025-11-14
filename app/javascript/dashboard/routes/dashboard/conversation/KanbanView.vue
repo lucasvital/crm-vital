@@ -401,11 +401,30 @@ const onEditSubmit = async payload => {
               </p>
             </div>
 
+            <CardLabels
+              v-if="getConversationLabels(conversation).length"
+              :conversation-labels="getConversationLabels(conversation)"
+            />
+
             <div v-if="conversation.custom_attributes?.lead_score !== undefined"
                  :class="[ 'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 w-fit', conversation.custom_attributes.lead_qualified ? 'bg-n-amber-4 text-n-amber-12 ring-n-amber-8' : 'bg-n-ruby-4 text-n-ruby-12 ring-n-ruby-8' ]">
               {{ $t('CONVERSATION.HEADER.LEAD_SCORE') }}: {{ conversation.custom_attributes.lead_score }}
               <span v-if="conversation.custom_attributes.lead_qualified" class="ml-1">{{ $t('CONVERSATION.HEADER.QUALIFIED') }}</span>
               <span v-else class="ml-1">{{ $t('CONVERSATION.HEADER.NOT_QUALIFIED') }}</span>
+            </div>
+
+            <!-- Controle de mover etapa: visível apenas em mobile -->
+            <div class="md:hidden">
+              <label class="text-[11px] text-n-slate-11 mr-2">{{ t('KANBAN.CARDS.MOVE_TO') }}</label>
+              <select
+                class="rounded-md border border-n-alpha-2 bg-n-solid-1 text-[11px] text-n-slate-12 px-2 py-1"
+                :value="stage"
+                @change="moveStageMobile(conversation, stage, $event.target.value)"
+              >
+                <option v-for="opt in STAGES" :key="opt" :value="opt">
+                  {{ columnTitle(opt) }}
+                </option>
+              </select>
             </div>
 
             <div class="flex items-center justify-between text-xs text-n-slate-11">
