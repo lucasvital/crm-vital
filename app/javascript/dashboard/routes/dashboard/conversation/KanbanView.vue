@@ -12,6 +12,7 @@ import CreateDealModal from 'dashboard/components/widgets/conversation/CreateDea
 import PriorityMark from 'dashboard/components/widgets/conversation/PriorityMark.vue';
 import TimeAgo from 'dashboard/components/ui/TimeAgo.vue';
 import CardLabels from 'dashboard/components/widgets/conversation/conversationCardComponents/CardLabels.vue';
+import ConversationsApi from 'dashboard/api/conversations';
 
 const { t } = useI18n();
 const { accountScopedRoute } = useAccount();
@@ -119,6 +120,28 @@ const getConversationLabels = conversation => {
     conversation?.cached_label_list_array ||
     []
   );
+};
+
+const labelsWithoutDeal = labels => {
+  return (labels || [])
+    .map(l => (typeof l === 'string' ? l : l?.title || l?.name))
+    .filter(Boolean)
+    .filter(l => l !== 'deal');
+};
+
+const removeCardFromKanban = async (conversation, stage) => {
+  try {
+    // Update otimista: remove do UI primeiro
+    removeFromStage(stage, conversation.id);
+    const currentLabels = getConversationLabels(conversation);
+    const nextLabels = labelsWithoutDeal(currentLabels);
+    await ConversationsApi.updateLabels(conversation.id, nextLabels);
+    alert(t('KANBAN.ALERTS.REMOVE_SUCCESS'));
+  } catch (e) {
+    alert(t('KANBAN.ALERTS.REMOVE_FAILED'));
+    // Recarrega quadro para restaurar estado
+    await refreshBoard();
+  }
 };
 
 const formatCurrency = (amount, currency = 'BRL') => {
@@ -370,7 +393,17 @@ const onEditSubmit = async payload => {
                 <span :class="['i-lucide-flag', 'size-3', stageBadgeIconColor(stage)]" />
                 {{ columnTitle(stage) }}
               </div>
-              <PriorityMark :priority="getPriority(conversation)" />
+              <div class="inline-flex items-center gap-2">
+                <button
+                  type="button"
+                  class="rounded-md p-1 hover:bg-n-alpha-2 text-n-slate-11"
+                  :title="t('KANBAN.CARDS.REMOVE')"
+                  @click.stop="removeCardFromKanban(conversation, stage)"
+                >
+                  <span class="i-lucide-trash-2 size-4" />
+                </button>
+                <PriorityMark :priority="getPriority(conversation)" />
+              </div>
             </div>
 
             <!-- Linha com avatar pequeno e nome (mesmo padrão dos chips pequenos) -->

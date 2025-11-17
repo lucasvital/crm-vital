@@ -313,7 +313,9 @@
     "ALERTS": {
       "FETCH_FAILED": "Não foi possível carregar o Kanban.",
       "STATUS_UPDATED": "Etapa atualizada.",
-      "STATUS_FAILED": "Não foi possível atualizar a etapa."
+      "STATUS_FAILED": "Não foi possível atualizar a etapa.",
+      "REMOVE_SUCCESS": "Removido do Kanban.",
+      "REMOVE_FAILED": "Não foi possível remover do Kanban."
     },
     "CARDS": {
       "NO_NAME": "Contato sem nome",
@@ -324,6 +326,7 @@
       "OPEN_CONVERSATION": "Ver conversa",
       "MOVE_TO": "Mover para etapa",
       "SELECT_STATUS": "Selecione uma etapa",
+      "REMOVE": "Remover do Kanban",
       "EMPTY_STATE": "Sem conversas aqui ainda",
       "UPDATING": "Atualizando..."
     },
