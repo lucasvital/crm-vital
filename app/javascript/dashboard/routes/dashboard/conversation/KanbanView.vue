@@ -178,6 +178,11 @@ const getDealAmountText = conversation => {
   return formatCurrency(amt, cur);
 };
 
+const getDealTitle = conversation => {
+  const ca = conversation?.custom_attributes || {};
+  return ca.deal_title || '';
+};
+
 const removeFromStage = (stage, id) => {
   const list = state[stage].items;
   const idx = list.findIndex(c => c.id === id);
@@ -406,6 +411,14 @@ const onEditSubmit = async payload => {
               </div>
             </div>
 
+            <!-- Título do negócio como título do card -->
+            <div
+              v-if="getDealTitle(conversation)"
+              class="mt-1 text-sm font-semibold text-n-slate-12 line-clamp-1"
+            >
+              {{ getDealTitle(conversation) }}
+            </div>
+
             <!-- Linha com avatar pequeno e nome (mesmo padrão dos chips pequenos) -->
             <div class="mt-1 flex items-center gap-2 h-7">
               <Avatar
@@ -428,7 +441,9 @@ const onEditSubmit = async payload => {
             </div>
 
             <div class="rounded-md bg-n-solid-3 p-2 text-xs text-n-slate-12">
-              <p class="line-clamp-2">{{ getPreviewText(conversation) || t('KANBAN.CARDS.NO_PREVIEW') }}</p>
+              <p class="line-clamp-2">
+                {{ getPreviewText(conversation) || t('KANBAN.CARDS.NO_PREVIEW') }}
+              </p>
               <p v-if="getDealAmountText(conversation)" class="mt-1 font-medium text-n-slate-12">
                 {{ getDealAmountText(conversation) }}
               </p>
