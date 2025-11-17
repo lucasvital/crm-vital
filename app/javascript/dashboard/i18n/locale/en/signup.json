@@ -23,6 +23,36 @@
       "PLACEHOLDER": "Enter your work email address. E.g., bruce{'@'}wayne{'.'}enterprises",
       "ERROR": "Please enter a valid work email address."
     },
+    "PHONE": {
+      "LABEL": "Company phone",
+      "PLACEHOLDER": "Enter your company phone number",
+      "ERROR": "Please enter a valid phone number."
+    },
+    "COMPANY_SIZE": {
+      "LABEL": "Number of employees",
+      "PLACEHOLDER": "Select number of employees",
+      "ERROR": "Please select a company size.",
+      "OPTIONS": {
+        "RANGE_1_5": "1-5",
+        "RANGE_6_20": "6-20",
+        "RANGE_21_50": "21-50",
+        "RANGE_51_200": "51-200",
+        "RANGE_200_PLUS": "200+"
+      }
+    },
+    "INDUSTRY": {
+      "LABEL": "Industry",
+      "PLACEHOLDER": "Select your industry",
+      "ERROR": "Please select an industry.",
+      "OPTIONS": {
+        "ECOMMERCE": "E-commerce",
+        "SAAS": "Software / SaaS",
+        "SERVICES": "Professional services",
+        "RETAIL": "Retail / Local business",
+        "EDUCATION": "Education",
+        "OTHER": "Other"
+      }
+    },
     "PASSWORD": {
       "LABEL": "Password",
       "PLACEHOLDER": "Password",

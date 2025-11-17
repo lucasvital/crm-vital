@@ -7,12 +7,12 @@ import { DEFAULT_REDIRECT_URL } from 'dashboard/constants/globals';
 import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
 import SimpleDivider from '../../../../../components/Divider/SimpleDivider.vue';
 import FormInput from '../../../../../components/Form/Input.vue';
+import FormSelect from '../../../../../components/Form/Select.vue';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import { isValidPassword } from 'shared/helpers/Validators';
 import GoogleOAuthButton from '../../../../../components/GoogleOauth/Button.vue';
 import { register } from '../../../../../api/auth';
-import * as CompanyEmailValidator from 'company-email-validator';
 
 const MIN_PASSWORD_LENGTH = 6;
 const SPECIAL_CHAR_REGEX = /[!@#$%^&*()_+\-=[\]{}|'"/\\.,`<>:;?~]/;
@@ -20,6 +20,7 @@ const SPECIAL_CHAR_REGEX = /[!@#$%^&*()_+\-=[\]{}|'"/\\.,`<>:;?~]/;
 export default {
   components: {
     FormInput,
+    FormSelect,
     GoogleOAuthButton,
     NextButton,
     SimpleDivider,
@@ -35,10 +36,61 @@ export default {
         accountName: '',
         fullName: '',
         email: '',
+        companyPhone: '',
+        companySize: '',
+        industry: '',
         password: '',
         confirmPassword: '',
         hCaptchaClientResponse: '',
       },
+      companySizeOptions: [
+        {
+          value: '1-5',
+          labelKey: 'REGISTER.COMPANY_SIZE.OPTIONS.RANGE_1_5',
+        },
+        {
+          value: '6-20',
+          labelKey: 'REGISTER.COMPANY_SIZE.OPTIONS.RANGE_6_20',
+        },
+        {
+          value: '21-50',
+          labelKey: 'REGISTER.COMPANY_SIZE.OPTIONS.RANGE_21_50',
+        },
+        {
+          value: '51-200',
+          labelKey: 'REGISTER.COMPANY_SIZE.OPTIONS.RANGE_51_200',
+        },
+        {
+          value: '200+',
+          labelKey: 'REGISTER.COMPANY_SIZE.OPTIONS.RANGE_200_PLUS',
+        },
+      ],
+      industryOptions: [
+        {
+          value: 'ecommerce',
+          labelKey: 'REGISTER.INDUSTRY.OPTIONS.ECOMMERCE',
+        },
+        {
+          value: 'saas',
+          labelKey: 'REGISTER.INDUSTRY.OPTIONS.SAAS',
+        },
+        {
+          value: 'services',
+          labelKey: 'REGISTER.INDUSTRY.OPTIONS.SERVICES',
+        },
+        {
+          value: 'retail',
+          labelKey: 'REGISTER.INDUSTRY.OPTIONS.RETAIL',
+        },
+        {
+          value: 'education',
+          labelKey: 'REGISTER.INDUSTRY.OPTIONS.EDUCATION',
+        },
+        {
+          value: 'other',
+          labelKey: 'REGISTER.INDUSTRY.OPTIONS.OTHER',
+        },
+      ],
       didCaptchaReset: false,
       isSignupInProgress: false,
       error: '',
@@ -55,12 +107,15 @@ export default {
           required,
           minLength: minLength(2),
         },
+        companySize: {
+          required,
+        },
+        industry: {
+          required,
+        },
         email: {
           required,
           email,
-          businessEmailValidator(value) {
-            return CompanyEmailValidator.isCompanyEmail(value);
-          },
         },
         password: {
           required,
@@ -224,6 +279,43 @@ export default {
         :error-message="$t('REGISTER.EMAIL.ERROR')"
         @blur="v$.credentials.email.$touch"
       />
+      <FormInput
+        v-model="credentials.companyPhone"
+        type="tel"
+        name="company_phone"
+        :label="$t('REGISTER.PHONE.LABEL')"
+        :placeholder="$t('REGISTER.PHONE.PLACEHOLDER')"
+      />
+      <div class="grid grid-cols-2 gap-2">
+        <FormSelect
+          v-model="credentials.companySize"
+          name="company_size"
+          :options="
+            companySizeOptions.map(option => ({
+              value: option.value,
+              label: $t(option.labelKey),
+            }))
+          "
+          :label="$t('REGISTER.COMPANY_SIZE.LABEL')"
+          :placeholder="$t('REGISTER.COMPANY_SIZE.PLACEHOLDER')"
+          :has-error="v$.credentials.companySize.$error"
+          :error-message="$t('REGISTER.COMPANY_SIZE.ERROR')"
+        />
+        <FormSelect
+          v-model="credentials.industry"
+          name="industry"
+          :options="
+            industryOptions.map(option => ({
+              value: option.value,
+              label: $t(option.labelKey),
+            }))
+          "
+          :label="$t('REGISTER.INDUSTRY.LABEL')"
+          :placeholder="$t('REGISTER.INDUSTRY.PLACEHOLDER')"
+          :has-error="v$.credentials.industry.$error"
+          :error-message="$t('REGISTER.INDUSTRY.ERROR')"
+        />
+      </div>
       <FormInput
         v-model="credentials.password"
         type="password"

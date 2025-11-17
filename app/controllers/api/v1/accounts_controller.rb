@@ -31,6 +31,17 @@ class Api::V1::AccountsController < Api::BaseController
       user: current_user
     ).perform
     if @user
+      # Persist optional custom attributes provided during signup
+      if @account.present?
+        @account.custom_attributes ||= {}
+        signup_custom_attributes = custom_attributes_params.to_h
+        signup_custom_attributes.delete_if { |_key, value| value.blank? }
+        @account.custom_attributes.merge!(signup_custom_attributes)
+        # Set initial onboarding step for new accounts so that the frontend
+        # can drive a WhatsApp-focused onboarding flow.
+        @account.custom_attributes['onboarding_step'] ||= 'whatsapp_setup'
+        @account.save!
+      end
       send_auth_headers(@user)
       render 'api/v1/accounts/create', format: :json, locals: { resource: @user }
     else
@@ -88,7 +99,7 @@ class Api::V1::AccountsController < Api::BaseController
   end
 
   def custom_attributes_params
-    params.permit(:industry, :company_size, :timezone)
+    params.permit(:industry, :company_size, :timezone, :phone, :onboarding_step)
   end
 
   def settings_params

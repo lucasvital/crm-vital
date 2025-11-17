@@ -173,12 +173,35 @@ const onCloseLinkDeviceModal = () => {
   showLinkDeviceModal.value = false;
 };
 
+const updateOnboardingStepIfNeeded = () => {
+  const accountId = route.params.accountId;
+  if (!accountId || !isAWhatsAppChannel.value) {
+    return;
+  }
+
+  const account =
+    store.getters['accounts/getAccount'] &&
+    store.getters['accounts/getAccount'](accountId);
+
+  const onboardingStep = account?.custom_attributes?.onboarding_step;
+
+  if (onboardingStep !== 'whatsapp_setup') {
+    return;
+  }
+
+  store.dispatch('accounts/update', {
+    onboarding_step: 'invite_team',
+    options: { silent: true },
+  });
+};
+
 // Watch for currentInbox changes and regenerate QR codes when available
 watch(
   currentInbox,
   newInbox => {
     if (newInbox) {
       generateQRCodes();
+      updateOnboardingStepIfNeeded();
     }
   },
   { immediate: true }

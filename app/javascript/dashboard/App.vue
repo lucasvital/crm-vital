@@ -117,8 +117,11 @@ export default {
       this.$store.dispatch('setActiveAccount', {
         accountId: this.currentAccountId,
       });
-      const { locale, latest_chatwoot_version: latestChatwootVersion } =
-        this.getAccount(this.currentAccountId);
+      const {
+        locale,
+        latest_chatwoot_version: latestChatwootVersion,
+        custom_attributes: customAttributes = {},
+      } = this.getAccount(this.currentAccountId);
       const { pubsub_token: pubsubToken } = this.currentUser || {};
       // If user locale is set, use it; otherwise use account locale
       this.setLocale(this.uiSettings?.locale || locale);
@@ -126,6 +129,16 @@ export default {
       vueActionCable.init(this.store, pubsubToken);
       this.reconnectService = new ReconnectService(this.store, this.router);
       window.reconnectService = this.reconnectService;
+
+      if (customAttributes.onboarding_step === 'whatsapp_setup') {
+        this.router.replace({
+          name: 'settings_inboxes_page_channel',
+          params: {
+            accountId: this.currentAccountId,
+            sub_page: 'whatsapp',
+          },
+        });
+      }
 
       verifyServiceWorkerExistence(registration =>
         registration.pushManager.getSubscription().then(subscription => {
