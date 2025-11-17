@@ -287,6 +287,9 @@
     "CONTACT_PANEL": {
       "LEAD_REASONS": "Motivos do score"
     },
+    "DEAL_STAGE": {
+      "TITLE": "Etapa do negócio"
+    },
     "INBOX": {
       "WHATSAPP_PROVIDER_CONNECTION": {
         "NOT_CONNECTED": "O WhatsApp não está conectado. Por favor conecte o seu dispositivo novamente.",

@@ -23,6 +23,7 @@ import LinearIssuesList from 'dashboard/components/widgets/conversation/linear/I
 import LinearSetupCTA from 'dashboard/components/widgets/conversation/linear/LinearSetupCTA.vue';
 import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 
+
 const props = defineProps({
   conversationId: {
     type: [Number, String],
@@ -137,6 +138,7 @@ onMounted(() => {
       @close="closeContactPanel"
     />
     <ContactInfo :contact="contact" :channel-type="channelType" />
+
     <div class="pb-8 list-group px-2">
       <Draggable
         :list="conversationSidebarItems"

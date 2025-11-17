@@ -10,6 +10,10 @@ import { CONVERSATION_PRIORITY } from '../../../../shared/constants/messages';
 import { CONVERSATION_EVENTS } from '../../../helper/AnalyticsHelper/events';
 import { useTrack } from 'dashboard/composables';
 import NextButton from 'dashboard/components-next/button/Button.vue';
+import ConversationApi from 'dashboard/api/inbox/conversation';
+import ContactAPI from 'dashboard/api/contacts';
+import ConversationsApi from 'dashboard/api/conversations';
+import CreateDealModal from 'dashboard/components/widgets/conversation/CreateDealModal.vue';
 
 export default {
   components: {
@@ -17,6 +21,7 @@ export default {
     MultiselectDropdown,
     ConversationLabels,
     NextButton,
+    CreateDealModal,
   },
   props: {
     conversationId: {
@@ -59,6 +64,18 @@ export default {
           thumbnail: `/assets/images/dashboard/priority/${CONVERSATION_PRIORITY.LOW}.svg`,
         },
       ],
+      stageOptions: [
+        { id: 'new', name: this.$t('KANBAN.COLUMNS.NEW') },
+        { id: 'qualified', name: this.$t('KANBAN.COLUMNS.QUALIFIED') },
+        { id: 'proposal', name: this.$t('KANBAN.COLUMNS.PROPOSAL') },
+        { id: 'won', name: this.$t('KANBAN.COLUMNS.WON') },
+        { id: 'lost', name: this.$t('KANBAN.COLUMNS.LOST') },
+      ],
+      dealConversationId: null,
+      dealStage: null,
+      dealCustomAttributes: {},
+      isDealLoading: false,
+      showCreateDealModal: false,
     };
   },
   computed: {
@@ -145,6 +162,10 @@ export default {
           });
       },
     },
+    selectedStage() {
+      if (!this.dealStage) return null;
+      return this.stageOptions.find(s => s.id === this.dealStage) || null;
+    },
     showSelfAssign() {
       if (!this.assignedAgent) {
         return true;
@@ -153,6 +174,14 @@ export default {
         return true;
       }
       return false;
+    },
+  },
+  watch: {
+    conversationId: {
+      immediate: true,
+      handler() {
+        this.loadDealTarget();
+      },
     },
   },
   methods: {
@@ -201,6 +230,126 @@ export default {
         this.assignedPriority.id === selectedPriorityItem.id;
 
       this.assignedPriority = isSamePriority ? null : selectedPriorityItem;
+    },
+
+    isCurrentChatDeal() {
+      const attrs = (this.currentChat && this.currentChat.custom_attributes) || {};
+      return !!attrs.deal_stage;
+    },
+
+    pickLatestDealConversation(list) {
+      if (!Array.isArray(list)) return null;
+      const matches = list.filter(c => {
+        const hasLabel =
+          Array.isArray(c?.labels) && c.labels.some(l => l === 'deal' || l?.title === 'deal');
+        const hasStage = !!(c?.custom_attributes && c.custom_attributes.deal_stage);
+        const notResolved = c?.status !== 'resolved';
+        return notResolved && (hasLabel || hasStage);
+      });
+      if (!matches.length) return null;
+      const byActivity = (a, b) => {
+        const ax = a.last_activity_at || a.created_at || 0;
+        const bx = b.last_activity_at || b.created_at || 0;
+        return new Date(bx) - new Date(ax);
+      };
+      return matches.sort(byActivity)[0];
+    },
+
+    async loadDealTarget() {
+      this.isDealLoading = true;
+      try {
+        if (this.isCurrentChatDeal()) {
+          this.dealConversationId = Number(this.conversationId);
+          const attrs = this.currentChat.custom_attributes || {};
+          this.dealStage = attrs.deal_stage || 'new';
+          this.dealCustomAttributes = { ...attrs };
+          return;
+        }
+        const contactId = this.currentChat?.meta?.sender?.id;
+        if (!contactId) {
+          this.dealConversationId = null;
+          this.dealStage = null;
+          this.dealCustomAttributes = {};
+          return;
+        }
+        const { data } = await ContactAPI.getConversations(contactId);
+        const items = data?.data || data || [];
+        const target = this.pickLatestDealConversation(items);
+        if (target) {
+          this.dealConversationId = Number(target.id);
+          this.dealStage = (target.custom_attributes && target.custom_attributes.deal_stage) || 'new';
+          this.dealCustomAttributes = { ...(target.custom_attributes || {}) };
+        } else {
+          this.dealConversationId = null;
+          this.dealStage = null;
+          this.dealCustomAttributes = {};
+        }
+      } catch (e) {
+        this.dealConversationId = null;
+        this.dealStage = null;
+        this.dealCustomAttributes = {};
+      } finally {
+        this.isDealLoading = false;
+      }
+    },
+
+    async onClickMoveStage(selectedStageItem) {
+      if (!this.dealConversationId || !selectedStageItem) return;
+      const prev = this.dealStage;
+      this.dealStage = selectedStageItem.id;
+      try {
+        const attrs = { ...(this.dealCustomAttributes || {}), deal_stage: selectedStageItem.id };
+        await ConversationApi.updateCustomAttributes({
+          conversationId: this.dealConversationId,
+          customAttributes: attrs,
+        });
+        this.dealCustomAttributes = attrs;
+        useAlert(this.$t('KANBAN.ALERTS.STATUS_UPDATED'));
+      } catch (e) {
+        this.dealStage = prev;
+        useAlert(this.$t('KANBAN.ALERTS.STATUS_FAILED'));
+      }
+    },
+
+    openCreateDeal() {
+      this.showCreateDealModal = true;
+    },
+    closeCreateDeal() {
+      this.showCreateDealModal = false;
+    },
+    async onDealSubmit(payload) {
+      try {
+        const conversationId = Number(this.currentChat.id);
+        const existingLabels = (this.currentChat?.labels || []).map(l =>
+          typeof l === 'string' ? l : l?.title || l?.name
+        ).filter(Boolean);
+        const labels = Array.from(new Set([...(existingLabels || []), 'deal']));
+        await ConversationsApi.updateLabels(conversationId, labels);
+
+        const currentAttrs = this.currentChat?.custom_attributes || {};
+        const attrs = {
+          ...currentAttrs,
+          deal_stage: 'new',
+          deal_title: payload.title,
+          deal_amount: payload.amount,
+          deal_currency: payload.currency,
+          deal_close_date: payload.closeDate,
+          deal_notes: payload.notes,
+        };
+        await ConversationApi.updateCustomAttributes({
+          conversationId,
+          customAttributes: attrs,
+        });
+
+        // Update local state so dropdown aparece imediatamente
+        this.dealConversationId = conversationId;
+        this.dealStage = 'new';
+        this.dealCustomAttributes = attrs;
+        this.showCreateDealModal = false;
+        useAlert(this.$t('KANBAN.DEAL_CREATED'));
+      } catch (e) {
+        useAlert(this.$t('KANBAN.ALERTS.STATUS_FAILED'));
+      }
     },
   },
 };
@@ -276,10 +425,44 @@ export default {
         @select="onClickAssignPriority"
       />
     </div>
+    <div
+      v-if="dealConversationId && dealStage"
+      class="multiselect-wrap--small"
+    >
+      <ContactDetailsItem compact :title="$t('CONVERSATION.DEAL_STAGE.TITLE')" />
+      <MultiselectDropdown
+        :options="stageOptions"
+        :selected-item="selectedStage"
+        :multiselector-title="$t('CONVERSATION.DEAL_STAGE.TITLE')"
+        :multiselector-placeholder="$t('KANBAN.CARDS.SELECT_STATUS')"
+        :no-search-result="$t('KANBAN.CARDS.SELECT_STATUS')"
+        :input-placeholder="$t('KANBAN.CARDS.SELECT_STATUS')"
+        @select="onClickMoveStage"
+      />
+    </div>
+    <div v-else class="multiselect-wrap--small">
+      <ContactDetailsItem compact :title="$t('CONVERSATION.DEAL_STAGE.TITLE')" />
+      <NextButton
+        link
+        xs
+        icon="i-lucide-plus"
+        class="!gap-1"
+        :label="$t('KANBAN.CREATE_DEAL')"
+        @click="openCreateDeal"
+      />
+    </div>
     <ContactDetailsItem
       compact
       :title="$t('CONVERSATION_SIDEBAR.ACCORDION.CONVERSATION_LABELS')"
     />
     <ConversationLabels :conversation-id="conversationId" />
+
+    <CreateDealModal
+      v-if="showCreateDealModal"
+      :show="showCreateDealModal"
+      :current-chat="currentChat"
+      @cancel="closeCreateDeal"
+      @submit="onDealSubmit"
+    />
   </div>
 </template>
