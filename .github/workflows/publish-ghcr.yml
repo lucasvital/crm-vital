@@ -125,3 +125,13 @@ jobs:
             -H "Content-Type: application/json" \
             -d "{\"sha\":\"${GITHUB_SHA}\",\"branch\":\"${GITHUB_REF_NAME}\",\"image\":\"ghcr.io/${{ github.repository_owner }}/chat-vital@${{ steps.build.outputs.digest }}\"}"
 
+      - name: Restart Coolify service
+        if: ${{ success() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/homolog') }}
+        env:
+          COOLIFY_BASE_URL: https://app.coolify.io
+          COOLIFY_UUID: ${{ secrets.COOLIFY_UUID }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+        run: |
+          curl -sS -X GET "$COOLIFY_BASE_URL/api/v1/services/$COOLIFY_UUID/restart" \
+            -H "Authorization: Bearer $COOLIFY_TOKEN"
+
