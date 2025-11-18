@@ -67,8 +67,12 @@ export default {
         'text-n-slate-9': !modelValue,
         'text-n-slate-12': modelValue,
         'pl-9': icon,
+        'error outline-n-ruby-8 dark:outline-n-ruby-8 hover:outline-n-ruby-9 dark:hover:outline-n-ruby-9 disabled:outline-n-ruby-8 dark:disabled:outline-n-ruby-8':
+          hasError,
+        'outline-n-weak dark:outline-n-weak hover:outline-n-slate-6 dark:hover:outline-n-slate-6 focus:outline-n-brand dark:focus:outline-n-brand':
+          !hasError,
       }"
-      class="block w-full px-3 py-2 pr-6 mb-0 border-0 shadow-sm appearance-none rounded-xl select-caret leading-6"
+      class="block w-full px-3 py-2 pr-6 mb-0 border-none shadow-sm appearance-none rounded-md select-caret leading-6 bg-n-alpha-black2 outline outline-1 focus:outline focus:outline-1"
       @input="onInput"
     >
       <option value="" disabled selected class="hidden">

@@ -23,6 +23,36 @@
       "PLACEHOLDER": "Enter your work email address. E.g., bruce{'@'}wayne{'.'}enterprises",
       "ERROR": "Please enter a valid work email address"
     },
+    "PHONE": {
+      "LABEL": "Telefone da empresa",
+      "PLACEHOLDER": "Indique o telefone da empresa",
+      "ERROR": "Indique um número de telefone válido."
+    },
+    "COMPANY_SIZE": {
+      "LABEL": "Número de funcionários",
+      "PLACEHOLDER": "Selecione o número de funcionários",
+      "ERROR": "Selecione o porte da empresa.",
+      "OPTIONS": {
+        "RANGE_1_5": "1-5",
+        "RANGE_6_20": "6-20",
+        "RANGE_21_50": "21-50",
+        "RANGE_51_200": "51-200",
+        "RANGE_200_PLUS": "200+"
+      }
+    },
+    "INDUSTRY": {
+      "LABEL": "Área de atuação",
+      "PLACEHOLDER": "Selecione a área de atuação",
+      "ERROR": "Selecione uma área de atuação.",
+      "OPTIONS": {
+        "ECOMMERCE": "E-commerce",
+        "SAAS": "Software / SaaS",
+        "SERVICES": "Serviços profissionais",
+        "RETAIL": "Varejo / Negócio local",
+        "EDUCATION": "Educação",
+        "OTHER": "Outro"
+      }
+    },
     "PASSWORD": {
       "LABEL": "Palavra-passe",
       "PLACEHOLDER": "Palavra-passe",

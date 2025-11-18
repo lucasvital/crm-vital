@@ -19,9 +19,39 @@
       "ERROR": "Nome completo é muito curto."
     },
     "EMAIL": {
-      "LABEL": "E-mail comercial",
-      "PLACEHOLDER": "Digite seu endereço de e-mail de trabalho. Ex: bruce{'@'}wayne{'.'}empresas",
-      "ERROR": "Por favor, insira um endereço de e-mail de trabalho válido."
+      "LABEL": "E-mail",
+      "PLACEHOLDER": "Digite seu endereço de e-mail. Ex: bruce{'@'}wayne{'.'}empresas",
+      "ERROR": "Por favor, insira um endereço de e-mail válido."
+    },
+    "PHONE": {
+      "LABEL": "Telefone da empresa",
+      "PLACEHOLDER": "Informe o telefone da empresa",
+      "ERROR": "Informe um telefone válido."
+    },
+    "COMPANY_SIZE": {
+      "LABEL": "Número de funcionários",
+      "PLACEHOLDER": "Selecione o número de funcionários",
+      "ERROR": "Selecione o porte da empresa.",
+      "OPTIONS": {
+        "RANGE_1_5": "1-5",
+        "RANGE_6_20": "6-20",
+        "RANGE_21_50": "21-50",
+        "RANGE_51_200": "51-200",
+        "RANGE_200_PLUS": "200+"
+      }
+    },
+    "INDUSTRY": {
+      "LABEL": "Área de atuação",
+      "PLACEHOLDER": "Selecione a área de atuação",
+      "ERROR": "Selecione uma área de atuação.",
+      "OPTIONS": {
+        "ECOMMERCE": "E-commerce",
+        "SAAS": "Software / SaaS",
+        "SERVICES": "Serviços profissionais",
+        "RETAIL": "Varejo / Negócio local",
+        "EDUCATION": "Educação",
+        "OTHER": "Outro"
+      }
     },
     "PASSWORD": {
       "LABEL": "Senha",
