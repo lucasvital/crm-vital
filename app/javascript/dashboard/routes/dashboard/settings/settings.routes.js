@@ -24,7 +24,7 @@ import teams from './teams/teams.routes';
 import customRoles from './customRoles/customRole.routes';
 import profile from './profile/profile.routes';
 import security from './security/security.routes';
-import pipelines from './account/pipelines.routes';
+import pipelines from './account/pipelines.routes.js';
 
 export default {
   routes: [
