@@ -25,7 +25,9 @@ import customRoles from './customRoles/customRole.routes';
 import profile from './profile/profile.routes';
 import security from './security/security.routes';
 import SettingsWrapper from './SettingsWrapper.vue';
-import PipelinesIndex from './account/pipelines/Index.vue';
+// Lazy-load via alias to avoid brittle relative paths in prod builds
+const PipelinesIndex = () =>
+  import('dashboard/routes/dashboard/settings/account/pipelines/Index.vue');
 
 const pipelinesRoutes = {
   routes: [
