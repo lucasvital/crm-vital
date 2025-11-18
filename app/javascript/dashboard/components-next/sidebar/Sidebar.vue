@@ -213,7 +213,7 @@ const menuItems = computed(() => {
       ],
     },
     {
-      name: 'Kanban',
+      name: 'Pipelines',
       label: t('SIDEBAR.KANBAN'),
       icon: 'i-lucide-layout-dashboard',
       to: accountScopedRoute('conversation_kanban'),
@@ -421,6 +421,12 @@ const menuItems = computed(() => {
           label: t('SIDEBAR.ACCOUNT_SETTINGS'),
           icon: 'i-lucide-briefcase',
           to: accountScopedRoute('general_settings_index'),
+        },
+        {
+          name: 'Settings Pipelines',
+          label: t('SIDEBAR.PIPELINES'),
+          icon: 'i-lucide-list-tree',
+          to: accountScopedRoute('settings_pipelines_index'),
         },
         {
           name: 'Settings Agents',

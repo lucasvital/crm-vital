@@ -5,6 +5,11 @@ import { useAccount } from 'dashboard/composables/useAccount';
 import { useAlert } from 'dashboard/composables';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import ConversationApi from 'dashboard/api/inbox/conversation';
+import PipelinesAPI from 'dashboard/api/pipelines';
+import DealsAPI from 'dashboard/api/deals';
+import ContactAPI from 'dashboard/api/contacts';
+import NextButton from 'dashboard/components-next/button/Button.vue';
+import DropdownMenu from 'dashboard/components-next/dropdown-menu/DropdownMenu.vue';
 import wootConstants from 'dashboard/constants/globals';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 import Avatar from 'next/avatar/Avatar.vue';
@@ -20,39 +25,106 @@ const alert = useAlert;
 const store = useStore();
 const inboxes = useMapGetter('inboxes/getInboxes');
 
-// Pipeline de negócios (etapas do kanban)
-const STAGES = ['new', 'qualified', 'proposal', 'won', 'lost'];
+// Pipelines dinâmicos
+const pipelines = ref([]);
+const selectedPipelineId = ref(null);
+const pipelineStages = ref([]); // [{id, name, key, position}]
+const showPipelineMenu = ref(false);
 
-const state = reactive(
-  STAGES.reduce((acc, stage) => {
+const DEFAULT_STAGE_KEYS = ['new', 'qualified', 'proposal', 'won', 'lost'];
+const STAGES = ref([...DEFAULT_STAGE_KEYS]);
+
+const buildEmptyState = stages =>
+  stages.reduce((acc, stage) => {
     acc[stage] = {
       items: [],
       loading: false,
     };
     return acc;
-  }, {})
-);
+  }, {});
+
+const state = reactive(buildEmptyState(STAGES.value));
 
 const isAnyColumnLoading = computed(() =>
-  STAGES.some(stage => state[stage].loading)
+  STAGES.value.some(stage => state[stage].loading)
 );
 
 const fetchColumn = async stage => {
   state[stage].loading = true;
   try {
-    // Busca apenas conversas com label "deal" (negócio)
-    const { data } = await ConversationApi.get({
-      labels: 'deal',
-      page: 1,
-      sortBy: wootConstants.SORT_BY_TYPE.LAST_ACTIVITY_AT_DESC,
-      assigneeType: wootConstants.ASSIGNEE_TYPE.ALL,
-    });
-    const payload = data?.data?.payload || data?.payload || [];
-    // Filtra por etapa (custom_attributes.deal_stage)
-    state[stage].items = payload.filter(conv => {
-      const s = conv?.custom_attributes?.deal_stage || 'new';
-      return s === stage;
-    });
+    // Busca deals do pipeline selecionado e mapeia para a estrutura usada na UI
+    const pid = selectedPipelineId.value;
+    const { data } = await DealsAPI.list({ pipelineId: pid });
+    const deals = Array.isArray(data) ? data : [];
+    // Buscar info recente de conversa/assignee por contato (cache por chamada)
+    const contactIds = [
+      ...new Set(deals.map(d => d?.contact?.id).filter(Boolean)),
+    ];
+    const contactInfoMap = {};
+    await Promise.all(
+      contactIds.map(async cid => {
+        try {
+          const resp = await ContactAPI.getConversations(cid);
+          const convs = resp?.data?.payload || resp?.data?.data || resp?.data || [];
+          // Pegar a conversa mais recente com mensagem não-atividade
+          const sorted = (convs || []).slice().sort((a, b) => {
+            const ax = a.last_activity_at || a.created_at || 0;
+            const bx = b.last_activity_at || b.created_at || 0;
+            return new Date(bx) - new Date(ax);
+          });
+          const recent = sorted[0] || null;
+          const preview =
+            recent?.last_non_activity_message?.content ||
+            (Array.isArray(recent?.messages)
+              ? (recent.messages.find(m => m.message_type !== 'activity')?.content || '')
+              : '') ||
+            '';
+          const assigneeName = recent?.meta?.assignee?.name || '';
+          const assigneeThumb = recent?.meta?.assignee?.thumbnail || '';
+          const inboxId = recent?.inbox_id || null;
+          const conversationId = recent?.id || null;
+          contactInfoMap[cid] = {
+            preview: String(preview || ''),
+            assigneeName,
+            assigneeThumb,
+            inboxId,
+            conversationId,
+          };
+        } catch (_) {
+          contactInfoMap[cid] = { preview: '', assigneeName: '', assigneeThumb: '', inboxId: null, conversationId: null };
+        }
+      })
+    );
+    state[stage].items = deals
+      .filter(d => d?.pipeline_stage?.key === stage)
+      .map(d => {
+        const cid = d?.contact?.id;
+        const info = (cid && contactInfoMap[cid]) || {
+          preview: '',
+          assigneeName: '',
+          assigneeThumb: '',
+          inboxId: null,
+          conversationId: null,
+        };
+        return {
+          id: d.id, // deal id
+          custom_attributes: {
+            deal_stage: d.pipeline_stage?.key,
+            deal_title: d.title,
+            deal_amount: d.amount,
+            deal_currency: d.currency,
+            deal_close_date: d.close_date,
+            deal_notes: d.notes,
+          },
+          meta: {
+            sender: { name: d.contact?.name },
+            assignee: { name: info.assigneeName, thumbnail: info.assigneeThumb },
+          },
+          _preview: info.preview,
+          _inboxId: info.inboxId,
+          _conversationId: info.conversationId,
+        };
+      });
   } catch (e) {
     alert(t('KANBAN.ALERTS.FETCH_FAILED'));
     state[stage].items = [];
@@ -62,15 +134,29 @@ const fetchColumn = async stage => {
 };
 
 const refreshBoard = async () => {
-  await Promise.all(STAGES.map(stage => fetchColumn(stage)));
+  await Promise.all(STAGES.value.map(stage => fetchColumn(stage)));
 };
 
 onMounted(async () => {
   await store.dispatch('inboxes/get');
+  // Carrega pipelines e estágios do pipeline selecionado
+  const { data: pipes } = await PipelinesAPI.get();
+  pipelines.value = pipes || [];
+  if (pipelines.value.length) {
+    selectedPipelineId.value = pipelines.value[0].id;
+    pipelineStages.value = (pipelines.value[0].pipeline_stages || []).sort((a, b) => a.position - b.position);
+    const newStageKeys = pipelineStages.value.map(s => s.key);
+    STAGES.value = newStageKeys.length ? newStageKeys : DEFAULT_STAGE_KEYS;
+  } else {
+    STAGES.value = DEFAULT_STAGE_KEYS;
+  }
+  Object.assign(state, buildEmptyState(STAGES.value));
   await refreshBoard();
 });
 
-const columnTitle = stage => {
+const columnTitle = stageKey => {
+  const found = pipelineStages.value.find(s => s.key === stageKey);
+  if (found) return found.name;
   const map = {
     new: t('KANBAN.COLUMNS.NEW'),
     qualified: t('KANBAN.COLUMNS.QUALIFIED'),
@@ -78,7 +164,7 @@ const columnTitle = stage => {
     won: t('KANBAN.COLUMNS.WON'),
     lost: t('KANBAN.COLUMNS.LOST'),
   };
-  return map[stage] || stage;
+  return map[stageKey] || stageKey;
 };
 
 const getConversationRoute = conversationId =>
@@ -215,6 +301,17 @@ const onDragEnd = () => {
   dragOverStage.value = null;
 };
 
+const removeDealFromKanban = async (deal, stage) => {
+  try {
+    removeFromStage(stage, deal.id);
+    await DealsAPI.delete(deal.id);
+    alert(t('KANBAN.ALERTS.REMOVE_SUCCESS'));
+  } catch (e) {
+    alert(t('KANBAN.ALERTS.REMOVE_FAILED'));
+    await refreshBoard();
+  }
+};
+
 const onDrop = async (toStage, event) => {
   event.preventDefault();
   if (!dragItem.value) return;
@@ -225,23 +322,23 @@ const onDrop = async (toStage, event) => {
     if (fromStage === toStage) return;
 
     const sourceList = state[fromStage].items;
-    const conv = sourceList.find(c => c.id === id);
-    if (!conv) return;
+    const dealLike = sourceList.find(c => c.id === id);
+    if (!dealLike) return;
 
     // Update otimista
     removeFromStage(fromStage, id);
     addToStage(toStage, {
-      ...conv,
-      custom_attributes: { ...conv.custom_attributes, deal_stage: toStage },
+      ...dealLike,
+      custom_attributes: { ...dealLike.custom_attributes, deal_stage: toStage },
     });
 
     // Persistência
     movingConversation.value = id;
-    const currentAttrs = conv.custom_attributes || {};
-    await ConversationApi.updateCustomAttributes({
-      conversationId: id,
-      customAttributes: { ...currentAttrs, deal_stage: toStage },
-    });
+    // Atualiza Deal (pipeline_stage)
+    const stage = pipelineStages.value.find(s => s.key === toStage);
+    if (stage) {
+      await DealsAPI.update(id, { deal: { pipeline_stage_id: stage.id } });
+    }
     alert(t('KANBAN.ALERTS.STATUS_UPDATED'));
   } catch (e) {
     alert(t('KANBAN.ALERTS.STATUS_FAILED'));
@@ -254,7 +351,7 @@ const onDrop = async (toStage, event) => {
 };
 
 const hasNoData = computed(() =>
-  STAGES.every(stage => state[stage].items.length === 0)
+  STAGES.value.every(stage => state[stage].items.length === 0)
 );
 
 const inboxName = id => {
@@ -334,15 +431,45 @@ const onEditSubmit = async payload => {
           {{ t('KANBAN.DESCRIPTION') }}
         </p>
       </div>
-      <button
-        class="inline-flex items-center justify-center rounded-md border border-n-strong bg-n-solid-1 px-3 py-2 text-sm font-medium text-n-slate-12 transition hover:bg-n-solid-2"
-        type="button"
-        :disabled="isAnyColumnLoading"
-        @click="refreshBoard"
-      >
-        <span class="i-lucide-refresh-cw mr-2 size-4" />
-        {{ t('KANBAN.CTA.REFRESH') }}
-      </button>
+      <div class="flex items-center gap-2">
+        <div v-if="pipelines.length" class="relative">
+          <NextButton
+            sm
+            slate
+            type="button"
+            class="!h-9"
+            :trailing-icon="'i-lucide-chevron-down'"
+            :label="(pipelines.find(p => p.id === selectedPipelineId)?.name) || 'Pipelines'"
+            @click="showPipelineMenu = !showPipelineMenu"
+          />
+          <DropdownMenu
+            v-if="showPipelineMenu"
+            class="absolute z-50 mt-1 min-w-40"
+            :menu-items="(pipelines || []).map(p => ({ label: p.name, action: 'select', value: p.id }))"
+            @action="async ({ value }) => {
+              showPipelineMenu = false;
+              if (!value || value === selectedPipelineId) return;
+              selectedPipelineId = Number(value);
+              const pipe = pipelines.find(p => p.id === selectedPipelineId) || {};
+              pipelineStages = (pipe.pipeline_stages || []).slice().sort((a,b) => a.position - b.position);
+              const newStageKeys = (pipelineStages || []).map(s => s.key);
+              STAGES = newStageKeys.length ? newStageKeys : DEFAULT_STAGE_KEYS;
+              Object.keys(state).forEach(k => delete state[k]);
+              Object.assign(state, buildEmptyState(STAGES));
+              await refreshBoard();
+            }"
+          />
+        </div>
+        <button
+          class="inline-flex items-center justify-center rounded-md border border-n-strong bg-n-solid-1 px-3 py-2 h-9 text-sm font-medium text-n-slate-12 transition hover:bg-n-solid-2"
+          type="button"
+          :disabled="isAnyColumnLoading"
+          @click="refreshBoard"
+        >
+          <span class="i-lucide-refresh-cw mr-2 size-4" />
+          {{ t('KANBAN.CTA.REFRESH') }}
+        </button>
+      </div>
     </header>
 
     <div
@@ -381,16 +508,16 @@ const onEditSubmit = async payload => {
 
         <transition-group name="kanban" tag="ul" class="flex flex-1 min-h-0 flex-col gap-3 overflow-y-auto px-3 py-3 scroll-smooth">
           <li
-            v-for="conversation in state[stage].items"
-            :key="conversation.id"
+            v-for="deal in state[stage].items"
+            :key="deal.id"
             class="flex flex-col gap-2 rounded-xl bg-n-solid-2 p-3 ring-1 ring-n-alpha-2 hover:ring-n-strong shadow-sm hover:shadow-md transition"
             draggable="true"
             role="listitem"
-            :aria-grabbed="movingConversation === conversation.id"
+            :aria-grabbed="movingConversation === deal.id"
             :title="t('KANBAN_A11Y.DRAG_HINT')"
-            @dragstart="onDragStart(conversation, stage, $index, $event)"
+            @dragstart="onDragStart(deal, stage, $index, $event)"
             @dragend="onDragEnd"
-            @click="onCardClick(conversation, $event)"
+            @click.stop
           >
             <!-- Linha superior: tag de etapa + avatar fantasma -->
             <div class="flex items-center justify-between">
@@ -403,7 +530,7 @@ const onEditSubmit = async payload => {
                   type="button"
                   class="rounded-md p-1 hover:bg-n-alpha-2 text-n-slate-11"
                   :title="t('KANBAN.CARDS.REMOVE')"
-                  @click.stop="removeCardFromKanban(conversation, stage)"
+                  @click.stop="removeDealFromKanban(deal, stage)"
                 >
                   <span class="i-lucide-trash-2 size-4" />
                 </button>
@@ -413,52 +540,37 @@ const onEditSubmit = async payload => {
 
             <!-- Título do negócio como título do card -->
             <div
-              v-if="getDealTitle(conversation)"
+              v-if="getDealTitle(deal)"
               class="mt-1 text-sm font-semibold text-n-slate-12 line-clamp-1"
             >
-              {{ getDealTitle(conversation) }}
+              {{ getDealTitle(deal) }}
             </div>
 
             <!-- Linha com avatar pequeno e nome (mesmo padrão dos chips pequenos) -->
             <div class="mt-1 flex items-center gap-2 h-7">
               <Avatar
-                :name="conversation.meta?.sender?.name"
-                :src="conversation.meta?.sender?.thumbnail"
+                :name="deal.meta?.sender?.name"
+                :src="deal.meta?.sender?.thumbnail"
                 :size="20"
                 rounded-full
               />
-              <span v-if="conversation.unread_count > 0" class="inline-flex items-center justify-center rounded-full bg-n-ruby-4 text-n-ruby-12 ring-1 ring-n-ruby-8 min-w-[18px] h-[18px] text-[11px] px-1">
-                {{ conversation.unread_count }}
-              </span>
               <div class="flex min-w-0 flex-col">
                 <span class="text-sm leading-7 font-medium text-n-slate-12 truncate">
-                  {{ conversation.meta?.sender?.name || t('KANBAN.CARDS.NO_NAME') }}
+                  {{ deal.meta?.sender?.name || t('KANBAN.CARDS.NO_NAME') }}
                 </span>
-                <span class="text-[11px] -mt-1 text-n-slate-11 truncate">
-                  {{ t('KANBAN.CARDS.INBOX', { inbox: inboxName(conversation.inbox_id) }) }}
+                <span v-if="deal._inboxId" class="text-[11px] -mt-1 text-n-slate-11 truncate">
+                  {{ t('KANBAN.CARDS.INBOX', { inbox: inboxName(deal._inboxId) }) }}
                 </span>
               </div>
             </div>
 
             <div class="rounded-md bg-n-solid-3 p-2 text-xs text-n-slate-12">
               <p class="line-clamp-2">
-                {{ getPreviewText(conversation) || t('KANBAN.CARDS.NO_PREVIEW') }}
+                {{ deal._preview || deal.custom_attributes?.deal_notes || t('KANBAN.CARDS.NO_PREVIEW') }}
               </p>
-              <p v-if="getDealAmountText(conversation)" class="mt-1 font-medium text-n-slate-12">
-                {{ getDealAmountText(conversation) }}
+              <p v-if="getDealAmountText(deal)" class="mt-1 font-medium text-n-slate-12">
+                {{ getDealAmountText(deal) }}
               </p>
-            </div>
-
-            <CardLabels
-              v-if="getConversationLabels(conversation).length"
-              :conversation-labels="getConversationLabels(conversation)"
-            />
-
-            <div v-if="conversation.custom_attributes?.lead_score !== undefined"
-                 :class="[ 'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 w-fit', conversation.custom_attributes.lead_qualified ? 'bg-n-amber-4 text-n-amber-12 ring-n-amber-8' : 'bg-n-ruby-4 text-n-ruby-12 ring-n-ruby-8' ]">
-              {{ $t('CONVERSATION.HEADER.LEAD_SCORE') }}: {{ conversation.custom_attributes.lead_score }}
-              <span v-if="conversation.custom_attributes.lead_qualified" class="ml-1">{{ $t('CONVERSATION.HEADER.QUALIFIED') }}</span>
-              <span v-else class="ml-1">{{ $t('CONVERSATION.HEADER.NOT_QUALIFIED') }}</span>
             </div>
 
             <!-- Controle de mover etapa: visível apenas em mobile -->
@@ -467,7 +579,7 @@ const onEditSubmit = async payload => {
               <select
                 class="rounded-md border border-n-alpha-2 bg-n-solid-1 text-[11px] text-n-slate-12 px-2 py-1"
                 :value="stage"
-                @change="moveStageMobile(conversation, stage, $event.target.value)"
+                @change="moveStageMobile(deal, stage, $event.target.value)"
               >
                 <option v-for="opt in STAGES" :key="opt" :value="opt">
                   {{ columnTitle(opt) }}
@@ -478,25 +590,24 @@ const onEditSubmit = async payload => {
             <div class="flex items-center justify-between text-xs text-n-slate-11">
               <div class="flex items-center gap-2 min-w-0">
                 <Avatar
-                  :name="conversation.meta?.assignee?.name"
-                  :src="conversation.meta?.assignee?.thumbnail"
+                  v-if="deal.meta?.assignee?.name"
+                  :name="deal.meta.assignee.name"
+                  :src="deal.meta.assignee.thumbnail"
                   :size="18"
                   rounded-full
                 />
-                <span class="truncate">{{ conversation.meta?.assignee?.name || t('KANBAN.CARDS.UNKNOWN_ASSIGNEE') }}</span>
+                <span class="truncate">{{ deal.meta?.assignee?.name || t('KANBAN.CARDS.UNKNOWN_ASSIGNEE') }}</span>
               </div>
-              <router-link
-                class="font-medium text-n-brand hover:underline"
-                :to="getConversationRoute(conversation.id)"
-              >
-                {{ t('KANBAN.CARDS.OPEN_CONVERSATION') }}
-              </router-link>
-              <TimeAgo
-                v-if="conversation.last_activity_at"
-                :last-activity-timestamp="conversation.last_activity_at"
-                :created-at-timestamp="conversation.created_at"
-                :is-auto-refresh-enabled="true"
-              />
+              <div class="flex items-center gap-2">
+                <router-link
+                  v-if="deal._conversationId"
+                  class="font-medium text-n-brand hover:underline"
+                  :to="getConversationRoute(deal._conversationId)"
+                >
+                  {{ t('KANBAN.CARDS.OPEN_CONVERSATION') }}
+                </router-link>
+                <span class="text-n-slate-10">{{ deal.close_date || '' }}</span>
+              </div>
             </div>
           </li>
 

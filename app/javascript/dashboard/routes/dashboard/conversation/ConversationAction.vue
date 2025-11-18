@@ -9,10 +9,13 @@ import ConversationLabels from './labels/LabelBox.vue';
 import { CONVERSATION_PRIORITY } from '../../../../shared/constants/messages';
 import { CONVERSATION_EVENTS } from '../../../helper/AnalyticsHelper/events';
 import { useTrack } from 'dashboard/composables';
+import { emitter } from 'shared/helpers/mitt';
+import PipelinesAPI from 'dashboard/api/pipelines';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import ConversationApi from 'dashboard/api/inbox/conversation';
 import ContactAPI from 'dashboard/api/contacts';
 import ConversationsApi from 'dashboard/api/conversations';
+import DealsAPI from 'dashboard/api/deals';
 import CreateDealModal from 'dashboard/components/widgets/conversation/CreateDealModal.vue';
 
 export default {
@@ -28,6 +31,20 @@ export default {
       type: [Number, String],
       required: true,
     },
+  },
+  mounted() {
+    this._onDealCreated = payload => {
+      const cid = this.currentChat?.meta?.sender?.id;
+      if (payload?.contactId && cid && Number(payload.contactId) === Number(cid)) {
+        this.loadDealTarget();
+      }
+    };
+    emitter.on('deal:created', this._onDealCreated);
+  },
+  unmounted() {
+    if (this._onDealCreated) {
+      emitter.off('deal:created', this._onDealCreated);
+    }
   },
   setup() {
     const { agentsList } = useAgentsList();
@@ -64,18 +81,16 @@ export default {
           thumbnail: `/assets/images/dashboard/priority/${CONVERSATION_PRIORITY.LOW}.svg`,
         },
       ],
-      stageOptions: [
-        { id: 'new', name: this.$t('KANBAN.COLUMNS.NEW') },
-        { id: 'qualified', name: this.$t('KANBAN.COLUMNS.QUALIFIED') },
-        { id: 'proposal', name: this.$t('KANBAN.COLUMNS.PROPOSAL') },
-        { id: 'won', name: this.$t('KANBAN.COLUMNS.WON') },
-        { id: 'lost', name: this.$t('KANBAN.COLUMNS.LOST') },
-      ],
+      stageOptions: [],
       dealConversationId: null,
       dealStage: null,
       dealCustomAttributes: {},
       isDealLoading: false,
       showCreateDealModal: false,
+      hasDeals: false,
+      dealsForContact: [],
+      selectedDealId: null,
+      selectedStageId: null,
     };
   },
   computed: {
@@ -163,8 +178,18 @@ export default {
       },
     },
     selectedStage() {
-      if (!this.dealStage) return null;
-      return this.stageOptions.find(s => s.id === this.dealStage) || null;
+      if (!this.selectedStageId) return null;
+      return this.stageOptions.find(s => s.id === this.selectedStageId) || null;
+    },
+    dealOptions() {
+      return (this.dealsForContact || []).map(d => {
+        const title = d?.title && String(d.title).trim().length ? d.title : this.$t('KANBAN.FORM.FIELDS.TITLE');
+        return { id: d.id, name: title };
+      });
+    },
+    selectedDealOption() {
+      if (!this.selectedDealId) return null;
+      return this.dealOptions.find(o => o.id === this.selectedDealId) || null;
     },
     showSelfAssign() {
       if (!this.assignedAgent) {
@@ -233,8 +258,8 @@ export default {
     },
 
     isCurrentChatDeal() {
-      const attrs = (this.currentChat && this.currentChat.custom_attributes) || {};
-      return !!attrs.deal_stage;
+      // Legacy detection removed; rely on Deals API in loadDealTarget
+      return false;
     },
 
     pickLatestDealConversation(list) {
@@ -258,56 +283,73 @@ export default {
     async loadDealTarget() {
       this.isDealLoading = true;
       try {
-        if (this.isCurrentChatDeal()) {
-          this.dealConversationId = Number(this.conversationId);
-          const attrs = this.currentChat.custom_attributes || {};
-          this.dealStage = attrs.deal_stage || 'new';
-          this.dealCustomAttributes = { ...attrs };
-          return;
-        }
+        // Use Deals API to check if contact has deals; do not rely on legacy labels/custom_attributes
         const contactId = this.currentChat?.meta?.sender?.id;
         if (!contactId) {
           this.dealConversationId = null;
           this.dealStage = null;
           this.dealCustomAttributes = {};
+          this.hasDeals = false;
           return;
         }
-        const { data } = await ContactAPI.getConversations(contactId);
-        const items = data?.data || data || [];
-        const target = this.pickLatestDealConversation(items);
-        if (target) {
-          this.dealConversationId = Number(target.id);
-          this.dealStage = (target.custom_attributes && target.custom_attributes.deal_stage) || 'new';
-          this.dealCustomAttributes = { ...(target.custom_attributes || {}) };
+        // If there are no deals, leave null to show "Criar negócio"
+        // We don't show stage control here anymore (managed via Kanban)
+        const { data } = await DealsAPI.list({ contactId });
+        const deals = Array.isArray(data) ? data : [];
+        this.dealsForContact = deals;
+        this.hasDeals = deals.length > 0;
+        if (!deals.length) {
+          this.selectedDealId = null;
+          this.selectedStageId = null;
+          this.stageOptions = [];
+          return;
+        }
+        const first = deals[0];
+        this.selectedDealId = first.id;
+        this.selectedStageId = first?.pipeline_stage?.id || null;
+        if (first?.pipeline_id) {
+          const resp = await PipelinesAPI.getStages(first.pipeline_id);
+          const stages = resp?.data || [];
+          this.stageOptions = stages.map(s => ({ id: s.id, name: s.name }));
         } else {
-          this.dealConversationId = null;
-          this.dealStage = null;
-          this.dealCustomAttributes = {};
+          this.stageOptions = [];
         }
       } catch (e) {
         this.dealConversationId = null;
         this.dealStage = null;
         this.dealCustomAttributes = {};
+        this.hasDeals = false;
       } finally {
         this.isDealLoading = false;
       }
     },
 
     async onClickMoveStage(selectedStageItem) {
-      if (!this.dealConversationId || !selectedStageItem) return;
-      const prev = this.dealStage;
-      this.dealStage = selectedStageItem.id;
+      if (!this.selectedDealId || !selectedStageItem) return;
+      const prev = this.selectedStageId;
+      this.selectedStageId = selectedStageItem.id;
       try {
-        const attrs = { ...(this.dealCustomAttributes || {}), deal_stage: selectedStageItem.id };
-        await ConversationApi.updateCustomAttributes({
-          conversationId: this.dealConversationId,
-          customAttributes: attrs,
+        await DealsAPI.update(this.selectedDealId, {
+          deal: { pipeline_stage_id: selectedStageItem.id },
         });
-        this.dealCustomAttributes = attrs;
         useAlert(this.$t('KANBAN.ALERTS.STATUS_UPDATED'));
       } catch (e) {
-        this.dealStage = prev;
+        this.selectedStageId = prev;
         useAlert(this.$t('KANBAN.ALERTS.STATUS_FAILED'));
+      }
+    },
+    async onSelectDeal(selectedItem) {
+      if (!selectedItem) return;
+      const nextDeal = (this.dealsForContact || []).find(d => d.id === selectedItem.id);
+      if (!nextDeal) return;
+      this.selectedDealId = nextDeal.id;
+      this.selectedStageId = nextDeal?.pipeline_stage?.id || null;
+      if (nextDeal?.pipeline_id) {
+        const resp = await PipelinesAPI.getStages(nextDeal.pipeline_id);
+        const stages = resp?.data || [];
+        this.stageOptions = stages.map(s => ({ id: s.id, name: s.name }));
+      } else {
+        this.stageOptions = [];
       }
     },
 
@@ -319,33 +361,33 @@ export default {
     },
     async onDealSubmit(payload) {
       try {
-        const conversationId = Number(this.currentChat.id);
-        const existingLabels = (this.currentChat?.labels || []).map(l =>
-          typeof l === 'string' ? l : l?.title || l?.name
-        ).filter(Boolean);
-        const labels = Array.from(new Set([...(existingLabels || []), 'deal']));
-        await ConversationsApi.updateLabels(conversationId, labels);
+        // Criar APENAS o Deal, sem alterar a conversa atual
+        const contactId =
+          this.currentChat?.meta?.sender?.id ||
+          this.currentChat?.meta?.sender_id;
+        if (!contactId || !payload.pipelineId || !payload.stageId) {
+          useAlert(this.$t('KANBAN.ALERTS.STATUS_FAILED'));
+          return;
+        }
 
-        const currentAttrs = this.currentChat?.custom_attributes || {};
-        const attrs = {
-          ...currentAttrs,
-          deal_stage: 'new',
-          deal_title: payload.title,
-          deal_amount: payload.amount,
-          deal_currency: payload.currency,
-          deal_close_date: payload.closeDate,
-          deal_notes: payload.notes,
-        };
-        await ConversationApi.updateCustomAttributes({
-          conversationId,
-          customAttributes: attrs,
+        const preview =
+          this.currentChat?.last_non_activity_message?.content || '';
+        const notesToSave = payload.notes || preview || null;
+
+        await DealsAPI.create({
+          deal: {
+            contact_id: contactId,
+            pipeline_id: payload.pipelineId,
+            pipeline_stage_id: payload.stageId,
+            title: payload.title,
+            amount: payload.amount,
+            currency: payload.currency,
+            close_date: payload.closeDate,
+            notes: notesToSave,
+          },
         });
-
-        // Update local state so dropdown aparece imediatamente
-        this.dealConversationId = conversationId;
-        this.dealStage = 'new';
-        this.dealCustomAttributes = attrs;
         this.showCreateDealModal = false;
+        await this.loadDealTarget();
         useAlert(this.$t('KANBAN.DEAL_CREATED'));
       } catch (e) {
         useAlert(this.$t('KANBAN.ALERTS.STATUS_FAILED'));
@@ -425,10 +467,17 @@ export default {
         @select="onClickAssignPriority"
       />
     </div>
-    <div
-      v-if="dealConversationId && dealStage"
-      class="multiselect-wrap--small"
-    >
+    <div v-if="(dealsForContact || []).length" class="multiselect-wrap--small">
+      <ContactDetailsItem compact title="Negócios" />
+      <MultiselectDropdown
+        :options="dealOptions"
+        :selected-item="selectedDealOption"
+        :multiselector-title="'Negócios'"
+        :multiselector-placeholder="'Selecionar negócio'"
+        :no-search-result="'Sem resultados'"
+        :input-placeholder="'Buscar negócio'"
+        @select="onSelectDeal"
+      />
       <ContactDetailsItem compact :title="$t('CONVERSATION.DEAL_STAGE.TITLE')" />
       <MultiselectDropdown
         :options="stageOptions"

@@ -27,6 +27,9 @@ class AccountDashboard < Administrate::BaseDashboard
   ATTRIBUTE_TYPES = {
     id: Field::Number.with_options(searchable: true),
     name: Field::String.with_options(searchable: true),
+    company_phone: Field::String,
+    company_size: Field::String,
+    industry: Field::String,
     created_at: Field::DateTime,
     updated_at: Field::DateTime,
     users: CountField,
@@ -46,6 +49,9 @@ class AccountDashboard < Administrate::BaseDashboard
     id
     name
     locale
+    company_phone
+    company_size
+    industry
     users
     conversations
     status
@@ -67,6 +73,9 @@ class AccountDashboard < Administrate::BaseDashboard
     created_at
     updated_at
     locale
+    company_phone
+    company_size
+    industry
     status
     conversations
     account_users

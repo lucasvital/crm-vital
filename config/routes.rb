@@ -44,6 +44,13 @@ Rails.application.routes.draw do
         end
 
         scope module: :accounts do
+          resources :pipelines do
+            resources :stages, controller: 'pipeline_stages' do
+              collection do
+                put :reorder
+              end
+            end
+          end
           namespace :actions do
             resource :contact_merge, only: [:create]
           end
@@ -139,6 +146,7 @@ Rails.application.routes.draw do
               post :update_last_seen
               post :unread
               post :custom_attributes
+              patch :deal
               post :lead_scoring
               get :attachments
               get :inbox_assistant
@@ -221,6 +229,9 @@ Rails.application.routes.draw do
             end
           end
           resource :notification_settings, only: [:show, :update]
+
+          # Deals
+          resources :deals, only: [:index, :create, :update, :destroy]
 
           resources :teams do
             resources :team_members, only: [:index, :create] do

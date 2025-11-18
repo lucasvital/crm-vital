@@ -66,6 +66,11 @@ module Featurable
     return true if config.blank?
 
     features_to_enabled = config.value.select { |f| f[:enabled] }.pluck(:name)
+    # Optional override: allow Super Admin to force-disable campaigns for new accounts
+    campaigns_override = InstallationConfig.find_by(name: 'ACCOUNT_DEFAULT_CAMPAIGNS_ENABLED')
+    if campaigns_override.present? && !ActiveModel::Type::Boolean.new.cast(campaigns_override.value)
+      features_to_enabled -= ['campaigns']
+    end
     enable_features(*features_to_enabled)
   end
 end

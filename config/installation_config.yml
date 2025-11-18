@@ -66,8 +66,14 @@
 # ------- Signup & Account Related Config ------- #
 - name: ENABLE_ACCOUNT_SIGNUP
   display_title: 'Enable Account Signup'
-  value: false
+  value: true
   description: 'Allow users to signup for new accounts'
+  locked: false
+  type: boolean
+- name: ACCOUNT_DEFAULT_CAMPAIGNS_ENABLED
+  display_title: 'Enable Campaigns by default (new accounts)'
+  value: false
+  description: 'When false, new accounts are created with Campaigns feature disabled, regardless of features.yml'
   locked: false
   type: boolean
 - name: CREATE_NEW_ACCOUNT_FROM_DASHBOARD

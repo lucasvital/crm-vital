@@ -120,6 +120,13 @@ class ConversationApi extends ApiClient {
     });
   }
 
+  updateDeal({ conversationId, pipelineId, stageId }) {
+    return axios.patch(`${this.url}/${conversationId}/deal`, {
+      deal_pipeline_id: pipelineId,
+      deal_pipeline_stage_id: stageId,
+    });
+  }
+
   fetchParticipants(conversationId) {
     return axios.get(`${this.url}/${conversationId}/participants`);
   }

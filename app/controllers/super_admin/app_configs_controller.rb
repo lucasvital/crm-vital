@@ -45,7 +45,7 @@ class SuperAdmin::AppConfigsController < SuperAdmin::ApplicationController
       'google' => %w[GOOGLE_OAUTH_CLIENT_ID GOOGLE_OAUTH_CLIENT_SECRET GOOGLE_OAUTH_REDIRECT_URI]
     }
 
-    @allowed_configs = mapping.fetch(@config, %w[ENABLE_ACCOUNT_SIGNUP FIREBASE_PROJECT_ID FIREBASE_CREDENTIALS])
+    @allowed_configs = mapping.fetch(@config, %w[ENABLE_ACCOUNT_SIGNUP ACCOUNT_DEFAULT_CAMPAIGNS_ENABLED FIREBASE_PROJECT_ID FIREBASE_CREDENTIALS])
   end
 end
 

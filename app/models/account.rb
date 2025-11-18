@@ -94,6 +94,8 @@ class Account < ApplicationRecord
   has_many :twilio_sms, dependent: :destroy_async, class_name: '::Channel::TwilioSms'
   has_many :twitter_profiles, dependent: :destroy_async, class_name: '::Channel::TwitterProfile'
   has_many :users, through: :account_users
+  has_many :pipelines, dependent: :destroy_async
+  has_many :deals, dependent: :destroy_async
   has_many :web_widgets, dependent: :destroy_async, class_name: '::Channel::WebWidget'
   has_many :webhooks, dependent: :destroy_async
   has_many :whatsapp_channels, dependent: :destroy_async, class_name: '::Channel::Whatsapp'
@@ -109,6 +111,19 @@ class Account < ApplicationRecord
   before_validation :validate_limit_keys
   after_create_commit :notify_creation
   after_destroy :remove_account_sequences
+
+  # Signup metadata helpers (stored in custom_attributes)
+  def company_phone
+    (custom_attributes || {})['phone']
+  end
+
+  def company_size
+    (custom_attributes || {})['company_size']
+  end
+
+  def industry
+    (custom_attributes || {})['industry']
+  end
 
   def agents
     users.where(account_users: { role: :agent })

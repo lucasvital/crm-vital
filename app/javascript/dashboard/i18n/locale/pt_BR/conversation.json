@@ -300,7 +300,7 @@
     }
   },
   "KANBAN": {
-    "TITLE": "Kanban",
+    "TITLE": "Pipelines",
     "DESCRIPTION": "Visualize e gerencie negócios criados a partir das conversas.",
     "CTA": { "REFRESH": "Atualizar" },
     "COLUMNS": {
@@ -311,11 +311,11 @@
       "LOST": "Perdido"
     },
     "ALERTS": {
-      "FETCH_FAILED": "Não foi possível carregar o Kanban.",
+      "FETCH_FAILED": "Não foi possível carregar o Pipelines.",
       "STATUS_UPDATED": "Etapa atualizada.",
       "STATUS_FAILED": "Não foi possível atualizar a etapa.",
-      "REMOVE_SUCCESS": "Removido do Kanban.",
-      "REMOVE_FAILED": "Não foi possível remover do Kanban."
+      "REMOVE_SUCCESS": "Removido do Pipelines.",
+      "REMOVE_FAILED": "Não foi possível remover do Pipelines."
     },
     "CARDS": {
       "NO_NAME": "Contato sem nome",
@@ -326,13 +326,13 @@
       "OPEN_CONVERSATION": "Ver conversa",
       "MOVE_TO": "Mover para etapa",
       "SELECT_STATUS": "Selecione uma etapa",
-      "REMOVE": "Remover do Kanban",
+      "REMOVE": "Remover do Pipelines",
       "EMPTY_STATE": "Sem conversas aqui ainda",
       "UPDATING": "Atualizando..."
     },
-    "OPEN_IN_KANBAN": "Abrir Kanban",
+    "OPEN_IN_KANBAN": "Abrir Pipelines",
     "CREATE_DEAL": "Criar negócio",
-    "DEAL_CREATED": "Negócio criado e adicionado ao Kanban",
+    "DEAL_CREATED": "Negócio criado e adicionado ao Pipelines",
     "BADGE_STAGE": "Etapa: {stage}",
     "FORM": {
       "TITLE": "Criar negócio",

@@ -9,6 +9,7 @@ import { emitter } from 'shared/helpers/mitt';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useConversationLabels } from 'dashboard/composables/useConversationLabels';
 import ConversationApi from 'dashboard/api/inbox/conversation';
+import DealsAPI from 'dashboard/api/deals';
 import EmailTranscriptModal from './EmailTranscriptModal.vue';
 import CreateDealModal from './CreateDealModal.vue';
 import ResolveAction from '../../buttons/ResolveAction.vue';
@@ -149,23 +150,38 @@ onUnmounted(() => {
 });
 
 const onDealSubmit = async payload => {
-  const conversationId = currentChat.value.id;
-  const labels = Array.from(new Set([...(savedLabels.value || []), 'deal']));
-  await onUpdateLabels(labels);
-  const currentAttrs = currentChat.value.custom_attributes || {};
-  await ConversationApi.updateCustomAttributes({
-    conversationId,
-    customAttributes: {
-      ...currentAttrs,
-      deal_stage: 'new',
-      deal_title: payload.title,
-      deal_amount: payload.amount,
-      deal_currency: payload.currency,
-      deal_close_date: payload.closeDate,
-      deal_notes: payload.notes,
+  // Criar um NOVO negócio (nova conversa) para o mesmo contato, sem alterar a conversa atual
+  const contactId =
+    currentChat.value.contact_id ||
+    currentChat.value.meta?.sender?.id ||
+    currentChat.value.meta?.sender_id;
+
+  if (!contactId || !payload.pipelineId || !payload.stageId) {
+    useAlert(t('KANBAN.ALERTS.STATUS_FAILED'));
+    return;
+  }
+
+  // Preview de mensagem recente para exibir no card, se notes não vier
+  const preview =
+    currentChat.value?.last_non_activity_message?.content || '';
+  const notesToSave = payload.notes || preview || null;
+
+  // Criar apenas o Deal vinculado ao contato
+  await DealsAPI.create({
+    deal: {
+      contact_id: contactId,
+      pipeline_id: payload.pipelineId,
+      pipeline_stage_id: payload.stageId,
+      title: payload.title,
+      amount: payload.amount,
+      currency: payload.currency,
+      close_date: payload.closeDate,
+      notes: notesToSave,
     },
   });
+
   toggleCreateDealModal(false);
+  emitter.emit('deal:created', { contactId });
   useAlert(t('KANBAN.DEAL_CREATED'));
 };
 </script>

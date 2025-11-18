@@ -24,6 +24,8 @@
 #  campaign_id            :bigint
 #  contact_id             :bigint
 #  contact_inbox_id       :bigint
+#  deal_pipeline_id       :bigint
+#  deal_pipeline_stage_id :bigint
 #  display_id             :integer          not null
 #  inbox_id               :integer          not null
 #  sla_policy_id          :bigint
@@ -38,6 +40,8 @@
 #  index_conversations_on_campaign_id                 (campaign_id)
 #  index_conversations_on_contact_id                  (contact_id)
 #  index_conversations_on_contact_inbox_id            (contact_inbox_id)
+#  index_conversations_on_deal_pipeline_id            (deal_pipeline_id)
+#  index_conversations_on_deal_pipeline_stage_id      (deal_pipeline_stage_id)
 #  index_conversations_on_first_reply_created_at      (first_reply_created_at)
 #  index_conversations_on_id_and_account_id           (account_id,id)
 #  index_conversations_on_inbox_id                    (inbox_id)
@@ -47,6 +51,11 @@
 #  index_conversations_on_team_id                     (team_id)
 #  index_conversations_on_uuid                        (uuid) UNIQUE
 #  index_conversations_on_waiting_since               (waiting_since)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (deal_pipeline_id => pipelines.id)
+#  fk_rails_...  (deal_pipeline_stage_id => pipeline_stages.id)
 #
 
 class Conversation < ApplicationRecord

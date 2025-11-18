@@ -128,6 +128,11 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
     @conversation.save!
   end
 
+  def deal
+    permitted = params.permit(:deal_pipeline_id, :deal_pipeline_stage_id)
+    @conversation.update!(permitted)
+    head :ok
+  end
   def lead_scoring
     LeadScoringJob.perform_later(@conversation.id)
     head :accepted
