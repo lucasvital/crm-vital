@@ -24,7 +24,30 @@ import teams from './teams/teams.routes';
 import customRoles from './customRoles/customRole.routes';
 import profile from './profile/profile.routes';
 import security from './security/security.routes';
-import pipelines from './account/pipelines.routes.js';
+import SettingsWrapper from './SettingsWrapper.vue';
+import PipelinesIndex from './account/pipelines/Index.vue';
+
+const pipelinesRoutes = {
+  routes: [
+    {
+      path: frontendURL('accounts/:accountId/settings/pipelines'),
+      meta: {
+        permissions: ['administrator'],
+      },
+      component: SettingsWrapper,
+      children: [
+        {
+          path: '',
+          name: 'settings_pipelines_index',
+          component: PipelinesIndex,
+          meta: {
+            permissions: ['administrator'],
+          },
+        },
+      ],
+    },
+  ],
+};
 
 export default {
   routes: [
@@ -64,6 +87,6 @@ export default {
     ...customRoles.routes,
     ...profile.routes,
     ...security.routes,
-    ...pipelines.routes,
+    ...pipelinesRoutes.routes,
   ],
 };
