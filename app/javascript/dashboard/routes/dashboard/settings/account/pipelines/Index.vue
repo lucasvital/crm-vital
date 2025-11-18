@@ -1,0 +1,262 @@
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useAccount } from 'dashboard/composables/useAccount';
+import { useAlert } from 'dashboard/composables';
+import PipelinesAPI from 'dashboard/api/pipelines';
+import BaseSettingsHeader from '../../components/BaseSettingsHeader.vue';
+
+const { t } = useI18n();
+const { accountId } = useAccount();
+const alert = useAlert;
+
+const pipelines = ref([]);
+const newPipelineName = ref('');
+const expandedId = ref(null);
+const stageName = ref('');
+const showModal = ref(false);
+const editingPipeline = ref(null);
+const editingPipelineName = ref('');
+const editingStages = ref([]);
+
+const load = async () => {
+  const { data } = await PipelinesAPI.get();
+  pipelines.value = data || [];
+};
+
+const createPipeline = async () => {
+  if (!newPipelineName.value) return;
+  await PipelinesAPI.create({ pipeline: { name: newPipelineName.value } });
+  newPipelineName.value = '';
+  await load();
+  alert(t('LABEL_MGMT.ADD.SUCCESS'));
+};
+
+const renamePipeline = async (pipeline, name) => {
+  await PipelinesAPI.update(pipeline.id, { pipeline: { name } });
+  await load();
+  alert(t('GENERAL_SETTINGS.UPDATE.SUCCESS'));
+};
+
+const deletePipeline = async pipeline => {
+  await PipelinesAPI.delete(pipeline.id);
+  await load();
+  alert(t('LABEL_MGMT.DELETE.SUCCESS'));
+};
+
+const toggleExpand = pipe => {
+  expandedId.value = expandedId.value === pipe.id ? null : pipe.id;
+};
+
+const createStage = async pipe => {
+  if (!stageName.value) return;
+  await PipelinesAPI.createStage(pipe.id, { name: stageName.value });
+  stageName.value = '';
+  await load();
+  alert(t('LABEL_MGMT.ADD.SUCCESS'));
+};
+
+const updateStage = async (pipe, st, name) => {
+  await PipelinesAPI.updateStage(pipe.id, st.id, { name });
+  await load();
+  alert(t('GENERAL_SETTINGS.UPDATE.SUCCESS'));
+};
+
+const deleteStage = async (pipe, st) => {
+  await PipelinesAPI.deleteStage(pipe.id, st.id);
+  await load();
+  alert(t('LABEL_MGMT.DELETE.SUCCESS'));
+};
+
+const moveStage = async (pipe, st, direction) => {
+  const list = (pipe.pipeline_stages || []).slice().sort((a, b) => a.position - b.position);
+  const idx = list.findIndex(s => s.id === st.id);
+  const swapWith = direction === 'up' ? idx - 1 : idx + 1;
+  if (swapWith < 0 || swapWith >= list.length) return;
+  const tmp = list[idx];
+  list[idx] = list[swapWith];
+  list[swapWith] = tmp;
+  const order = list.map((s, i) => ({ id: s.id, position: i + 1 }));
+  await PipelinesAPI.reorderStages(pipe.id, order);
+  await load();
+};
+
+const openModal = async pipe => {
+  const { data } = await PipelinesAPI.show(pipe.id);
+  editingPipeline.value = data;
+  editingPipelineName.value = data.name;
+  editingStages.value = (data.pipeline_stages || []).slice().sort((a, b) => a.position - b.position);
+  showModal.value = true;
+};
+
+const savePipeline = async () => {
+  if (!editingPipeline.value) return;
+  await PipelinesAPI.update(editingPipeline.value.id, { pipeline: { name: editingPipelineName.value } });
+  await load();
+  showModal.value = false;
+  alert(t('GENERAL_SETTINGS.UPDATE.SUCCESS'));
+};
+
+const addStageInModal = async () => {
+  if (!editingPipeline.value || !stageName.value) return;
+  await PipelinesAPI.createStage(editingPipeline.value.id, { name: stageName.value });
+  stageName.value = '';
+  const { data } = await PipelinesAPI.show(editingPipeline.value.id);
+  editingStages.value = (data.pipeline_stages || []).slice().sort((a, b) => a.position - b.position);
+  await load();
+};
+
+const renameStageInModal = async (st, name) => {
+  if (!editingPipeline.value) return;
+  await PipelinesAPI.updateStage(editingPipeline.value.id, st.id, { name });
+  const { data } = await PipelinesAPI.show(editingPipeline.value.id);
+  editingStages.value = (data.pipeline_stages || []).slice().sort((a, b) => a.position - b.position);
+  alert(t('GENERAL_SETTINGS.UPDATE.SUCCESS'));
+};
+
+const deleteStageInModal = async st => {
+  if (!editingPipeline.value) return;
+  await PipelinesAPI.deleteStage(editingPipeline.value.id, st.id);
+  const { data } = await PipelinesAPI.show(editingPipeline.value.id);
+  editingStages.value = (data.pipeline_stages || []).slice().sort((a, b) => a.position - b.position);
+  await load();
+};
+
+const moveStageInModal = async (st, direction) => {
+  if (!editingPipeline.value) return;
+  const list = editingStages.value.slice();
+  const idx = list.findIndex(s => s.id === st.id);
+  const swapWith = direction === 'up' ? idx - 1 : idx + 1;
+  if (swapWith < 0 || swapWith >= list.length) return;
+  const tmp = list[idx];
+  list[idx] = list[swapWith];
+  list[swapWith] = tmp;
+  const order = list.map((s, i) => ({ id: s.id, position: i + 1 }));
+  await PipelinesAPI.reorderStages(editingPipeline.value.id, order);
+  editingStages.value = list;
+  await load();
+};
+onMounted(load);
+</script>
+
+<template>
+  <div class="flex flex-col max-w-4xl mx-auto w-full">
+    <BaseSettingsHeader title="Pipelines" />
+    <div class="mt-4 rounded-xl border border-n-alpha-2 bg-n-solid-1 p-4">
+      <div class="flex items-center gap-2">
+        <input
+          v-model="newPipelineName"
+          type="text"
+          class="w-full rounded-md border border-n-alpha-2 bg-n-solid-1 px-3 py-2 text-sm"
+          placeholder="Novo pipeline"
+        />
+        <button
+          class="rounded-md border border-n-strong bg-n-solid-1 px-3 py-2 text-sm font-medium text-n-slate-12 hover:bg-n-solid-2"
+          @click="createPipeline"
+        >
+          Criar
+        </button>
+      </div>
+      <div class="mt-4 space-y-3">
+        <div
+          v-for="pipe in pipelines"
+          :key="pipe.id"
+          class="flex items-center justify-between rounded-lg border border-n-alpha-2 bg-n-solid-2 p-3 cursor-pointer hover:bg-n-solid-3"
+          @click="openModal(pipe)"
+        >
+          <div class="flex items-center gap-2 text-sm font-medium text-n-slate-12">
+            {{ pipe.name }}
+            <span class="text-xs text-n-slate-11">• {{ (pipe.pipeline_stages || []).length }} estágios</span>
+          </div>
+          <button
+            class="rounded-md border border-n-strong bg-n-solid-1 px-3 py-1 text-xs font-medium text-n-ruby-11 hover:bg-n-ruby-3"
+            @click.stop="deletePipeline(pipe)"
+          >
+            Remover
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de edição do Pipeline -->
+    <woot-modal :show="showModal" :on-close="() => (showModal = false)">
+      <div class="flex flex-col h-auto overflow-auto">
+        <woot-modal-header header-title="Editar Pipeline" />
+        <div class="px-6 py-4 space-y-3">
+          <div>
+            <label class="text-sm text-n-slate-12 mb-1 block">Nome do pipeline</label>
+            <input
+              v-model="editingPipelineName"
+              type="text"
+              class="w-full rounded-md border border-n-alpha-2 bg-n-solid-1 px-3 py-2 text-sm"
+              placeholder="Nome do pipeline"
+            />
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <input
+                v-model="stageName"
+                type="text"
+                class="w-full rounded-md border border-n-alpha-2 bg-n-solid-1 px-3 py-2 text-sm"
+                placeholder="Nome do estágio (ex.: Qualificado)"
+              />
+              <button
+                class="rounded-md border border-n-strong bg-n-solid-1 px-3 py-2 text-sm font-medium text-n-slate-12 hover:bg-n-solid-2"
+                @click="addStageInModal"
+              >
+                Adicionar estágio
+              </button>
+            </div>
+            <ul class="space-y-2">
+              <li
+                v-for="st in editingStages"
+                :key="st.id"
+                class="flex items-center gap-2 rounded-md border border-n-alpha-2 bg-n-solid-2 p-2"
+              >
+                <button
+                  class="rounded-md border border-n-strong bg-n-solid-1 px-2 py-1 text-xs"
+                  @click="moveStageInModal(st, 'up')"
+                  aria-label="Mover para cima"
+                >↑</button>
+                <button
+                  class="rounded-md border border-n-strong bg-n-solid-1 px-2 py-1 text-xs"
+                  @click="moveStageInModal(st, 'down')"
+                  aria-label="Mover para baixo"
+                >↓</button>
+                <input
+                  :value="st.name"
+                  class="flex-1 rounded-md border border-n-alpha-2 bg-n-solid-1 px-2 py-1 text-sm"
+                  @change="e => renameStageInModal(st, e.target.value)"
+                />
+                <button
+                  class="rounded-md border border-n-strong bg-n-solid-1 px-3 py-1 text-xs font-medium text-n-ruby-11 hover:bg-n-ruby-3"
+                  @click="deleteStageInModal(st)"
+                >
+                  Remover
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="w-full flex justify-end gap-2 items-center px-6 pb-4">
+          <button
+            type="button"
+            class="rounded-md border border-n-weak bg-n-solid-1 px-3 py-2 text-sm text-n-slate-12"
+            @click="() => (showModal = false)"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="rounded-md border border-n-strong bg-n-solid-1 px-3 py-2 text-sm font-medium text-n-slate-12 hover:bg-n-solid-2"
+            @click="savePipeline"
+          >
+            Salvar
+          </button>
+        </div>
+      </div>
+    </woot-modal>
+  </div>
+</template>
+
+
