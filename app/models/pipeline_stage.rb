@@ -3,6 +3,7 @@
 # Table name: pipeline_stages
 #
 #  id          :bigint           not null, primary key
+#  is_won      :boolean          default(FALSE), not null
 #  key         :string           not null
 #  name        :string           not null
 #  position    :integer          default(0), not null
@@ -12,6 +13,7 @@
 #
 # Indexes
 #
+#  idx_pipeline_stages_pipeline_won              (pipeline_id,is_won)
 #  index_pipeline_stages_on_pipeline_id          (pipeline_id)
 #  index_pipeline_stages_on_pipeline_id_and_key  (pipeline_id,key) UNIQUE
 #
@@ -26,10 +28,35 @@ class PipelineStage < ApplicationRecord
   validates :name, presence: true
   validates :key, presence: true, uniqueness: { scope: :pipeline_id }
   validates :position, numericality: { greater_than_or_equal_to: 0 }
+  validate :only_one_won_per_pipeline
+  before_update :prevent_rename_if_won
+  before_destroy :prevent_destroy_if_won
 
   before_validation :ensure_key, on: :create
 
   private
+
+  def only_one_won_per_pipeline
+    return unless is_won?
+    scope = PipelineStage.where(pipeline_id: pipeline_id, is_won: true)
+    scope = scope.where.not(id: id) if persisted?
+    errors.add(:is_won, 'já existe um estágio de ganho neste pipeline') if scope.exists?
+  end
+
+  def prevent_rename_if_won
+    return unless is_won?
+    return unless will_save_change_to_name?
+
+    errors.add(:name, 'não pode ser alterado para estágio de ganho')
+    throw :abort
+  end
+
+  def prevent_destroy_if_won
+    return unless is_won?
+
+    errors.add(:base, 'não é permitido excluir o estágio de ganho')
+    throw :abort
+  end
 
   def ensure_key
     return if key.present?

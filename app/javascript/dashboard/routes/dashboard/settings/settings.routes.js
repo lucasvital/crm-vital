@@ -28,6 +28,8 @@ import SettingsWrapper from './SettingsWrapper.vue';
 // Lazy-load via alias to avoid brittle relative paths in prod builds
 const PipelinesIndex = () =>
   import('dashboard/routes/dashboard/settings/account/pipelines/Index.vue');
+const GoalsIndex = () =>
+  import('dashboard/routes/dashboard/settings/account/goals/Index.vue');
 
 const pipelinesRoutes = {
   routes: [
@@ -42,6 +44,28 @@ const pipelinesRoutes = {
           path: '',
           name: 'settings_pipelines_index',
           component: PipelinesIndex,
+          meta: {
+            permissions: ['administrator'],
+          },
+        },
+      ],
+    },
+  ],
+};
+
+const goalsRoutes = {
+  routes: [
+    {
+      path: frontendURL('accounts/:accountId/settings/goals'),
+      meta: {
+        permissions: ['administrator'],
+      },
+      component: SettingsWrapper,
+      children: [
+        {
+          path: '',
+          name: 'settings_goals_index',
+          component: GoalsIndex,
           meta: {
             permissions: ['administrator'],
           },
@@ -90,5 +114,6 @@ export default {
     ...profile.routes,
     ...security.routes,
     ...pipelinesRoutes.routes,
+    ...goalsRoutes.routes,
   ],
 };

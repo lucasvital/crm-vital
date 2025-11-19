@@ -8,6 +8,17 @@ class ReportsAPI extends ApiClient {
     super('reports', { accountScoped: true, apiVersion: 'v2' });
   }
 
+  // New: v1 endpoint for CRM deals ranking
+  dealsWon(params = {}) {
+    const accountId =
+      window.location.pathname.includes('/app/accounts')
+        ? window.location.pathname.split('/')[3]
+        : '';
+    return axios.get(`/api/v1/accounts/${accountId}/reports/deals_won`, {
+      params,
+    });
+  }
+
   getReports({
     metric,
     from,

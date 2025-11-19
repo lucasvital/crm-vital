@@ -51,6 +51,16 @@ Rails.application.routes.draw do
               end
             end
           end
+          resources :goals do
+            member do
+              get :progress
+            end
+          end
+          resources :reports, only: [] do
+            collection do
+              get :deals_won
+            end
+          end
           namespace :actions do
             resource :contact_merge, only: [:create]
           end

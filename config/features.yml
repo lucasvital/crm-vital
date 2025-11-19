@@ -222,3 +222,7 @@
   chatwoot_internal: true
 - name: quoted_email_reply
   display_name: Quoted Email Reply
+## Goals & Rankings
+- name: goals
+  display_name: Goals & Rankings
+  enabled: true

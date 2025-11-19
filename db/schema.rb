@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_11_18_133500) do
+ActiveRecord::Schema[7.1].define(version: 2025_11_19_110300) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -805,12 +805,17 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_18_133500) do
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "won_at"
+    t.bigint "won_by_user_id"
+    t.decimal "won_amount_snapshot", precision: 12, scale: 2
     t.index ["account_id", "contact_id"], name: "index_deals_on_account_id_and_contact_id"
     t.index ["account_id", "pipeline_id"], name: "index_deals_on_account_id_and_pipeline_id"
     t.index ["account_id"], name: "index_deals_on_account_id"
     t.index ["contact_id"], name: "index_deals_on_contact_id"
     t.index ["pipeline_id"], name: "index_deals_on_pipeline_id"
     t.index ["pipeline_stage_id"], name: "index_deals_on_pipeline_stage_id"
+    t.index ["won_at"], name: "index_deals_on_won_at"
+    t.index ["won_by_user_id"], name: "index_deals_on_won_by_user_id"
   end
 
   create_table "email_templates", force: :cascade do |t|
@@ -830,6 +835,28 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_18_133500) do
     t.string "name"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+  end
+
+  create_table "goals", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "created_by_id", null: false
+    t.string "scope_type", null: false
+    t.bigint "scope_id", null: false
+    t.string "metric", null: false
+    t.integer "target_number"
+    t.decimal "target_amount", precision: 12, scale: 2
+    t.date "start_date", null: false
+    t.date "end_date", null: false
+    t.integer "pipeline_ids", default: [], array: true
+    t.string "title", null: false
+    t.text "notes"
+    t.string "status", default: "active", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "scope_type", "scope_id"], name: "idx_goals_account_scope"
+    t.index ["account_id"], name: "index_goals_on_account_id"
+    t.index ["created_by_id"], name: "index_goals_on_created_by_id"
+    t.index ["pipeline_ids"], name: "index_goals_on_pipeline_ids", using: :gin
   end
 
   create_table "inbox_assignment_policies", force: :cascade do |t|
@@ -1062,6 +1089,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_18_133500) do
     t.integer "position", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "is_won", default: false, null: false
+    t.index ["pipeline_id", "is_won"], name: "idx_pipeline_stages_pipeline_won"
     t.index ["pipeline_id", "key"], name: "index_pipeline_stages_on_pipeline_id_and_key", unique: true
     t.index ["pipeline_id"], name: "index_pipeline_stages_on_pipeline_id"
   end
@@ -1302,6 +1331,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_18_133500) do
   add_foreign_key "deals", "contacts"
   add_foreign_key "deals", "pipeline_stages"
   add_foreign_key "deals", "pipelines"
+  add_foreign_key "deals", "users", column: "won_by_user_id"
+  add_foreign_key "goals", "accounts"
+  add_foreign_key "goals", "users", column: "created_by_id"
   add_foreign_key "inboxes", "portals"
   add_foreign_key "pipeline_stages", "pipelines"
   add_foreign_key "pipelines", "accounts"

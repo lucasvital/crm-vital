@@ -51,12 +51,12 @@ class Api::V1::Accounts::PipelineStagesController < Api::V1::Accounts::BaseContr
   end
 
   def stage_params
-    params.require(:stage).permit(:name, :position)
+    params.require(:stage).permit(:name, :position, :is_won)
   end
 
   def stage_update_params
     # We intentionally do not allow updating :key to avoid breaking references
-    params.require(:stage).permit(:name, :position)
+    params.require(:stage).permit(:name, :position, :is_won)
   end
 end
 

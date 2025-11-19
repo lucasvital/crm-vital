@@ -340,6 +340,11 @@ const menuItems = computed(() => {
           label: t('SIDEBAR.REPORTS_BOT'),
           to: accountScopedRoute('bot_reports'),
         },
+        {
+          name: 'Reports Goals',
+          label: 'Metas & Ranking',
+          to: accountScopedRoute('goals_reports'),
+        },
       ],
     },
     {
@@ -427,6 +432,12 @@ const menuItems = computed(() => {
           label: t('SIDEBAR.PIPELINES'),
           icon: 'i-lucide-list-tree',
           to: accountScopedRoute('settings_pipelines_index'),
+        },
+        {
+          name: 'Settings Goals',
+          label: 'Metas',
+          icon: 'i-lucide-trophy',
+          to: accountScopedRoute('settings_goals_index'),
         },
         {
           name: 'Settings Agents',

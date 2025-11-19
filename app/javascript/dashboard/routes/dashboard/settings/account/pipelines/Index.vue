@@ -114,6 +114,25 @@ const renameStageInModal = async (st, name) => {
   alert(t('GENERAL_SETTINGS.UPDATE.SUCCESS'));
 };
 
+const setWonStageInModal = async st => {
+  if (!editingPipeline.value) return;
+  // Optimistically set selected as won and others as false
+  const pipelineId = editingPipeline.value.id;
+  // First, fetch current stages to know current won
+  const { data } = await PipelinesAPI.show(pipelineId);
+  const stages = (data.pipeline_stages || []);
+  // Set selected stage as won
+  await PipelinesAPI.updateStage(pipelineId, st.id, { is_won: true });
+  // Ensure others are not won
+  const others = stages.filter(s => s.id !== st.id && s.is_won);
+  for (const other of others) {
+    // eslint-disable-next-line no-await-in-loop
+    await PipelinesAPI.updateStage(pipelineId, other.id, { is_won: false });
+  }
+  const refreshed = await PipelinesAPI.show(pipelineId);
+  editingStages.value = (refreshed.data.pipeline_stages || []).slice().sort((a, b) => a.position - b.position);
+};
+
 const deleteStageInModal = async st => {
   if (!editingPipeline.value) return;
   await PipelinesAPI.deleteStage(editingPipeline.value.id, st.id);
@@ -226,10 +245,22 @@ onMounted(load);
                 <input
                   :value="st.name"
                   class="flex-1 rounded-md border border-n-alpha-2 bg-n-solid-1 px-2 py-1 text-sm"
+                  :disabled="st.is_won"
                   @change="e => renameStageInModal(st, e.target.value)"
                 />
+                <span v-if="st.is_won" class="rounded-md border border-n-weak bg-n-solid-1 px-2 py-1 text-2xs text-n-grass-11">
+                  Ganho (fixo)
+                </span>
+                <button
+                  v-else
+                  class="rounded-md border border-grass-7 bg-grass-3 px-3 py-1 text-xs font-medium text-grass-11 hover:bg-grass-4"
+                  @click="setWonStageInModal(st)"
+                >
+                  Marcar como ganho
+                </button>
                 <button
                   class="rounded-md border border-n-strong bg-n-solid-1 px-3 py-1 text-xs font-medium text-n-ruby-11 hover:bg-n-ruby-3"
+                  :disabled="st.is_won"
                   @click="deleteStageInModal(st)"
                 >
                   Remover
