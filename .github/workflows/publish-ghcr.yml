@@ -2,7 +2,7 @@ name: Build and publish container to GHCR
 
 on:
   push:
-    branches: [ "main", "homolog" ]
+    branches: [ "main", "homolog", "sales" ]
     tags: [ "*" ]
   workflow_dispatch:
     inputs:
@@ -94,6 +94,13 @@ jobs:
         run: |
           docker buildx imagetools create \
             -t ghcr.io/${{ github.repository_owner }}/chat-vital:homolog \
+            ghcr.io/${{ github.repository_owner }}/chat-vital@${{ steps.build.outputs.digest }}
+
+      - name: Tag sales by digest
+        if: ${{ github.ref == 'refs/heads/sales' }}
+        run: |
+          docker buildx imagetools create \
+            -t ghcr.io/${{ github.repository_owner }}/chat-vital:sales \
             ghcr.io/${{ github.repository_owner }}/chat-vital@${{ steps.build.outputs.digest }}
 
       - name: Promote latest by digest
