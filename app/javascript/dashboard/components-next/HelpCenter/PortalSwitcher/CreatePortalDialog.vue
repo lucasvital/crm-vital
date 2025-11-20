@@ -21,6 +21,8 @@ const store = useStore();
 const dialogRef = ref(null);
 
 const isCreatingPortal = useMapGetter('portals/isCreatingPortal');
+const currentUser = useMapGetter('getCurrentUser');
+const isSuperAdmin = computed(() => currentUser.value?.type === 'SuperAdmin');
 
 const state = reactive({
   name: '',
@@ -28,6 +30,7 @@ const state = reactive({
   domain: '',
   logoUrl: '',
   avatarBlobId: '',
+  isGlobal: false,
 });
 
 const rules = {
@@ -68,9 +71,12 @@ const redirectToPortal = portal => {
 };
 
 const resetForm = () => {
-  Object.keys(state).forEach(key => {
-    state[key] = '';
-  });
+  state.name = '';
+  state.slug = '';
+  state.domain = '';
+  state.logoUrl = '';
+  state.avatarBlobId = '';
+  state.isGlobal = false;
   v$.value.$reset();
 };
 const createPortal = async portal => {
@@ -110,6 +116,7 @@ const handleDialogConfirm = async () => {
     custom_domain: state.domain,
     blob_id: state.avatarBlobId || null,
     color: '#2781F6', // The default color is set to Chatwoot brand color
+    is_global: state.isGlobal,
   };
   await createPortal(portal);
 };
@@ -154,6 +161,22 @@ defineExpose({ dialogRef });
         @input="v$.slug.$touch()"
         @blur="v$.slug.$touch()"
       />
+      <div v-if="isSuperAdmin" class="flex items-start gap-3">
+        <input
+          id="is-global-checkbox"
+          v-model="state.isGlobal"
+          type="checkbox"
+          class="mt-1 size-4 rounded border-n-weak bg-n-solid-1 text-n-teal-9 focus:ring-2 focus:ring-n-teal-9 focus:ring-offset-0"
+        />
+        <label for="is-global-checkbox" class="flex flex-col gap-1 cursor-pointer">
+          <span class="text-sm font-medium text-n-slate-12">
+            {{ t('HELP_CENTER.CREATE_PORTAL_DIALOG.IS_GLOBAL.LABEL') }}
+          </span>
+          <span class="text-xs text-n-slate-11">
+            {{ t('HELP_CENTER.CREATE_PORTAL_DIALOG.IS_GLOBAL.MESSAGE') }}
+          </span>
+        </label>
+      </div>
     </div>
   </Dialog>
 </template>

@@ -687,7 +687,14 @@
       "CREATE_PORTAL": "Crie e gerencie vários portais",
       "ARTICLES": "artigos",
       "DOMAIN": "domínio",
-      "PORTAL_NAME": "Nome do portal"
+      "PORTAL_NAME": "Nome do portal",
+      "YOUR_PORTALS": "Seus Portais"
+    },
+    "GLOBAL_PORTAL": {
+      "TITLE": "Central de Ajuda Geral",
+      "DESCRIPTION": "Artigos compartilhados com todas as contas",
+      "BADGE": "Portal Global",
+      "READ_ONLY": "Este portal é gerenciado pelo administrador do sistema"
     },
     "CREATE_PORTAL_DIALOG": {
       "TITLE": "Criar novo portal",
@@ -704,6 +711,10 @@
         "PLACEHOLDER": "user-guide",
         "ERROR": "Slug é obrigatório",
         "FORMAT_ERROR": "Por favor, insira um slug válido, por exemplo: guia do usuário"
+      },
+      "IS_GLOBAL": {
+        "LABEL": "Portal Global (Central de Ajuda Geral)",
+        "MESSAGE": "Este portal será visível para todas as contas. Apenas super admins podem criar e gerenciar portais globais."
       }
     },
     "PORTAL_SETTINGS": {

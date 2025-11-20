@@ -11,8 +11,14 @@ export const actions = {
         data: { payload },
       } = await portalAPIs.get();
       commit(types.CLEAR_PORTALS);
-      const portalSlugs = payload.map(portal => portal.slug);
-      commit(types.ADD_MANY_PORTALS_ENTRY, payload);
+      
+      // Combinar portais locais e globais
+      const allPortals = [
+        ...(payload.local_portals || []),
+        ...(payload.global_portals || [])
+      ];
+      const portalSlugs = allPortals.map(portal => portal.slug);
+      commit(types.ADD_MANY_PORTALS_ENTRY, allPortals);
       commit(types.ADD_MANY_PORTALS_IDS, portalSlugs);
     } catch (error) {
       throwErrorMessage(error);

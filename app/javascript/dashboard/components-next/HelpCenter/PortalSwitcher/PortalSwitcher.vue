@@ -24,6 +24,14 @@ const CATEGORY_SUB_ROUTES = [
 
 const portals = useMapGetter('portals/allPortals');
 
+const localPortals = computed(() => {
+  return portals.value.filter(portal => !portal.is_global);
+});
+
+const globalPortals = computed(() => {
+  return portals.value.filter(portal => portal.is_global);
+});
+
 const currentPortalSlug = computed(() => route.params.portalSlug);
 
 const portalLink = computed(() => {
@@ -128,37 +136,80 @@ const redirectToPortalHomePage = () => {
         @click="openCreatePortalDialog"
       />
     </div>
-    <div v-if="portals.length > 0" class="flex flex-col gap-2 px-4">
-      <Button
-        v-for="(portal, index) in portals"
-        :key="index"
-        :label="portal.name"
-        variant="ghost"
-        color="slate"
-        trailing-icon
-        :icon="isPortalActive(portal) ? 'i-lucide-check' : ''"
-        class="!justify-end !px-2 !py-2 hover:!bg-n-alpha-2 [&>.i-lucide-check]:text-n-teal-10 h-9"
-        size="sm"
-        @click="handlePortalChange(portal)"
-      >
-        <div v-if="portal.custom_domain" class="flex items-center gap-1">
-          <span class="i-lucide-link size-3" />
-          <span class="text-sm truncate text-n-slate-11">
-            {{ portal.custom_domain || '' }}
+    <div v-if="portals.length > 0" class="flex flex-col gap-4 px-4">
+      <!-- Seus Portais -->
+      <div v-if="localPortals.length > 0" class="flex flex-col gap-2">
+        <h3 class="text-xs font-medium text-n-slate-11 px-2">
+          {{ t('HELP_CENTER.PORTAL_SWITCHER.YOUR_PORTALS') }}
+        </h3>
+        <Button
+          v-for="(portal, index) in localPortals"
+          :key="index"
+          :label="portal.name"
+          variant="ghost"
+          color="slate"
+          trailing-icon
+          :icon="isPortalActive(portal) ? 'i-lucide-check' : ''"
+          class="!justify-end !px-2 !py-2 hover:!bg-n-alpha-2 [&>.i-lucide-check]:text-n-teal-10 h-9"
+          size="sm"
+          @click="handlePortalChange(portal)"
+        >
+          <div v-if="portal.custom_domain" class="flex items-center gap-1">
+            <span class="i-lucide-link size-3" />
+            <span class="text-sm truncate text-n-slate-11">
+              {{ portal.custom_domain || '' }}
+            </span>
+          </div>
+          <span class="text-sm font-medium truncate text-n-slate-12">
+            {{ portal.name || '' }}
           </span>
-        </div>
-        <span class="text-sm font-medium truncate text-n-slate-12">
-          {{ portal.name || '' }}
-        </span>
-        <Avatar
-          v-if="portal"
-          :name="portal.name"
-          :src="getPortalThumbnailSrc(portal)"
-          :size="20"
-          icon-name="i-lucide-building-2"
-          rounded-full
-        />
-      </Button>
+          <Avatar
+            v-if="portal"
+            :name="portal.name"
+            :src="getPortalThumbnailSrc(portal)"
+            :size="20"
+            icon-name="i-lucide-building-2"
+            rounded-full
+          />
+        </Button>
+      </div>
+
+      <!-- Central de Ajuda Geral -->
+      <div v-if="globalPortals.length > 0" class="flex flex-col gap-2">
+        <h3 class="text-xs font-medium text-n-slate-11 px-2">
+          {{ t('HELP_CENTER.GLOBAL_PORTAL.TITLE') }}
+        </h3>
+        <Button
+          v-for="(portal, index) in globalPortals"
+          :key="'global-' + index"
+          :label="portal.name"
+          variant="ghost"
+          color="slate"
+          trailing-icon
+          :icon="isPortalActive(portal) ? 'i-lucide-check' : ''"
+          class="!justify-end !px-2 !py-2 hover:!bg-n-alpha-2 [&>.i-lucide-check]:text-n-teal-10 h-9"
+          size="sm"
+          @click="handlePortalChange(portal)"
+        >
+          <div v-if="portal.custom_domain" class="flex items-center gap-1">
+            <span class="i-lucide-link size-3" />
+            <span class="text-sm truncate text-n-slate-11">
+              {{ portal.custom_domain || '' }}
+            </span>
+          </div>
+          <span class="text-sm font-medium truncate text-n-slate-12">
+            {{ portal.name || '' }}
+          </span>
+          <Avatar
+            v-if="portal"
+            :name="portal.name"
+            :src="getPortalThumbnailSrc(portal)"
+            :size="20"
+            icon-name="i-lucide-globe"
+            rounded-full
+          />
+        </Button>
+      </div>
     </div>
   </div>
 </template>

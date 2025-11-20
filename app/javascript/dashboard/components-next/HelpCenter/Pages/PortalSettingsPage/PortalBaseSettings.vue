@@ -25,6 +25,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(['updatePortal']);
@@ -228,6 +232,7 @@ const handleAvatarDelete = () => {
           :placeholder="t('HELP_CENTER.PORTAL_SETTINGS.FORM.NAME.PLACEHOLDER')"
           :message-type="nameError ? 'error' : 'info'"
           :message="nameError"
+          :disabled="disabled"
           custom-input-class="!bg-transparent dark:!bg-transparent"
           @input="v$.name.$touch()"
           @blur="v$.name.$touch()"
@@ -246,6 +251,7 @@ const handleAvatarDelete = () => {
           :placeholder="
             t('HELP_CENTER.PORTAL_SETTINGS.FORM.HEADER_TEXT.PLACEHOLDER')
           "
+          :disabled="disabled"
           custom-input-class="!bg-transparent dark:!bg-transparent"
         />
       </div>
@@ -262,6 +268,7 @@ const handleAvatarDelete = () => {
           :placeholder="
             t('HELP_CENTER.PORTAL_SETTINGS.FORM.PAGE_TITLE.PLACEHOLDER')
           "
+          :disabled="disabled"
           custom-input-class="!bg-transparent dark:!bg-transparent"
         />
       </div>
@@ -280,6 +287,7 @@ const handleAvatarDelete = () => {
           "
           :message-type="homePageLinkError ? 'error' : 'info'"
           :message="homePageLinkError"
+          :disabled="disabled"
           custom-input-class="!bg-transparent dark:!bg-transparent"
           @input="v$.homePageLink.$touch()"
           @blur="v$.homePageLink.$touch()"
@@ -298,6 +306,7 @@ const handleAvatarDelete = () => {
           :placeholder="t('HELP_CENTER.PORTAL_SETTINGS.FORM.SLUG.PLACEHOLDER')"
           :message-type="slugError ? 'error' : 'info'"
           :message="slugError || buildPortalURL(state.slug)"
+          :disabled="disabled"
           custom-input-class="!bg-transparent dark:!bg-transparent"
           @input="v$.slug.$touch()"
           @blur="v$.slug.$touch()"
@@ -320,6 +329,7 @@ const handleAvatarDelete = () => {
           :message="
             t('HELP_CENTER.PORTAL_SETTINGS.FORM.LIVE_CHAT_WIDGET.HELP_TEXT')
           "
+          :disabled="disabled"
           class="[&>div>button:not(.focused)]:!outline-n-weak"
         />
       </div>
@@ -332,7 +342,7 @@ const handleAvatarDelete = () => {
           {{ t('HELP_CENTER.PORTAL_SETTINGS.FORM.BRAND_COLOR.LABEL') }}
         </label>
         <div class="w-[432px] justify-start">
-          <ColorPicker v-model="state.widgetColor" />
+          <ColorPicker v-model="state.widgetColor" :disabled="disabled" />
         </div>
       </div>
       <div class="flex justify-end w-full gap-2">

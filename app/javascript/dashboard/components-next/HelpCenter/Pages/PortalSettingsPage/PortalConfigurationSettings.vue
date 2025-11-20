@@ -16,6 +16,10 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits([

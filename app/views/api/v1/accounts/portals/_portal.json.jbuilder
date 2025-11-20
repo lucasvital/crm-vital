@@ -8,6 +8,7 @@ json.page_title portal.page_title
 json.slug portal.slug
 json.archived portal.archived
 json.account_id portal.account_id
+json.is_global portal.is_global?
 
 json.config do
   json.allowed_locales do

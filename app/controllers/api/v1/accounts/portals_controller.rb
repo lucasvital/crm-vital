@@ -6,7 +6,8 @@ class Api::V1::Accounts::PortalsController < Api::V1::Accounts::BaseController
   before_action :set_current_page, only: [:index]
 
   def index
-    @portals = Current.account.portals
+    @local_portals = Current.account.portals.local
+    @global_portals = Portal.global.active
   end
 
   def show
@@ -15,13 +16,29 @@ class Api::V1::Accounts::PortalsController < Api::V1::Accounts::BaseController
   end
 
   def create
-    @portal = Current.account.portals.build(portal_params.merge(live_chat_widget_params))
+    # Apenas super admins podem criar portais globais
+    if portal_params[:is_global] && !current_user.is_a?(SuperAdmin)
+      return render json: { error: 'Unauthorized' }, status: :forbidden
+    end
+
+    if portal_params[:is_global]
+      @portal = Portal.new(portal_params.merge(live_chat_widget_params))
+      @portal.account_id = nil
+    else
+      @portal = Current.account.portals.build(portal_params.merge(live_chat_widget_params))
+    end
+    
     @portal.custom_domain = parsed_custom_domain
     @portal.save!
     process_attached_logo
   end
 
   def update
+    # Apenas super admins podem editar portais globais
+    if @portal.is_global? && !current_user.is_a?(SuperAdmin)
+      return render json: { error: 'Unauthorized' }, status: :forbidden
+    end
+
     ActiveRecord::Base.transaction do
       @portal.update!(portal_params.merge(live_chat_widget_params)) if params[:portal].present?
       # @portal.custom_domain = parsed_custom_domain
@@ -32,6 +49,11 @@ class Api::V1::Accounts::PortalsController < Api::V1::Accounts::BaseController
   end
 
   def destroy
+    # Apenas super admins podem deletar portais globais
+    if @portal.is_global? && !current_user.is_a?(SuperAdmin)
+      return render json: { error: 'Unauthorized' }, status: :forbidden
+    end
+
     @portal.destroy!
     head :ok
   end
@@ -69,7 +91,9 @@ class Api::V1::Accounts::PortalsController < Api::V1::Accounts::BaseController
   private
 
   def fetch_portal
-    @portal = Current.account.portals.find_by(slug: permitted_params[:id])
+    # Buscar portal local ou global
+    @portal = Current.account.portals.find_by(slug: permitted_params[:id]) ||
+              Portal.global.find_by(slug: permitted_params[:id])
   end
 
   def permitted_params
@@ -79,7 +103,7 @@ class Api::V1::Accounts::PortalsController < Api::V1::Accounts::BaseController
   def portal_params
     params.require(:portal).permit(
       :id, :account_id, :color, :custom_domain, :header_text, :homepage_link,
-      :name, :page_title, :slug, :archived, { config: [:default_locale, { allowed_locales: [] }] }
+      :name, :page_title, :slug, :archived, :is_global, { config: [:default_locale, { allowed_locales: [] }] }
     )
   end
 

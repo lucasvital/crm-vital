@@ -46,6 +46,16 @@ const activePortal = computed(() => {
 
 const activePortalName = computed(() => activePortal.value?.name || '');
 
+const isPortalGlobal = computed(() => activePortal.value?.is_global || false);
+
+const currentUser = useMapGetter('getCurrentUser');
+const isSuperAdmin = computed(() => currentUser.value?.type === 'SuperAdmin');
+
+const canEditPortal = computed(() => {
+  if (!isPortalGlobal.value) return true;
+  return isSuperAdmin.value;
+});
+
 const isLoading = computed(() => props.isFetching || isSwitchingPortal.value);
 
 const handleUpdatePortal = portal => {
@@ -87,9 +97,26 @@ const handleDeletePortal = () => {
         v-else-if="activePortal"
         class="flex flex-col w-full gap-4 max-w-[40rem] pb-8"
       >
+        <!-- Badge de Portal Global -->
+        <div
+          v-if="isPortalGlobal"
+          class="flex items-center gap-2 px-4 py-2 border rounded-lg bg-n-teal-3 border-n-teal-6"
+        >
+          <span class="i-lucide-globe size-5 text-n-teal-11" />
+          <div class="flex flex-col gap-1">
+            <span class="text-sm font-medium text-n-teal-12">
+              {{ t('HELP_CENTER.GLOBAL_PORTAL.BADGE') }}
+            </span>
+            <span v-if="!canEditPortal" class="text-xs text-n-teal-11">
+              {{ t('HELP_CENTER.GLOBAL_PORTAL.READ_ONLY') }}
+            </span>
+          </div>
+        </div>
+
         <PortalBaseSettings
           :active-portal="activePortal"
           :is-fetching="isFetching"
+          :disabled="!canEditPortal"
           @update-portal="handleUpdatePortal"
         />
         <div class="w-full h-px bg-n-weak" />
@@ -97,12 +124,16 @@ const handleDeletePortal = () => {
           :active-portal="activePortal"
           :is-fetching="isFetching"
           :is-fetching-status="isFetchingSSLStatus"
+          :disabled="!canEditPortal"
           @update-portal-configuration="handleUpdatePortalConfiguration"
           @refresh-status="fetchSSLStatus"
           @send-cname-instructions="handleSendCnameInstructions"
         />
-        <div class="w-full h-px bg-n-weak" />
-        <div class="flex items-end justify-between w-full gap-4">
+        <div v-if="canEditPortal" class="w-full h-px bg-n-weak" />
+        <div
+          v-if="canEditPortal"
+          class="flex items-end justify-between w-full gap-4"
+        >
           <div class="flex flex-col gap-2">
             <h6 class="text-base font-medium text-n-slate-12">
               {{

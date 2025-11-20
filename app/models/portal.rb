@@ -9,25 +9,27 @@
 #  custom_domain         :string
 #  header_text           :text
 #  homepage_link         :string
+#  is_global             :boolean          default(FALSE), not null
 #  name                  :string           not null
 #  page_title            :string
 #  slug                  :string           not null
 #  ssl_settings          :jsonb            not null
 #  created_at            :datetime         not null
 #  updated_at            :datetime         not null
-#  account_id            :integer          not null
+#  account_id            :integer
 #  channel_web_widget_id :bigint
 #
 # Indexes
 #
 #  index_portals_on_channel_web_widget_id  (channel_web_widget_id)
 #  index_portals_on_custom_domain          (custom_domain) UNIQUE
+#  index_portals_on_is_global              (is_global)
 #  index_portals_on_slug                   (slug) UNIQUE
 #
 class Portal < ApplicationRecord
   include Rails.application.routes.url_helpers
 
-  belongs_to :account
+  belongs_to :account, optional: true
   has_many :categories, dependent: :destroy_async
   has_many :folders,  through: :categories
   has_many :articles, dependent: :destroy_async
@@ -36,13 +38,15 @@ class Portal < ApplicationRecord
   belongs_to :channel_web_widget, class_name: 'Channel::WebWidget', optional: true
 
   before_validation -> { normalize_empty_string_to_nil(%i[custom_domain homepage_link]) }
-  validates :account_id, presence: true
+  validates :account_id, presence: true, unless: :is_global?
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
   validates :custom_domain, uniqueness: true, allow_nil: true
   validate :config_json_format
 
   scope :active, -> { where(archived: false) }
+  scope :global, -> { where(is_global: true) }
+  scope :local, -> { where(is_global: false) }
 
   CONFIG_JSON_KEYS = %w[allowed_locales default_locale website_token].freeze
 

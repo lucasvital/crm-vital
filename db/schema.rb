@@ -1121,7 +1121,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_19_110300) do
   end
 
   create_table "portals", force: :cascade do |t|
-    t.integer "account_id", null: false
+    t.integer "account_id"
     t.string "name", null: false
     t.string "slug", null: false
     t.string "custom_domain"
@@ -1135,8 +1135,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_19_110300) do
     t.boolean "archived", default: false
     t.bigint "channel_web_widget_id"
     t.jsonb "ssl_settings", default: {}, null: false
+    t.boolean "is_global", default: false, null: false
     t.index ["channel_web_widget_id"], name: "index_portals_on_channel_web_widget_id"
     t.index ["custom_domain"], name: "index_portals_on_custom_domain", unique: true
+    t.index ["is_global"], name: "index_portals_on_is_global"
     t.index ["slug"], name: "index_portals_on_slug", unique: true
   end
 
