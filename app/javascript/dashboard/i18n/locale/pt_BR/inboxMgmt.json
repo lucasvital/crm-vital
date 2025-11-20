@@ -1,14 +1,14 @@
 {
   "INBOX_MGMT": {
-    "HEADER": "Caixas de Entrada",
-    "DESCRIPTION": "Um canal é o modo de comunicação que seu cliente escolhe para interagir com você. Uma caixa de entrada é onde você gerencia interações para um canal específico. Pode incluir comunicações de várias fontes, como e-mail, chat ao vivo e mídia social.",
-    "LEARN_MORE": "Saiba mais sobre as caixas de entrada",
-    "RECONNECTION_REQUIRED": "Sua caixa de entrada está desconectada. Você não receberá novas mensagens até reautorizar.",
+    "HEADER": "Canais",
+    "DESCRIPTION": "Um canal é o modo de comunicação que seu cliente escolhe para interagir com você. É onde você gerencia interações para um canal específico, incluindo comunicações de várias fontes, como e-mail, chat ao vivo e mídias sociais.",
+    "LEARN_MORE": "Saiba mais sobre os canais",
+    "RECONNECTION_REQUIRED": "Seu canal está desconectado. Você não receberá novas mensagens até reautorizar.",
     "CLICK_TO_RECONNECT": "Clique aqui para reconectar.",
     "WHATSAPP_REGISTRATION_INCOMPLETE": "Your WhatsApp Business registration isn’t complete. Please check your display name status in Meta Business Manager before reconnecting.",
     "COMPLETE_REGISTRATION": "Complete Registration",
     "LIST": {
-      "404": "Não há caixas de entrada anexadas a esta conta."
+      "404": "Não há canais anexados a esta conta."
     },
     "CREATE_FLOW": {
       "CHANNEL": {
@@ -16,8 +16,8 @@
         "BODY": "Escolha o provedor que você deseja integrar com o Chatwoot."
       },
       "INBOX": {
-        "TITLE": "Criar Caixa de Entrada",
-        "BODY": "Autenticar sua conta e criar uma caixa de entrada."
+        "TITLE": "Criar Canal",
+        "BODY": "Autenticar sua conta e criar um canal."
       },
       "AGENT": {
         "TITLE": "Adicionar Agentes",
@@ -30,8 +30,8 @@
     },
     "ADD": {
       "CHANNEL_NAME": {
-        "LABEL": "Nome da Caixa de Entrada",
-        "PLACEHOLDER": "Digite o nome da caixa de entrada (ex: Acme Inc)",
+        "LABEL": "Nome do Canal",
+        "PLACEHOLDER": "Digite o nome do canal (ex: Acme Inc)",
         "ERROR": "Por favor, insira um nome completo válido"
       },
       "WEBSITE_NAME": {
@@ -226,14 +226,18 @@
           "LABEL": "Provedor de API",
           "WHATSAPP_EMBEDDED": "WhatsApp Business",
           "TWILIO": "Twilio",
-          "WHATSAPP_CLOUD": "Cloud do WhatsApp",
-          "WHATSAPP_CLOUD_DESC": "Configuração rápida via Meta",
+          "WHATSAPP_CLOUD": "API Oficial",
+          "WHATSAPP_CLOUD_DESC": "Mude para a API oficial do WhatsApp",
           "TWILIO_DESC": "Conectar através de credenciais Twilio",
           "360_DIALOG": "360Dialog",
-          "BAILEYS": "Baileys",
-          "BAILEYS_DESC": "Conectar via API não-oficial Baileys",
+          "BAILEYS": "WhatsApp Business",
+          "BAILEYS_DESC": "Conectar via WhatsApp Business (API não-oficial Baileys)",
           "ZAPI": "Z-API",
-          "ZAPI_DESC": "Conectar via API não-oficial Z-API"
+          "ZAPI_DESC": "Conectar via API não-oficial Z-API",
+          "BADGE": {
+            "PAID": "Pago",
+            "FREE": "Grátis"
+          }
         },
         "SELECT_PROVIDER": {
           "TITLE": "Selecione seu provedor de API",

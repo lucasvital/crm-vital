@@ -302,16 +302,16 @@
   "CONFIRM_EMAIL": "Verificando...",
   "SETTINGS": {
     "INBOXES": {
-      "NEW_INBOX": "Adicionar Caixa de Entrada"
+      "NEW_INBOX": "Adicionar Canal"
     }
   },
-  "SIDEBAR": {
+    "SIDEBAR": {
     "NO_ITEMS": "Nenhum item",
     "CURRENTLY_VIEWING_ACCOUNT": "Visualização atual:",
     "SWITCH": "Trocar",
     "INBOX_VIEW": "Caixa de entrada",
     "CONVERSATIONS": "Conversas",
-    "INBOX": "Caixa de Entrada",
+    "INBOX": "Novas conversas",
     "ALL_CONVERSATIONS": "Todas as conversas",
     "KANBAN": "Pipelines",
     "MENTIONED_CONVERSATIONS": "Menções",
@@ -327,10 +327,10 @@
     "CAPTAIN_RESPONSES": "FAQs",
     "CAPTAIN_TOOLS": "Ferramentas",
     "HOME": "Principal",
-    "AGENTS": "Agentes",
+    "AGENTS": "Usuários",
     "AGENT_BOTS": "Robôs",
     "AUDIT_LOGS": "Auditoria",
-    "INBOXES": "Caixas de Entrada",
+      "INBOXES": "Canais",
     "NOTIFICATIONS": "Notificações",
     "CANNED_RESPONSES": "Respostas Prontas",
     "INTEGRATIONS": "Integrações",
@@ -350,7 +350,7 @@
     "TAGGED_WITH": "Marcado com",
     "NEW_LABEL": "Nova etiqueta",
     "NEW_TEAM": "Novo time",
-    "NEW_INBOX": "Nova caixa de entrada",
+    "NEW_INBOX": "Novo canal",
     "REPORTS_CONVERSATION": "Conversas",
     "CSAT": "CSAT",
     "LIVE_CHAT": "Chat ao vivo",
@@ -361,7 +361,7 @@
     "ONE_OFF": "Única",
     "REPORTS_SLA": "SLA",
     "REPORTS_BOT": "Robôs",
-    "REPORTS_AGENT": "Agentes",
+    "REPORTS_AGENT": "Usuários",
     "REPORTS_LABEL": "Etiquetas",
     "REPORTS_INBOX": "Caixa de Entrada",
     "REPORTS_TEAM": "Time",
@@ -490,6 +490,21 @@
       }
     }
   },
+  "PIPELINES": {
+    "VALIDATIONS": {
+      "WON_STAGE_REQUIRED": "O pipeline precisa ter pelo menos uma etapa marcada como ganho."
+    },
+    "ALERTS": {
+      "CREATE_SUCCESS": "Pipeline criado com sucesso.",
+      "CREATE_ERROR": "Não foi possível criar o pipeline.",
+      "UPDATE_SUCCESS": "Pipeline atualizado com sucesso.",
+      "UPDATE_ERROR": "Não foi possível atualizar o pipeline.",
+      "DELETE_SUCCESS": "Pipeline removido com sucesso.",
+      "DELETE_ERROR": "Não foi possível remover o pipeline. Verifique se não há negócios vinculados a ele.",
+      "DUPLICATE_SUCCESS": "Pipeline duplicado com sucesso.",
+      "DUPLICATE_ERROR": "Não foi possível duplicar o pipeline."
+    }
+  },
   "CREATE_ACCOUNT": {
     "NO_ACCOUNT_WARNING": "Ah oh! Não conseguimos encontrar nenhuma conta. Por favor, crie uma nova conta para continuar.",
     "NEW_ACCOUNT": "Nova conta",
@@ -512,9 +527,9 @@
     "TOGGLE_MODAL": "Alternar Modal",
     "TITLE": {
       "OPEN_CONVERSATION": "Abrir conversa",
-      "RESOLVE_AND_NEXT": "Resolver e ir para o próximo",
+      "RESOLVE_AND_NEXT": "Finalizar e ir para o próximo",
       "NAVIGATE_DROPDOWN": "Navegar pelos itens suspensos",
-      "RESOLVE_CONVERSATION": "Resolver Conversa",
+      "RESOLVE_CONVERSATION": "Finalizar Atendimento",
       "GO_TO_CONVERSATION_DASHBOARD": "Ir para Painel de Conversação",
       "ADD_ATTACHMENT": "Adicionar anexo",
       "GO_TO_CONTACTS_DASHBOARD": "Ir para Painel de Contatos",

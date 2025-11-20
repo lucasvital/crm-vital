@@ -69,7 +69,8 @@ const activeNotificationIndex = computed(() => {
 const isContactPanelOpen = computed(() => {
   if (currentChat.value.id) {
     const { is_contact_sidebar_open: isContactSidebarOpen } = uiSettings.value;
-    return isContactSidebarOpen;
+    // Se não houver preferência salva, abre a sidebar por padrão
+    return isContactSidebarOpen !== undefined ? isContactSidebarOpen : true;
   }
   return false;
 });

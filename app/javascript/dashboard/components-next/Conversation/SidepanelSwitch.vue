@@ -61,11 +61,11 @@ useKeyboardEvents(keyboardEvents);
     <Button
       v-tooltip.top="$t('CONVERSATION.SIDEBAR.CONTACT')"
       ghost
-      slate
       sm
       class="!rounded-full"
       :class="{
-        'bg-n-alpha-2': isContactSidebarOpen,
+        'text-n-slate-11': isContactSidebarOpen,
+        'bg-n-grass-4 !text-n-grass-11': !isContactSidebarOpen,
       }"
       icon="i-ph-user-bold"
       @click="handleConversationSidebarToggle"

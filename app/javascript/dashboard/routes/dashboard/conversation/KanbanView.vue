@@ -139,7 +139,7 @@ const refreshBoard = async () => {
 
 onMounted(async () => {
   await store.dispatch('inboxes/get');
-  // Carrega pipelines e estágios do pipeline selecionado
+// Carrega pipelines e etapas do pipeline selecionado
   const { data: pipes } = await PipelinesAPI.get();
   pipelines.value = pipes || [];
   if (pipelines.value.length) {
@@ -425,7 +425,7 @@ const onEditSubmit = async payload => {
     <header class="flex items-center justify-between">
       <div>
         <h1 class="text-xl font-semibold text-n-slate-12">
-          {{ t('KANBAN.TITLE') }}
+          {{ pipelines.length && selectedPipelineId ? (pipelines.find(p => p.id === selectedPipelineId)?.name) || t('KANBAN.TITLE') : t('KANBAN.TITLE') }}
         </h1>
         <p class="text-sm text-n-slate-11">
           {{ t('KANBAN.DESCRIPTION') }}
@@ -439,7 +439,7 @@ const onEditSubmit = async payload => {
             type="button"
             class="!h-9"
             :trailing-icon="'i-lucide-chevron-down'"
-            :label="(pipelines.find(p => p.id === selectedPipelineId)?.name) || 'Pipelines'"
+            label="Selecione pipeline"
             @click="showPipelineMenu = !showPipelineMenu"
           />
           <DropdownMenu

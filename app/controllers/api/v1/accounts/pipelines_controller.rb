@@ -28,7 +28,15 @@ class Api::V1::Accounts::PipelinesController < Api::V1::Accounts::BaseController
   end
 
   def destroy
+    if @pipeline.deals.exists?
+      render json: { error: 'Não é possível remover pipeline com negócios vinculados' }, status: :unprocessable_entity
+      return
+    end
+
+    # Deletar stages sem callbacks para pular a validação de won
+    @pipeline.pipeline_stages.delete_all
     @pipeline.destroy
+
     head :ok
   end
 

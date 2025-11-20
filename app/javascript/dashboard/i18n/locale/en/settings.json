@@ -490,6 +490,21 @@
       }
     }
   },
+  "PIPELINES": {
+    "VALIDATIONS": {
+      "WON_STAGE_REQUIRED": "The pipeline must have at least one stage marked as won."
+    },
+    "ALERTS": {
+      "CREATE_SUCCESS": "Pipeline created successfully.",
+      "CREATE_ERROR": "Could not create the pipeline.",
+      "UPDATE_SUCCESS": "Pipeline updated successfully.",
+      "UPDATE_ERROR": "Could not update the pipeline.",
+      "DELETE_SUCCESS": "Pipeline deleted successfully.",
+      "DELETE_ERROR": "Could not delete the pipeline. Make sure there are no deals linked to it.",
+      "DUPLICATE_SUCCESS": "Pipeline duplicated successfully.",
+      "DUPLICATE_ERROR": "Could not duplicate the pipeline."
+    }
+  },
   "CREATE_ACCOUNT": {
     "NO_ACCOUNT_WARNING": "Uh oh! We could not find any Chatwoot accounts. Please create a new account to continue.",
     "NEW_ACCOUNT": "New Account",

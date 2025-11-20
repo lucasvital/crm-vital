@@ -1,3 +1,36 @@
+# == Schema Information
+#
+# Table name: goals
+#
+#  id            :bigint           not null, primary key
+#  end_date      :date             not null
+#  metric        :string           not null
+#  notes         :text
+#  pipeline_ids  :integer          default([]), is an Array
+#  scope_type    :string           not null
+#  start_date    :date             not null
+#  status        :string           default("active"), not null
+#  target_amount :decimal(12, 2)
+#  target_number :integer
+#  title         :string           not null
+#  created_at    :datetime         not null
+#  updated_at    :datetime         not null
+#  account_id    :bigint           not null
+#  created_by_id :bigint           not null
+#  scope_id      :bigint           not null
+#
+# Indexes
+#
+#  idx_goals_account_scope       (account_id,scope_type,scope_id)
+#  index_goals_on_account_id     (account_id)
+#  index_goals_on_created_by_id  (created_by_id)
+#  index_goals_on_pipeline_ids   (pipeline_ids) USING gin
+#
+# Foreign Keys
+#
+#  fk_rails_...  (account_id => accounts.id)
+#  fk_rails_...  (created_by_id => users.id)
+#
 class Goal < ApplicationRecord
   belongs_to :account
   belongs_to :created_by, class_name: 'User'

@@ -94,7 +94,8 @@ export default {
       }
 
       const { is_contact_sidebar_open: isContactSidebarOpen } = this.uiSettings;
-      return isContactSidebarOpen;
+      // Se não houver preferência salva, abre a sidebar por padrão
+      return isContactSidebarOpen !== undefined ? isContactSidebarOpen : true;
     },
   },
   watch: {

@@ -175,7 +175,7 @@ watch(
     <div class="mt-4 rounded-xl border border-n-alpha-2 bg-n-solid-1 p-4">
       <div class="flex items-center justify-between">
         <div class="text-sm text-n-slate-11">
-          Defina metas por usuário ou time. O progresso é calculado quando negócios entram no estágio “Ganho”.
+          Defina metas por usuário ou time. O progresso é calculado quando negócios entram na etapa “Ganho”.
         </div>
         <button
           class="rounded-md border border-n-strong bg-n-solid-1 px-3 py-2 text-sm font-medium text-n-slate-12 hover:bg-n-solid-2"
