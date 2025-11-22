@@ -1,0 +1,81 @@
+{
+  "ROUTINES": {
+    "HEADER": "Rotinas semanais",
+    "DESCRIPTION": "Cadastre rotinas recorrentes de segunda a sexta para orientar o foco do time em cada dia. Os agentes apenas visualizam essas rotinas no dashboard.",
+    "LEARN_MORE": "",
+    "HEADER_BTN_TXT": "Adicionar rotina",
+    "LOADING": "Carregando rotinas...",
+    "LIST": {
+      "TABLE_HEADER": {
+        "WEEKDAY": "Dia da semana",
+        "TIME": "Horário",
+        "TITLE": "Título",
+        "STATUS": "Status"
+      },
+      "404": "Nenhuma rotina configurada ainda"
+    },
+    "STATUS": {
+      "ACTIVE": "Ativa",
+      "INACTIVE": "Inativa"
+    },
+    "WEEKDAY": {
+      "MONDAY": "Segunda-feira",
+      "TUESDAY": "Terça-feira",
+      "WEDNESDAY": "Quarta-feira",
+      "THURSDAY": "Quinta-feira",
+      "FRIDAY": "Sexta-feira"
+    },
+    "CREATE": {
+      "TITLE": "Criar rotina",
+      "API": {
+        "SUCCESS_MESSAGE": "Rotina criada com sucesso",
+        "ERROR_MESSAGE": "Não foi possível criar a rotina, tente novamente mais tarde"
+      }
+    },
+    "EDIT": {
+      "TITLE": "Editar rotina",
+      "TOOLTIP": "Editar rotina",
+      "API": {
+        "SUCCESS_MESSAGE": "Rotina atualizada com sucesso",
+        "ERROR_MESSAGE": "Não foi possível atualizar a rotina, tente novamente mais tarde"
+      }
+    },
+    "DELETE": {
+      "TOOLTIP": "Excluir rotina",
+      "CONFIRM": {
+        "TITLE": "Excluir rotina",
+        "MESSAGE": "Tem certeza de que deseja excluir esta rotina?",
+        "YES": "Sim, excluir",
+        "NO": "Não"
+      },
+      "API": {
+        "SUCCESS_MESSAGE": "Rotina excluída com sucesso",
+        "ERROR_MESSAGE": "Erro ao excluir a rotina. Tente novamente mais tarde"
+      }
+    },
+    "FORM": {
+      "WEEKDAY": "Dia da semana",
+      "TIME": "Horário de início",
+      "TITLE": "Título",
+      "DESCRIPTION": "Descrição (opcional)",
+      "ACTIVE": "Rotina ativa",
+      "CANCEL": "Cancelar",
+      "CREATE": "Criar rotina",
+      "SAVE": "Salvar alterações"
+    },
+    "AGENDA": {
+      "TITLE": "Rotinas de hoje",
+      "EMPTY": "Nenhuma rotina agendada para hoje",
+      "TODAY_LABEL": "Hoje",
+      "DESCRIPTION": "Essas rotinas são definidas pelos administradores e não podem ser editadas aqui.",
+      "MARK_COMPLETE": "Marcar como concluída"
+    },
+    "CALENDAR": {
+      "TITLE": "Rotinas Semanais",
+      "DESCRIPTION": "Visualize todas as rotinas agendadas para a semana",
+      "NO_ROUTINES": "Nenhuma rotina agendada"
+    }
+  }
+}
+
+

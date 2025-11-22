@@ -220,6 +220,13 @@ const menuItems = computed(() => {
       activeOn: ['conversation_kanban'],
     },
     {
+      name: 'Routines',
+      label: t('SIDEBAR.ROUTINES'),
+      icon: 'i-lucide-calendar-clock',
+      to: accountScopedRoute('routines_view'),
+      activeOn: ['routines_view'],
+    },
+    {
       name: 'Captain',
       icon: 'i-woot-captain',
       label: t('SIDEBAR.CAPTAIN'),
@@ -492,6 +499,12 @@ const menuItems = computed(() => {
           label: t('SIDEBAR.MACROS'),
           icon: 'i-lucide-toy-brick',
           to: accountScopedRoute('macros_wrapper'),
+        },
+        {
+          name: 'Settings Routines',
+          label: t('SIDEBAR.ROUTINES'),
+          icon: 'i-lucide-calendar-clock',
+          to: accountScopedRoute('routines_list'),
         },
         {
           name: 'Settings Canned Responses',

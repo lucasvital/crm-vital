@@ -42,9 +42,9 @@ defineProps({
 
     <div class="flex flex-col items-start gap-1.5">
       <div class="flex items-center gap-2">
-        <h3 class="text-n-slate-12 text-sm text-start font-medium capitalize">
-          {{ title }}
-        </h3>
+      <h3 class="text-n-slate-12 text-sm text-start font-medium capitalize">
+        {{ title }}
+      </h3>
         <span
           v-if="badge"
           class="inline-flex items-center rounded-full border border-n-weak bg-n-solid-2 px-2 py-0.5 text-[11px] font-medium text-n-slate-11"

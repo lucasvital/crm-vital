@@ -305,7 +305,7 @@
       "NEW_INBOX": "Adicionar Canal"
     }
   },
-    "SIDEBAR": {
+  "SIDEBAR": {
     "NO_ITEMS": "Nenhum item",
     "CURRENTLY_VIEWING_ACCOUNT": "Visualização atual:",
     "SWITCH": "Trocar",
@@ -387,7 +387,8 @@
       "INFO_SHORT": "Marcar off-line automaticamente quando não estiver usando o aplicativo."
     },
     "DOCS": "Ler documentos",
-    "SECURITY": "Segurança"
+    "SECURITY": "Segurança",
+    "ROUTINES": "Rotinas"
   },
   "BILLING_SETTINGS": {
     "TITLE": "Cobrança",

@@ -124,6 +124,13 @@ Rails.application.routes.draw do
           end
           resources :campaigns, only: [:index, :create, :show, :update, :destroy]
           resources :dashboard_apps, only: [:index, :show, :create, :update, :destroy]
+        resources :routines
+        resources :agent_routines, only: [:index]
+        resources :routine_completions, only: [:create] do
+          collection do
+            delete ':routine_id', to: 'routine_completions#destroy'
+          end
+        end
           namespace :channels do
             resource :twilio_channel, only: [:create]
           end

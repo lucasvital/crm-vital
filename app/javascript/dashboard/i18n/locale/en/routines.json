@@ -1,0 +1,81 @@
+{
+  "ROUTINES": {
+    "HEADER": "Weekly routines",
+    "DESCRIPTION": "Create recurring weekly routines for your team (Monday to Friday) so agents see what to focus on each day, without being able to edit them.",
+    "LEARN_MORE": "",
+    "HEADER_BTN_TXT": "Add routine",
+    "LOADING": "Loading routines",
+    "LIST": {
+      "TABLE_HEADER": {
+        "WEEKDAY": "Weekday",
+        "TIME": "Time",
+        "TITLE": "Title",
+        "STATUS": "Status"
+      },
+      "404": "No routines configured yet"
+    },
+    "STATUS": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive"
+    },
+    "WEEKDAY": {
+      "MONDAY": "Monday",
+      "TUESDAY": "Tuesday",
+      "WEDNESDAY": "Wednesday",
+      "THURSDAY": "Thursday",
+      "FRIDAY": "Friday"
+    },
+    "CREATE": {
+      "TITLE": "Create routine",
+      "API": {
+        "SUCCESS_MESSAGE": "Routine created successfully",
+        "ERROR_MESSAGE": "Unable to create routine, please try again later"
+      }
+    },
+    "EDIT": {
+      "TITLE": "Edit routine",
+      "TOOLTIP": "Edit routine",
+      "API": {
+        "SUCCESS_MESSAGE": "Routine updated successfully",
+        "ERROR_MESSAGE": "Unable to update routine, please try again later"
+      }
+    },
+    "DELETE": {
+      "TOOLTIP": "Delete routine",
+      "CONFIRM": {
+        "TITLE": "Delete routine",
+        "MESSAGE": "Are you sure you want to delete this routine?",
+        "YES": "Yes, delete",
+        "NO": "No"
+      },
+      "API": {
+        "SUCCESS_MESSAGE": "Routine deleted successfully",
+        "ERROR_MESSAGE": "There was an error deleting the routine. Please try again later"
+      }
+    },
+    "FORM": {
+      "WEEKDAY": "Day of the week",
+      "TIME": "Start time",
+      "TITLE": "Title",
+      "DESCRIPTION": "Description (optional)",
+      "ACTIVE": "Routine is active",
+      "CANCEL": "Cancel",
+      "CREATE": "Create routine",
+      "SAVE": "Save changes"
+    },
+    "AGENDA": {
+      "TITLE": "Today's routines",
+      "EMPTY": "No routines scheduled for today",
+      "TODAY_LABEL": "Today",
+      "DESCRIPTION": "These routines are defined by admins and cannot be edited here.",
+      "MARK_COMPLETE": "Mark as complete"
+    },
+    "CALENDAR": {
+      "TITLE": "Weekly Routines",
+      "DESCRIPTION": "View all routines scheduled for the week",
+      "NO_ROUTINES": "No routines scheduled"
+    }
+  }
+}
+
+
