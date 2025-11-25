@@ -14,6 +14,11 @@ class Forecasts::GenerateService
     safe_chat_call(prompt, 20)
   end
 
+  def call_refine(prompt)
+    # usado em job async para tentar melhorar a previsão
+    safe_chat_call(prompt, 25)
+  end
+
   private
 
   def safe_chat_call(prompt, timeout_secs)

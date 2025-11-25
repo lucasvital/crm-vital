@@ -10,6 +10,7 @@ const { t } = useI18n();
 
 const loading = ref(false);
 const generating = ref(false);
+const generationProgress = ref(0);
 const metrics = ref(null);
 const forecast = ref(null);
 const error = ref('');
@@ -43,6 +44,10 @@ const generateForecast = async () => {
   generating.value = true;
   error.value = '';
   forecast.value = null;
+  generationProgress.value = 0;
+  const timer = setInterval(() => {
+    generationProgress.value = Math.min(generationProgress.value + 8, 92);
+  }, 800);
   try {
     const { data } = await ForecastsAPI.generate();
     forecast.value = data;
@@ -59,6 +64,8 @@ const generateForecast = async () => {
       } catch {}
     }
   } finally {
+    clearInterval(timer);
+    generationProgress.value = 100;
     generating.value = false;
   }
 };
@@ -175,6 +182,16 @@ const canGenerate = computed(() => {
     <div class="rounded-xl border border-n-alpha-2 bg-n-solid-1 p-4">
       <div class="text-sm font-medium text-n-slate-12 mb-2">Métricas do pipeline</div>
       <woot-loading-state v-if="loading" class="text-xs" message="Carregando…" />
+      <div v-else-if="!forecast && generating" class="space-y-3">
+        <div class="flex items-center justify-center gap-2 text-sm text-n-slate-12">
+          <span class="i-lucide-loader-2 animate-spin" />
+          <span>Analisando pipeline…</span>
+        </div>
+        <div class="w-full bg-n-alpha-2 rounded-full h-2 overflow-hidden">
+          <div class="bg-n-strong h-full transition-all duration-700 ease-out" :style="{ width: generationProgress + '%' }" />
+        </div>
+        <div class="text-xs text-n-slate-11">{{ generationProgress }}% — pode levar até 30 segundos</div>
+      </div>
       <div v-else-if="metrics" class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div class="rounded-lg border border-n-alpha-2 bg-n-solid-2 p-3">
           <div class="text-xs text-n-slate-11">Negócios</div>

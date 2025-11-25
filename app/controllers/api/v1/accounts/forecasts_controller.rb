@@ -113,6 +113,11 @@ class Api::V1::Accounts::ForecastsController < Api::V1::Accounts::BaseController
       }
     )
 
+    begin
+      ForecastsAiRefinementJob.perform_later(record.id, prompt)
+    rescue StandardError
+    end
+
     render json: {
       weekly_forecast: record.weekly_forecast,
       monthly_forecast: record.monthly_forecast,
