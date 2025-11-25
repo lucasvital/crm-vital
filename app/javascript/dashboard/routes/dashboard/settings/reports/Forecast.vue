@@ -142,13 +142,29 @@ const scenario = computed(() => {
     },
   };
 });
+
+const nextAllowedComputed = computed(() => {
+  if (nextAllowedAt.value) return new Date(nextAllowedAt.value);
+  const created = forecast.value?.created_at ? new Date(forecast.value.created_at) : null;
+  return created ? new Date(created.getTime() + 7 * 24 * 60 * 60 * 1000) : null;
+});
+
+const canGenerate = computed(() => {
+  if (!nextAllowedComputed.value) return true;
+  return new Date() >= nextAllowedComputed.value;
+});
 </script>
 
 <template>
   <div class="p-6 space-y-6">
     <div class="flex items-center justify-between">
       <div class="text-lg font-semibold text-n-slate-12">Previsão de Vendas</div>
-      <NextButton :label="'Gerar previsão'" :loading="generating" @click="generateForecast" />
+      <div class="flex items-center gap-3">
+        <div v-if="nextAllowedComputed" class="text-xs text-n-slate-11">
+          Próxima geração: {{ nextAllowedComputed.toLocaleString('pt-BR') }}
+        </div>
+        <NextButton :label="'Gerar previsão'" :loading="generating" :disabled="!canGenerate" @click="generateForecast" />
+      </div>
     </div>
 
     <div v-if="error" class="rounded-lg border border-red-300 bg-red-50 text-red-900 p-3 text-sm">

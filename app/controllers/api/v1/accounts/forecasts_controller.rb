@@ -72,16 +72,18 @@ class Api::V1::Accounts::ForecastsController < Api::V1::Accounts::BaseController
       "IMPORTANTE:\n- As previsões devem ser realistas e baseadas nos dados fornecidos\n- O cenário conservador deve ser ~70% do esperado\n- O cenário otimista deve ser ~130% do esperado\n- Considere que negócios em estágios avançados têm maior probabilidade de fechar\n- Use insights específicos baseados nos dados fornecidos"
 
     ai_content = Forecasts::GenerateService.new.call(prompt)
-    return render json: { error: 'Erro ao gerar previsão com IA' }, status: :bad_gateway if ai_content.blank?
 
-    begin
-      parsed = JSON.parse(ai_content)
-    rescue JSON::ParserError
-      return render json: { error: 'Erro ao processar resposta da IA' }, status: :internal_server_error
+    parsed = nil
+    if ai_content.present?
+      begin
+        parsed = JSON.parse(ai_content)
+      rescue JSON::ParserError
+        parsed = nil
+      end
     end
 
-    weekly = parsed['weekly_forecast'] || []
-    monthly = parsed['monthly_forecast'] || []
+    weekly = parsed&.dig('weekly_forecast') || []
+    monthly = parsed&.dig('monthly_forecast') || []
     if weekly.empty?
       base = (active_value > 0 ? active_value : total_value) / 4.0
       weekly = Array.new(4) { |i| { week: "Semana #{i + 1}", expected_revenue: base, conservative_revenue: base * 0.7, optimistic_revenue: base * 1.3, expected_deals_closed: (deals.size / 12.0).ceil } }
@@ -96,17 +98,18 @@ class Api::V1::Accounts::ForecastsController < Api::V1::Accounts::BaseController
       user_id: current_user.id,
       weekly_forecast: weekly,
       monthly_forecast: monthly,
-      risks: parsed['risks'] || [],
-      opportunities: parsed['opportunities'] || [],
-      confidence_level: parsed['confidence_level'] || 70,
-      key_insights: parsed['key_insights'] || [],
-      recommendations: parsed['recommendations'] || [],
-      summary: parsed['summary'] || 'Previsão gerada com sucesso.',
+      risks: parsed&.dig('risks') || [],
+      opportunities: parsed&.dig('opportunities') || [],
+      confidence_level: parsed&.dig('confidence_level') || 70,
+      key_insights: parsed&.dig('key_insights') || [],
+      recommendations: parsed&.dig('recommendations') || [],
+      summary: parsed&.dig('summary') || 'Previsão básica gerada.',
       metadata: {
         generated_at: Time.current.iso8601,
         total_deals: deals.size,
         total_pipeline_value: total_value,
-        average_deal_value: avg_value
+        average_deal_value: avg_value,
+        ai_status: parsed.present? ? 'ai_success' : 'fallback_basic'
       }
     )
 
