@@ -250,6 +250,15 @@ Rails.application.routes.draw do
           # Deals
           resources :deals, only: [:index, :create, :update, :destroy]
 
+          resources :forecasts, only: [:show] do
+            collection do
+              get :history
+              get :latest
+              post :generate
+              get :metrics
+            end
+          end
+
           resources :teams do
             resources :team_members, only: [:index, :create] do
               collection do

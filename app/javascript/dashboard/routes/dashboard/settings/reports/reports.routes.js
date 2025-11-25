@@ -24,6 +24,7 @@ import BotReports from './BotReports.vue';
 import LiveReports from './LiveReports.vue';
 import SLAReports from './SLAReports.vue';
 const GoalsReports = () => import('./GoalsReports.vue');
+const Forecast = () => import('./Forecast.vue');
 
 const meta = {
   featureFlag: FEATURE_FLAGS.REPORTS,
@@ -174,6 +175,12 @@ export default {
           name: 'goals_reports',
           meta,
           component: GoalsReports,
+        },
+        {
+          path: 'forecast',
+          name: 'sales_forecast',
+          meta,
+          component: Forecast,
         },
       ],
     },

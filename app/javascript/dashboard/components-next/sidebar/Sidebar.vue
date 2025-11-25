@@ -352,6 +352,11 @@ const menuItems = computed(() => {
           label: 'Metas & Ranking',
           to: accountScopedRoute('goals_reports'),
         },
+        {
+          name: 'Reports Forecast',
+          label: 'Previsão de Vendas',
+          to: accountScopedRoute('sales_forecast'),
+        },
       ],
     },
     {
