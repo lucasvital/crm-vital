@@ -112,6 +112,7 @@ class Account < ApplicationRecord
 
   before_validation :validate_limit_keys
   after_create_commit :notify_creation
+  after_create_commit :create_default_pipeline
   after_destroy :remove_account_sequences
 
   # Signup metadata helpers (stored in custom_attributes)
@@ -197,6 +198,21 @@ class Account < ApplicationRecord
   def remove_account_sequences
     ActiveRecord::Base.connection.exec_query("drop sequence IF EXISTS camp_dpid_seq_#{id}")
     ActiveRecord::Base.connection.exec_query("drop sequence IF EXISTS conv_dpid_seq_#{id}")
+  end
+
+  def create_default_pipeline
+    stages = [
+      { key: 'base', name: 'Base', position: 1 },
+      { key: 'prospeccao', name: 'Prospecção', position: 2 },
+      { key: 'conexao', name: 'Conexão', position: 3 },
+      { key: 'possibilidade', name: 'Possibilidade', position: 4 },
+      { key: 'possibilidade_quente', name: 'Possibilidade Quente', position: 5 },
+      { key: 'aguardando_compra', name: 'Aguardando Compra', position: 6 },
+      { key: 'ganho', name: 'Ganho', position: 7, is_won: true }
+    ]
+
+    pipeline = pipelines.create!(name: 'Padrão')
+    stages.each { |stage_attrs| pipeline.pipeline_stages.create!(stage_attrs) }
   end
 end
 
