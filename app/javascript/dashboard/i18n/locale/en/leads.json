@@ -1,0 +1,97 @@
+{
+  "LEADS": {
+    "CREATE": {
+      "TITLE": "Create Lead",
+      "DESCRIPTION": "Create a new lead with contact and deal information",
+      "CONTACT_INFO": "Contact Information",
+      "DEAL_INFO": "Deal Information",
+      "FIELDS": {
+        "NAME": "Name",
+        "EMAIL": "Email",
+        "PHONE": "Phone",
+        "COMPANY": "Company",
+        "CITY": "City",
+        "COUNTRY": "Country",
+        "TITLE": "Deal Title",
+        "AMOUNT": "Amount",
+        "CURRENCY": "Currency",
+        "CLOSE_DATE": "Expected Close Date",
+        "NOTES": "Notes",
+        "STAGE": "Initial Stage"
+      },
+      "PLACEHOLDERS": {
+        "NAME": "Enter contact name",
+        "EMAIL": "Enter email address",
+        "PHONE": "Enter phone number",
+        "COMPANY": "Enter company name",
+        "CITY": "Enter city",
+        "COUNTRY": "Enter country",
+        "TITLE": "Enter deal title",
+        "AMOUNT": "Enter amount",
+        "CLOSE_DATE": "Select date",
+        "NOTES": "Add notes about this lead"
+      },
+      "SUBMIT": "Create Lead",
+      "CANCEL": "Cancel",
+      "SUCCESS": "Lead created successfully!",
+      "ERROR": "Failed to create lead. Please try again."
+    },
+    "IMPORT": {
+      "TITLE": "Import Leads",
+      "DESCRIPTION": "Import leads from CSV file with custom field mapping",
+      "STEP_1": {
+        "TITLE": "Upload CSV File",
+        "DESCRIPTION": "Select a CSV file to import leads",
+        "CHOOSE_FILE": "Choose File",
+        "DRAG_DROP": "or drag and drop CSV file here",
+        "FILE_REQUIREMENTS": "File should be in CSV format with headers"
+      },
+      "STEP_2": {
+        "TITLE": "Map Fields",
+        "DESCRIPTION": "Map CSV columns to system fields",
+        "COLUMN": "CSV Column",
+        "MAPS_TO": "Maps to",
+        "PREVIEW": "Preview",
+        "REQUIRED_FIELDS": "Required fields: Name, Email, Phone",
+        "CONTACT_FIELDS": "Contact Fields",
+        "DEAL_FIELDS": "Deal Fields",
+        "SELECT_FIELD": "Select field...",
+        "SKIP_COLUMN": "Skip this column"
+      },
+      "STEP_3": {
+        "TITLE": "Import Configuration",
+        "DESCRIPTION": "Configure import settings",
+        "SELECT_PIPELINE": "Select Pipeline",
+        "SELECT_STAGE": "Select Initial Stage",
+        "IMPORT_SUMMARY": "Import Summary",
+        "TOTAL_ROWS": "Total rows",
+        "VALID_ROWS": "Valid rows",
+        "INVALID_ROWS": "Invalid rows"
+      },
+      "FIELDS": {
+        "CONTACT_NAME": "Contact Name",
+        "CONTACT_EMAIL": "Contact Email",
+        "CONTACT_PHONE": "Contact Phone",
+        "CONTACT_COMPANY": "Company",
+        "CONTACT_CITY": "City",
+        "CONTACT_COUNTRY": "Country",
+        "DEAL_TITLE": "Deal Title",
+        "DEAL_AMOUNT": "Deal Amount",
+        "DEAL_CURRENCY": "Currency",
+        "DEAL_CLOSE_DATE": "Close Date",
+        "DEAL_NOTES": "Notes"
+      },
+      "BUTTONS": {
+        "BACK": "Back",
+        "NEXT": "Next",
+        "IMPORT": "Import Leads",
+        "CANCEL": "Cancel"
+      },
+      "SUCCESS": "Leads imported successfully!",
+      "ERROR": "Failed to import leads. Please check the file and try again.",
+      "PROCESSING": "Processing import...",
+      "COMPLETED": "Import completed!"
+    }
+  }
+}
+

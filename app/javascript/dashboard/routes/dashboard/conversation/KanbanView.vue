@@ -14,6 +14,8 @@ import wootConstants from 'dashboard/constants/globals';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 import Avatar from 'next/avatar/Avatar.vue';
 import CreateDealModal from 'dashboard/components/widgets/conversation/CreateDealModal.vue';
+import CreateLeadModal from 'dashboard/components/widgets/conversation/CreateLeadModal.vue';
+import ImportLeadsModal from 'dashboard/components/widgets/conversation/ImportLeadsModal.vue';
 import PriorityMark from 'dashboard/components/widgets/conversation/PriorityMark.vue';
 import TimeAgo from 'dashboard/components/ui/TimeAgo.vue';
 import CardLabels from 'dashboard/components/widgets/conversation/conversationCardComponents/CardLabels.vue';
@@ -178,6 +180,8 @@ const dragOverStage = ref(null);
 const isDropping = ref(false);
 const movingConversation = ref(null);
 const showEditDealModal = ref(false);
+const showCreateLeadModal = ref(false);
+const showImportLeadsModal = ref(false);
 const selectedConversation = ref(null);
 const initialValues = ref({});
 
@@ -418,6 +422,16 @@ const onEditSubmit = async payload => {
   showEditDealModal.value = false;
   alert(t('KANBAN.ALERTS.STATUS_UPDATED'));
 };
+
+const handleLeadCreated = async () => {
+  showCreateLeadModal.value = false;
+  await refreshBoard();
+};
+
+const handleImportCompleted = async () => {
+  showImportLeadsModal.value = false;
+  await refreshBoard();
+};
 </script>
 
 <template>
@@ -460,6 +474,22 @@ const onEditSubmit = async payload => {
             }"
           />
         </div>
+        <button
+          class="inline-flex items-center justify-center rounded-md border border-n-strong bg-n-blue-9 px-3 py-2 h-9 text-sm font-medium text-white transition hover:bg-n-blue-10"
+          type="button"
+          @click="showCreateLeadModal = true"
+        >
+          <span class="i-lucide-plus mr-2 size-4" />
+          {{ t('LEADS.CREATE.TITLE') }}
+        </button>
+        <button
+          class="inline-flex items-center justify-center rounded-md border border-n-strong bg-n-solid-1 px-3 py-2 h-9 text-sm font-medium text-n-slate-12 transition hover:bg-n-solid-2"
+          type="button"
+          @click="showImportLeadsModal = true"
+        >
+          <span class="i-lucide-file-up mr-2 size-4" />
+          {{ t('LEADS.IMPORT.TITLE') }}
+        </button>
         <button
           class="inline-flex items-center justify-center rounded-md border border-n-strong bg-n-solid-1 px-3 py-2 h-9 text-sm font-medium text-n-slate-12 transition hover:bg-n-solid-2"
           type="button"
@@ -621,6 +651,16 @@ const onEditSubmit = async payload => {
         </transition-group>
       </div>
     </div>
+    <CreateLeadModal
+      :show="showCreateLeadModal"
+      @cancel="() => (showCreateLeadModal = false)"
+      @success="handleLeadCreated"
+    />
+    <ImportLeadsModal
+      :show="showImportLeadsModal"
+      @cancel="() => (showImportLeadsModal = false)"
+      @success="handleImportCompleted"
+    />
     <CreateDealModal
       v-if="showEditDealModal"
       :show="showEditDealModal"

@@ -1153,8 +1153,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_25_121500) do
     t.jsonb "config", default: {"allowed_locales" => ["en"]}
     t.boolean "archived", default: false
     t.bigint "channel_web_widget_id"
-    t.boolean "is_global", default: false, null: false
     t.jsonb "ssl_settings", default: {}, null: false
+    t.boolean "is_global", default: false, null: false
     t.index ["channel_web_widget_id"], name: "index_portals_on_channel_web_widget_id"
     t.index ["custom_domain"], name: "index_portals_on_custom_domain", unique: true
     t.index ["is_global"], name: "index_portals_on_is_global"
@@ -1279,6 +1279,44 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_25_121500) do
     t.index ["name"], name: "index_tags_on_name", unique: true
   end
 
+  create_table "task_comments", force: :cascade do |t|
+    t.bigint "task_id", null: false
+    t.bigint "user_id", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["task_id", "created_at"], name: "index_task_comments_on_task_id_and_created_at"
+    t.index ["task_id"], name: "index_task_comments_on_task_id"
+    t.index ["user_id"], name: "index_task_comments_on_user_id"
+  end
+
+  create_table "tasks", force: :cascade do |t|
+    t.string "title", null: false
+    t.text "description"
+    t.datetime "due_date"
+    t.integer "status", default: 0, null: false
+    t.integer "priority", default: 1, null: false
+    t.bigint "account_id", null: false
+    t.bigint "creator_id", null: false
+    t.bigint "assignee_id"
+    t.bigint "conversation_id"
+    t.bigint "contact_id"
+    t.boolean "is_team_task", default: false, null: false
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "assignee_id"], name: "index_tasks_on_account_id_and_assignee_id"
+    t.index ["account_id", "creator_id"], name: "index_tasks_on_account_id_and_creator_id"
+    t.index ["account_id", "status"], name: "index_tasks_on_account_id_and_status"
+    t.index ["account_id"], name: "index_tasks_on_account_id"
+    t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
+    t.index ["contact_id"], name: "index_tasks_on_contact_id"
+    t.index ["conversation_id"], name: "index_tasks_on_conversation_id"
+    t.index ["creator_id"], name: "index_tasks_on_creator_id"
+    t.index ["due_date"], name: "index_tasks_on_due_date"
+    t.index ["status"], name: "index_tasks_on_status"
+  end
+
   create_table "team_members", force: :cascade do |t|
     t.bigint "team_id", null: false
     t.bigint "user_id", null: false
@@ -1387,6 +1425,13 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_25_121500) do
   add_foreign_key "routine_completions", "routines"
   add_foreign_key "routine_completions", "users"
   add_foreign_key "routines", "accounts"
+  add_foreign_key "task_comments", "tasks"
+  add_foreign_key "task_comments", "users"
+  add_foreign_key "tasks", "accounts"
+  add_foreign_key "tasks", "contacts"
+  add_foreign_key "tasks", "conversations"
+  add_foreign_key "tasks", "users", column: "assignee_id"
+  add_foreign_key "tasks", "users", column: "creator_id"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
       on("accounts").
       after(:insert).

@@ -250,6 +250,14 @@ Rails.application.routes.draw do
           # Deals
           resources :deals, only: [:index, :create, :update, :destroy]
 
+          # Leads
+          resources :leads, only: [:create] do
+            collection do
+              post 'import/upload', to: 'leads#import_upload'
+              post 'import/process', to: 'leads#import_process'
+            end
+          end
+
           resources :forecasts, only: [:show] do
             collection do
               get :history
