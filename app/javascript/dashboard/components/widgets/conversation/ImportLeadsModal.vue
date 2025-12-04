@@ -23,6 +23,7 @@ const isProcessing = ref(false);
 const fileInput = ref(null);
 const selectedFile = ref(null);
 const selectedFileName = ref('');
+const importId = ref(null);
 
 // Step 2: Column mapping
 const csvColumns = ref([]);
@@ -118,6 +119,7 @@ const uploadAndPreview = async () => {
   isProcessing.value = true;
   try {
     const response = await LeadsAPI.importUpload(selectedFile.value);
+    importId.value = response.data.import_id;
     csvColumns.value = response.data.columns || [];
     previewRows.value = response.data.preview_rows || [];
     totalRows.value = response.data.total_rows || 0;
@@ -206,7 +208,7 @@ const processImport = async () => {
   isProcessing.value = true;
   try {
     const response = await LeadsAPI.importProcess({
-      file: selectedFile.value,
+      import_id: importId.value,
       column_mapping: columnMapping.value,
       pipeline_id: selectedPipelineId.value,
       pipeline_stage_id: selectedStageId.value,
@@ -253,6 +255,7 @@ const onCancel = () => {
   currentStep.value = 1;
   selectedFile.value = null;
   selectedFileName.value = '';
+  importId.value = null;
   csvColumns.value = [];
   previewRows.value = [];
   totalRows.value = 0;

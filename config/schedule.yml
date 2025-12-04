@@ -53,3 +53,10 @@ bulk_auto_assignment_job:
   cron: '*/15 * * * *'
   class: 'Inboxes::BulkAutoAssignmentJob'
   queue: scheduled_jobs
+
+# executed daily at 0300 UTC
+# to clean up temporary import files older than 24 hours
+cleanup_temporary_import_files_job:
+  cron: '0 3 * * *'
+  class: 'Internal::CleanupTemporaryImportFilesJob'
+  queue: housekeeping

@@ -30,7 +30,20 @@ class Api::V1::Accounts::LeadsController < Api::V1::Accounts::BaseController
     result = Leads::ImportService.new(current_account).preview_csv(params[:file])
     
     if result[:success]
+      # Salvar arquivo temporariamente com ID único
+      import_id = SecureRandom.hex(16)
+      temp_file_path = Rails.root.join('tmp', 'imports', "#{import_id}.csv")
+      FileUtils.mkdir_p(File.dirname(temp_file_path))
+      
+      # Copiar arquivo para pasta temporária
+      if params[:file].respond_to?(:tempfile)
+        FileUtils.cp(params[:file].tempfile.path, temp_file_path)
+      elsif params[:file].respond_to?(:path)
+        FileUtils.cp(params[:file].path, temp_file_path)
+      end
+      
       render json: {
+        import_id: import_id,
         columns: result[:columns],
         preview_rows: result[:preview_rows],
         total_rows: result[:total_rows]
@@ -41,12 +54,28 @@ class Api::V1::Accounts::LeadsController < Api::V1::Accounts::BaseController
   end
 
   def import_process
+    # Recuperar arquivo temporário usando import_id
+    import_id = params[:import_id]
+    unless import_id.present?
+      render json: { error: 'Import ID is required' }, status: :unprocessable_entity
+      return
+    end
+    
+    temp_file_path = Rails.root.join('tmp', 'imports', "#{import_id}.csv")
+    unless File.exist?(temp_file_path)
+      render json: { error: 'Invalid CSV file' }, status: :unprocessable_entity
+      return
+    end
+
     result = Leads::ImportService.new(current_account).process_import(
-      file: params[:file],
+      file: temp_file_path.to_s,
       column_mapping: params[:column_mapping]&.to_unsafe_h || {},
       pipeline_id: params[:pipeline_id],
       pipeline_stage_id: params[:pipeline_stage_id]
     )
+
+    # Limpar arquivo temporário
+    FileUtils.rm_f(temp_file_path) if File.exist?(temp_file_path)
 
     if result[:success]
       render json: {
