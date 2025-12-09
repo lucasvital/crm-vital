@@ -114,16 +114,19 @@ const handleActionClick = async ({ action }) => {
     await ConversationApi.leadScoring(currentChat.value.id);
     useAlert(t('CONVERSATION.HEADER.LEAD_SCORING_STARTED'));
   } else if (action === 'analyze_conversation') {
-    await ai.fetchIntegrationsIfRequired();
-    const analysis = await ai.processEvent('conversation_analysis');
-    if (analysis) {
-      await MessageApi.create({
-        conversationId: currentChat.value.id,
-        message: analysis,
-        private: true,
-        contentAttributes: { ai_analysis: true },
-      });
-      useAlert(t('CONVERSATION.HEADER.ANALYSIS_NOTE_ADDED'));
+    try {
+      const response = await ConversationApi.conversationAnalysis(currentChat.value.id);
+      if (response.data?.message) {
+        await MessageApi.create({
+          conversationId: currentChat.value.id,
+          message: response.data.message,
+          private: true,
+          contentAttributes: { ai_analysis: true },
+        });
+        useAlert(t('CONVERSATION.HEADER.ANALYSIS_NOTE_ADDED'));
+      }
+    } catch (error) {
+      useAlert(error.response?.data?.error || t('CONVERSATION.HEADER.ANALYSIS_ERROR'));
     }
   }
 };

@@ -165,6 +165,7 @@ Rails.application.routes.draw do
               post :custom_attributes
               patch :deal
               post :lead_scoring
+              post :conversation_analysis
               get :attachments
               get :inbox_assistant
             end
@@ -313,6 +314,9 @@ Rails.application.routes.draw do
           namespace :integrations do
             resources :apps, only: [:index, :show]
             resources :hooks, only: [:show, :create, :update, :destroy] do
+              collection do
+                post :process_event_with_env
+              end
               member do
                 post :process_event
               end

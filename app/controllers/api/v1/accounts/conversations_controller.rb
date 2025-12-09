@@ -138,6 +138,17 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
     head :accepted
   end
 
+  def conversation_analysis
+    service = Conversations::AnalysisService.new(@conversation)
+    response = service.perform
+
+    if response[:error]
+      render json: { error: response[:error] }, status: :unprocessable_entity
+    else
+      render json: { message: response[:message] }
+    end
+  end
+
   def destroy
     authorize @conversation, :destroy?
     ::DeleteObjectJob.perform_later(@conversation, Current.user, request.ip)

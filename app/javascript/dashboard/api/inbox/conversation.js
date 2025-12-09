@@ -152,6 +152,10 @@ class ConversationApi extends ApiClient {
   leadScoring(conversationId) {
     return axios.post(`${this.url}/${conversationId}/lead_scoring`);
   }
+
+  conversationAnalysis(conversationId) {
+    return axios.post(`${this.url}/${conversationId}/conversation_analysis`);
+  }
 }
 
 export default new ConversationApi();

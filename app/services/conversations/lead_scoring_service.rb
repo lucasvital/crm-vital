@@ -4,8 +4,8 @@ class Conversations::LeadScoringService
   end
 
   def perform
-    hook = Integrations::Hook.find_by(account_id: @conversation.account_id, app_id: 'openai')
-    return unless hook&.enabled?
+    hook = find_or_create_mock_hook
+    return unless hook
 
     event = {
       'name' => 'lead_scoring',
@@ -20,6 +20,21 @@ class Conversations::LeadScoringService
   end
 
   private
+
+  def find_or_create_mock_hook
+    # Se tem ENV configurada, cria um mock hook temporário
+    if ENV['OPENAI_API_KEY'].present?
+      return OpenStruct.new(
+        account: @conversation.account,
+        settings: { 'api_key' => ENV['OPENAI_API_KEY'] },
+        enabled?: true
+      )
+    end
+
+    # Senão, busca o hook real configurado
+    hook = Integrations::Hook.find_by(account_id: @conversation.account_id, app_id: 'openai')
+    hook if hook&.enabled?
+  end
 
   def parse_json(response)
     body = JSON.parse(response.to_s) rescue nil

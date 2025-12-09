@@ -64,6 +64,16 @@ class OpenAIAPI extends ApiClient {
       };
     }
 
+    // Se não tem hookId e é conversation_analysis, usa o endpoint com ENV
+    if (!hookId && type === 'conversation_analysis') {
+      return axios.post(`${this.url}/hooks/process_event_with_env`, {
+        event: {
+          name: type,
+          data,
+        },
+      });
+    }
+
     return axios.post(`${this.url}/hooks/${hookId}/process_event`, {
       event: {
         name: type,
