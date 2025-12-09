@@ -115,7 +115,7 @@ class Integrations::OpenaiBaseService
 
   def determine_api_key
     if use_captain_token?
-      InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
+      ENV['OPENAI_API_KEY']
     else
       hook.settings['api_key']
     end
