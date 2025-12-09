@@ -3,7 +3,9 @@
 # Table name: data_imports
 #
 #  id                :bigint           not null, primary key
+#  column_mapping    :jsonb
 #  data_type         :string           not null
+#  import_mode       :string           default("quick")
 #  processed_records :integer
 #  processing_errors :text
 #  status            :integer          default("pending"), not null

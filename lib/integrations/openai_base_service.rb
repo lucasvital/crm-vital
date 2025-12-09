@@ -8,6 +8,7 @@ class Integrations::OpenaiBaseService
 
   ALLOWED_EVENT_NAMES = %w[rephrase summarize reply_suggestion conversation_analysis fix_spelling_grammar shorten expand make_friendly make_formal simplify lead_scoring].freeze
   CACHEABLE_EVENTS = %w[].freeze
+  CAPTAIN_TOKEN_EVENTS = %w[conversation_analysis lead_scoring].freeze
 
   pattr_initialize [:hook!, :event!]
 
@@ -87,9 +88,12 @@ class Integrations::OpenaiBaseService
   end
 
   def make_api_call(body)
+    api_key = determine_api_key
+    return { error: 'API key not configured', error_code: 401 } if api_key.blank?
+
     headers = {
       'Content-Type' => 'application/json',
-      'Authorization' => "Bearer #{hook.settings['api_key']}"
+      'Authorization' => "Bearer #{api_key}"
     }
 
     Rails.logger.info("OpenAI API request: #{body}")
@@ -103,5 +107,17 @@ class Integrations::OpenaiBaseService
     return { message: choices.first['message']['content'] } if choices.present?
 
     { message: nil }
+  end
+
+  def use_captain_token?
+    self.class::CAPTAIN_TOKEN_EVENTS.include?(event_name)
+  end
+
+  def determine_api_key
+    if use_captain_token?
+      InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
+    else
+      hook.settings['api_key']
+    end
   end
 end
