@@ -56,7 +56,7 @@ const routinesByWeekday = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-col h-full p-4 overflow-auto bg-n-solid-1">
+  <div class="flex flex-col min-h-full h-full p-4 overflow-auto bg-n-solid-1">
     <div class="max-w-7xl w-full mx-auto">
       <div class="mb-6">
         <h1 class="text-2xl font-semibold text-n-slate-12">

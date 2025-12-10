@@ -410,6 +410,51 @@
   "KANBAN": {
     "BADGE_STAGE": "Stage: {stage}"
   },
+  "DEAL_DETAILS": {
+    "UNTITLED": "Untitled Deal",
+    "SUBTITLE": "Deal details",
+    "NO_CONTACT": "No contact",
+    "NO_ASSIGNEE": "No assignee",
+    "NO_DATE": "No date",
+    "NO_TITLE": "No title",
+    "SECTIONS": {
+      "MAIN_INFO": "Main Information",
+      "NOTES": "Notes"
+    },
+    "FIELDS": {
+      "TITLE": "Title",
+      "STAGE": "Stage",
+      "AMOUNT": "Amount",
+      "CLOSE_DATE": "Close Date",
+      "CONTACT": "Contact",
+      "ASSIGNEE": "Assignee"
+    }
+  },
+  "DEAL_MANAGE": {
+    "TABS": {
+      "DETAILS": "Details",
+      "ACTIVITIES": "Activities"
+    },
+    "DETAILS_TAB_PLACEHOLDER": "Detailed deal information."
+  },
+  "DEAL_ACTIVITIES": {
+    "TITLE": "Suggested Activities",
+    "NO_ACTIVITIES": "No activities available for this stage.",
+    "EXECUTE": "Execute",
+    "NO_CONVERSATION_TITLE": "No associated conversation",
+    "NO_CONVERSATION_DESC": "This deal has no associated conversation. Activities cannot be executed.",
+    "ALERTS": {
+      "MESSAGE_SENT": "Message sent successfully!",
+      "MESSAGE_FAILED": "Error sending message. Please try again."
+    },
+    "CONFIRM_MODAL": {
+      "TITLE": "Confirm Send Message",
+      "MESSAGE_PREVIEW": "Message preview:",
+      "INFO": "This message will be sent to the lead associated with this deal.",
+      "CANCEL": "Cancel",
+      "SEND": "Send Message"
+    }
+  },
   "CONVERSATION_SIDEBAR": {
     "ASSIGNEE_LABEL": "Assigned Agent",
     "SELF_ASSIGN": "Assign to me",

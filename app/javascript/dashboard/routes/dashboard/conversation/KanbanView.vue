@@ -20,6 +20,7 @@ import PriorityMark from 'dashboard/components/widgets/conversation/PriorityMark
 import TimeAgo from 'dashboard/components/ui/TimeAgo.vue';
 import CardLabels from 'dashboard/components/widgets/conversation/conversationCardComponents/CardLabels.vue';
 import ConversationsApi from 'dashboard/api/conversations';
+import DealManageView from 'dashboard/routes/dashboard/conversation/DealManageView.vue';
 
 const { t } = useI18n();
 const { accountScopedRoute } = useAccount();
@@ -50,6 +51,8 @@ const state = reactive(buildEmptyState(STAGES.value));
 const isAnyColumnLoading = computed(() =>
   STAGES.value.some(stage => state[stage].loading)
 );
+
+const showDealDetailsView = ref(false);
 
 const fetchColumn = async stage => {
   state[stage].loading = true;
@@ -385,7 +388,7 @@ const onCardClick = (conversation, event) => {
     closeDate: ca.deal_close_date || '',
     notes: ca.deal_notes || '',
   };
-  showEditDealModal.value = true;
+  showDealDetailsView.value = true;
 };
 
 const onEditSubmit = async payload => {
@@ -431,6 +434,11 @@ const handleLeadCreated = async () => {
 const handleImportCompleted = async () => {
   showImportLeadsModal.value = false;
   await refreshBoard();
+};
+
+const closeDealDetailsView = () => {
+  showDealDetailsView.value = false;
+  selectedConversation.value = null;
 };
 </script>
 
@@ -509,11 +517,11 @@ const handleImportCompleted = async () => {
       <Spinner class="text-n-brand" />
     </div>
 
-    <div v-else class="flex flex-1 gap-6 overflow-x-auto pb-4">
+    <div v-else class="flex flex-1 gap-6 overflow-x-auto pb-4 px-1">
       <div
         v-for="stage in STAGES"
         :key="stage"
-        class="flex w-[320px] shrink-0 flex-col rounded-2xl bg-n-solid-1/70 shadow-sm hover:shadow-md transition-shadow"
+        class="flex flex-1 min-w-[320px] max-w-[400px] flex-col rounded-2xl bg-n-solid-1/70 shadow-sm hover:shadow-md transition-shadow"
         :class="[dragOverStage === stage ? 'ring-1 ring-n-brand' : 'ring-1 ring-transparent hover:ring-n-alpha-2']"
         role="list"
         :aria-label="columnTitle(stage)"
@@ -547,7 +555,7 @@ const handleImportCompleted = async () => {
             :title="t('KANBAN_A11Y.DRAG_HINT')"
             @dragstart="onDragStart(deal, stage, $index, $event)"
             @dragend="onDragEnd"
-            @click.stop
+            @click.stop="onCardClick(deal, $event)"
           >
             <!-- Linha superior: tag de etapa + avatar fantasma -->
             <div class="flex items-center justify-between">
@@ -672,6 +680,31 @@ const handleImportCompleted = async () => {
       @cancel="() => (showEditDealModal = false)"
       @submit="onEditSubmit"
     />
+    
+    <!-- Deal Details View em tela cheia -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition-opacity duration-200 ease-in-out"
+        leave-active-class="transition-opacity duration-200 ease-in-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="showDealDetailsView"
+          class="fixed inset-0 z-[9999] bg-n-background"
+        >
+          <DealManageView
+            :selected-deal="selectedConversation"
+            :pipeline-stages="pipelineStages"
+            :show-back-button="false"
+            @close="closeDealDetailsView"
+            @update-deal="onEditSubmit"
+          />
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 

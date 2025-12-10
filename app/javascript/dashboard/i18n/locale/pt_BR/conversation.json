@@ -361,6 +361,51 @@
     "DRAG_HINT": "Arraste o cartão para outra coluna para atualizar a etapa.",
     "DROP_TO": "Solte aqui para mover para {stage}"
   },
+  "DEAL_DETAILS": {
+    "UNTITLED": "Negócio sem título",
+    "SUBTITLE": "Detalhes do negócio",
+    "NO_CONTACT": "Sem contato",
+    "NO_ASSIGNEE": "Sem responsável",
+    "NO_DATE": "Sem data",
+    "NO_TITLE": "Sem título",
+    "SECTIONS": {
+      "MAIN_INFO": "Informações Principais",
+      "NOTES": "Notas"
+    },
+    "FIELDS": {
+      "TITLE": "Título",
+      "STAGE": "Etapa",
+      "AMOUNT": "Valor",
+      "CLOSE_DATE": "Data de Fechamento",
+      "CONTACT": "Contato",
+      "ASSIGNEE": "Responsável"
+    }
+  },
+  "DEAL_MANAGE": {
+    "TABS": {
+      "DETAILS": "Detalhes",
+      "ACTIVITIES": "Atividades"
+    },
+    "DETAILS_TAB_PLACEHOLDER": "Informações detalhadas do negócio."
+  },
+  "DEAL_ACTIVITIES": {
+    "TITLE": "Atividades Sugeridas",
+    "NO_ACTIVITIES": "Nenhuma atividade disponível para esta etapa.",
+    "EXECUTE": "Executar",
+    "NO_CONVERSATION_TITLE": "Sem conversa associada",
+    "NO_CONVERSATION_DESC": "Este negócio não possui uma conversa associada. As atividades não podem ser executadas.",
+    "ALERTS": {
+      "MESSAGE_SENT": "Mensagem enviada com sucesso!",
+      "MESSAGE_FAILED": "Erro ao enviar mensagem. Tente novamente."
+    },
+    "CONFIRM_MODAL": {
+      "TITLE": "Confirmar Envio de Mensagem",
+      "MESSAGE_PREVIEW": "Pré-visualização da mensagem:",
+      "INFO": "Esta mensagem será enviada para o lead associado a este negócio.",
+      "CANCEL": "Cancelar",
+      "SEND": "Enviar Mensagem"
+    }
+  },
   "EMAIL_TRANSCRIPT": {
     "TITLE": "Enviar transcrição de conversa",
     "DESC": "Enviar uma cópia da transcrição da conversa para o endereço de e-mail especificado",
