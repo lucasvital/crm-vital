@@ -73,7 +73,7 @@ const openCreateNewContactDialog = async () => {
   createNewContactDialogRef.value?.dialogRef.open();
 };
 const openContactImportDialog = () =>
-  contactImportDialogRef.value?.dialogRef.open();
+  contactImportDialogRef.value?.open();
 const openContactExportDialog = () =>
   contactExportDialogRef.value?.dialogRef.open();
 const openCreateSegmentDialog = () =>
@@ -104,10 +104,9 @@ const onCreate = async contact => {
   }
 };
 
-const onImport = async file => {
+const onImport = async (file, mode = 'standard', columnMapping = null) => {
   try {
-    await store.dispatch('contacts/import', file);
-    contactImportDialogRef.value?.dialogRef.close();
+    await store.dispatch('contacts/import', { file, mode, columnMapping });
     useAlert(
       t('CONTACTS_LAYOUT.HEADER.ACTIONS.IMPORT_CONTACT.SUCCESS_MESSAGE')
     );

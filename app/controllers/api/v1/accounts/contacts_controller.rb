@@ -33,11 +33,35 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
     @contacts_count = @contacts.total_count
   end
 
+  def analyze_import
+    render json: { error: I18n.t('errors.contacts.import.failed') }, status: :unprocessable_entity and return if params[:import_file].blank?
+
+    begin
+      columns = DataImport::CsvAnalyzer.new(params[:import_file]).analyze
+      suggested_mapping = DataImport::FieldMatcher.new(columns).suggest_mapping
+
+      render json: {
+        columns: columns,
+        suggested_mapping: suggested_mapping
+      }, status: :ok
+    rescue CSV::MalformedCSVError => e
+      render json: { error: I18n.t('errors.contacts.import.invalid_csv') }, status: :unprocessable_entity
+    rescue StandardError => e
+      render json: { error: e.message }, status: :unprocessable_entity
+    end
+  end
+
   def import
     render json: { error: I18n.t('errors.contacts.import.failed') }, status: :unprocessable_entity and return if params[:import_file].blank?
 
     ActiveRecord::Base.transaction do
-      import = Current.account.data_imports.create!(data_type: 'contacts')
+      import_params = {
+        data_type: 'contacts',
+        import_mode: params[:import_mode] || 'standard'
+      }
+      import_params[:column_mapping] = JSON.parse(params[:column_mapping]) if params[:column_mapping].present?
+
+      import = Current.account.data_imports.create!(import_params)
       import.import_file.attach(params[:import_file])
     end
 

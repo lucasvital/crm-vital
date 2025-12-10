@@ -72,9 +72,27 @@ class ContactAPI extends ApiClient {
     return axios.post(requestURL, queryPayload);
   }
 
+  analyzeImportFile(file) {
+    const formData = new FormData();
+    formData.append('import_file', file);
+    return axios.post(`${this.url}/import/analyze`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  }
+
   importContacts(file) {
     const formData = new FormData();
     formData.append('import_file', file);
+    return axios.post(`${this.url}/import`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  }
+
+  importContactsWithMapping(file, columnMapping, importMode = 'custom') {
+    const formData = new FormData();
+    formData.append('import_file', file);
+    formData.append('column_mapping', JSON.stringify(columnMapping));
+    formData.append('import_mode', importMode);
     return axios.post(`${this.url}/import`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });

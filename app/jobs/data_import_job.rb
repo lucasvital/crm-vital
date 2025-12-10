@@ -7,7 +7,7 @@ class DataImportJob < ApplicationJob
 
   def perform(data_import)
     @data_import = data_import
-    @contact_manager = DataImport::ContactManager.new(@data_import.account)
+    @contact_manager = DataImport::ContactManager.new(@data_import.account, @data_import.column_mapping)
     begin
       process_import_file
       send_import_notification_to_admin
@@ -40,7 +40,11 @@ class DataImportJob < ApplicationJob
     csv = CSV.parse(clean_data, headers: true)
 
     csv.each do |row|
-      current_contact = @contact_manager.build_contact(row.to_h.with_indifferent_access)
+      current_contact = if @data_import.import_mode == 'custom'
+                          @contact_manager.build_contact_with_mapping(row.to_h.with_indifferent_access)
+                        else
+                          @contact_manager.build_contact(row.to_h.with_indifferent_access)
+                        end
       if current_contact.valid?
         contacts << current_contact
       else

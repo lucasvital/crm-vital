@@ -187,6 +187,7 @@ Rails.application.routes.draw do
               get :search
               post :filter
               post :import
+              post 'import/analyze', to: 'contacts#analyze_import'
               post :export
             end
             member do

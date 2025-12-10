@@ -325,7 +325,35 @@
           "CANCEL": "Cancel",
           "IMPORT": "Import",
           "SUCCESS_MESSAGE": "You will be notified via email when the import is complete.",
-          "ERROR_MESSAGE": "There was an error, please try again"
+          "ERROR_MESSAGE": "There was an error, please try again",
+          "IMPORT_MODE": {
+            "TITLE": "Choose Import Method",
+            "DESCRIPTION": "Select how you would like to import your contacts.",
+            "STANDARD": {
+              "TITLE": "Standard Template",
+              "DESCRIPTION": "Use our pre-formatted CSV template with predefined columns."
+            },
+            "CUSTOM": {
+              "TITLE": "Custom CSV",
+              "DESCRIPTION": "Upload your own CSV file and map the columns to our fields."
+            }
+          },
+          "FIELD_MAPPER": {
+            "TITLE": "Map CSV Columns",
+            "DESCRIPTION": "Match your CSV columns to our contact fields. Required fields must be mapped.",
+            "UPLOAD_DESCRIPTION": "Upload your custom CSV file to continue.",
+            "CSV_COLUMN": "CSV Column",
+            "MAP_TO": "Map to Field",
+            "PREVIEW": "Preview",
+            "PREVIEW_DATA": "Preview Data (first 3 rows)",
+            "SELECT_FIELD": "Select a field",
+            "CONFIRM": "Import Contacts",
+            "CANCEL": "Back",
+            "NEXT": "Next: Map Fields",
+            "MISSING_REQUIRED": "Please map all required fields:",
+            "ANALYZE_ERROR": "Error analyzing CSV file. Please check the file format.",
+            "AUTO_SUGGEST": "Auto Suggest"
+          }
         },
         "EXPORT_CONTACT": {
           "TITLE": "Export contacts",
