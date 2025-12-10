@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import DealDetailsLayout from 'dashboard/components-next/Deals/DealDetailsLayout.vue';
-import DealDetails from 'dashboard/components-next/Deals/DealDetails.vue';
+import DealDetailsEdit from 'dashboard/components-next/Deals/DealDetailsEdit.vue';
 import TabBar from 'dashboard/components-next/tabbar/TabBar.vue';
 import DealActivities from 'dashboard/components-next/Deals/DealActivities.vue';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
@@ -64,6 +64,10 @@ const handleClose = () => {
 const handleBack = () => {
   emit('goBack');
 };
+
+const handleDealUpdated = updatedData => {
+  emit('updateDeal', updatedData);
+};
 </script>
 
 <template>
@@ -74,11 +78,11 @@ const handleBack = () => {
     @close="handleClose"
     @go-back="handleBack"
   >
-    <DealDetails
+    <DealDetailsEdit
       :selected-deal="selectedDeal"
       :pipeline-stages="pipelineStages"
-      :is-updating="isUpdating"
-      @update-deal="$emit('updateDeal', $event)"
+      @updated="handleDealUpdated"
+      @close="handleClose"
     />
     
     <template #sidebar>

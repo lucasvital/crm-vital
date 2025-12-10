@@ -3,7 +3,9 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Button from 'dashboard/components-next/button/Button.vue';
 import MessageAPI from 'dashboard/api/inbox/message';
+import ConversationApi from 'dashboard/api/inbox/conversation';
 import { useAlert } from 'dashboard/composables';
+import { watch } from 'vue';
 
 const props = defineProps({
   selectedDeal: {
@@ -22,6 +24,8 @@ const alert = useAlert;
 const showConfirmModal = ref(false);
 const selectedActivity = ref(null);
 const isSending = ref(false);
+const editableMessage = ref('');
+const completedActivities = ref([]);
 
 // Definir atividades padrão para cada etapa do pipeline
 const stageActivities = {
@@ -137,26 +141,102 @@ const hasConversation = computed(() => {
   return !!conversationId.value;
 });
 
+// Carregar atividades completadas dos custom attributes
+const loadCompletedActivities = () => {
+  const ca = props.selectedDeal?.custom_attributes || {};
+  const completed = ca.completed_activities || [];
+  completedActivities.value = Array.isArray(completed) ? completed : [];
+};
+
+// Verificar se uma atividade já foi completada
+const isActivityCompleted = activityId => {
+  return completedActivities.value.some(a => a.id === activityId);
+};
+
+// Obter informação de quando foi completada
+const getCompletedInfo = activityId => {
+  return completedActivities.value.find(a => a.id === activityId);
+};
+
+// Formatar data/hora
+const formatDateTime = dateTimeStr => {
+  if (!dateTimeStr) return '';
+  try {
+    const date = new Date(dateTimeStr);
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+  } catch (_) {
+    return dateTimeStr;
+  }
+};
+
+// Watch para carregar atividades quando o deal mudar
+watch(
+  () => props.selectedDeal,
+  () => {
+    loadCompletedActivities();
+  },
+  { immediate: true }
+);
+
 const openConfirmModal = activity => {
   selectedActivity.value = activity;
+  editableMessage.value = activity.messageTemplate;
   showConfirmModal.value = true;
 };
 
 const closeConfirmModal = () => {
   showConfirmModal.value = false;
   selectedActivity.value = null;
+  editableMessage.value = '';
 };
 
 const sendMessage = async () => {
-  if (!selectedActivity.value || !conversationId.value) return;
+  if (!editableMessage.value.trim() || !conversationId.value) return;
 
   try {
     isSending.value = true;
+    
+    // Enviar mensagem
     await MessageAPI.create({
       conversationId: conversationId.value,
-      message: selectedActivity.value.messageTemplate,
+      message: editableMessage.value,
       private: false,
     });
+    
+    // Marcar atividade como completada
+    const completedActivity = {
+      id: selectedActivity.value.id,
+      title: selectedActivity.value.title,
+      completedAt: new Date().toISOString(),
+      message: editableMessage.value,
+    };
+    
+    // Atualizar lista local
+    const existingIndex = completedActivities.value.findIndex(
+      a => a.id === selectedActivity.value.id
+    );
+    if (existingIndex >= 0) {
+      completedActivities.value[existingIndex] = completedActivity;
+    } else {
+      completedActivities.value.push(completedActivity);
+    }
+    
+    // Salvar no backend (custom attributes)
+    const ca = props.selectedDeal?.custom_attributes || {};
+    await ConversationApi.updateCustomAttributes({
+      conversationId: conversationId.value,
+      customAttributes: {
+        ...ca,
+        completed_activities: completedActivities.value,
+      },
+    });
+    
     alert(t('DEAL_ACTIVITIES.ALERTS.MESSAGE_SENT'));
     closeConfirmModal();
   } catch (error) {
@@ -196,21 +276,37 @@ const sendMessage = async () => {
       <div
         v-for="activity in currentActivities"
         :key="activity.id"
-        class="rounded-lg bg-n-solid-1 p-4 ring-1 ring-n-alpha-2 hover:ring-n-strong transition-all"
+        class="rounded-lg bg-n-solid-1 p-4 ring-1 transition-all"
+        :class="isActivityCompleted(activity.id) ? 'ring-n-green-6 bg-n-green-1' : 'ring-n-alpha-2 hover:ring-n-strong'"
       >
         <div class="flex items-start justify-between gap-3">
           <div class="flex-1 min-w-0">
-            <h4 class="text-sm font-medium text-n-slate-12 mb-1">
-              {{ activity.title }}
-            </h4>
-            <p class="text-xs text-n-slate-11">
+            <div class="flex items-center gap-2 mb-1">
+              <h4 class="text-sm font-medium text-n-slate-12">
+                {{ activity.title }}
+              </h4>
+              <span
+                v-if="isActivityCompleted(activity.id)"
+                class="inline-flex items-center gap-1 rounded-full bg-n-green-3 px-2 py-0.5 text-[10px] font-medium text-n-green-11"
+              >
+                <span class="i-lucide-check size-3" />
+                {{ $t('DEAL_ACTIVITIES.COMPLETED') }}
+              </span>
+            </div>
+            <p class="text-xs text-n-slate-11 mb-1">
               {{ activity.description }}
+            </p>
+            <p
+              v-if="isActivityCompleted(activity.id)"
+              class="text-[11px] text-n-slate-10"
+            >
+              {{ $t('DEAL_ACTIVITIES.COMPLETED_AT') }}: {{ formatDateTime(getCompletedInfo(activity.id)?.completedAt) }}
             </p>
           </div>
           <Button
             sm
             :disabled="!hasConversation"
-            :label="$t('DEAL_ACTIVITIES.EXECUTE')"
+            :label="isActivityCompleted(activity.id) ? $t('DEAL_ACTIVITIES.EXECUTE_AGAIN') : $t('DEAL_ACTIVITIES.EXECUTE')"
             @click="openConfirmModal(activity)"
           />
         </div>
@@ -238,13 +334,14 @@ const sendMessage = async () => {
         <div class="px-8 py-6">
           <div class="mb-4">
             <label class="text-sm font-medium text-n-slate-12 block mb-2">
-              {{ $t('DEAL_ACTIVITIES.CONFIRM_MODAL.MESSAGE_PREVIEW') }}
+              {{ $t('DEAL_ACTIVITIES.CONFIRM_MODAL.MESSAGE_LABEL') }}
             </label>
-            <div class="rounded-lg bg-n-solid-2 p-4 ring-1 ring-n-alpha-2">
-              <p class="text-sm text-n-slate-12 whitespace-pre-wrap">
-                {{ selectedActivity?.messageTemplate }}
-              </p>
-            </div>
+            <textarea
+              v-model="editableMessage"
+              rows="6"
+              class="w-full rounded-lg border border-n-strong bg-n-solid-2 p-3 text-sm text-n-slate-12 placeholder-n-slate-11 focus:outline-none focus:ring-2 focus:ring-n-brand focus:border-transparent resize-none"
+              :placeholder="$t('DEAL_ACTIVITIES.CONFIRM_MODAL.MESSAGE_PLACEHOLDER')"
+            />
           </div>
           <div class="rounded-lg bg-n-blue-2 border border-n-blue-6 p-3">
             <div class="flex items-start gap-2">
@@ -267,7 +364,7 @@ const sendMessage = async () => {
             type="button"
             :label="$t('DEAL_ACTIVITIES.CONFIRM_MODAL.SEND')"
             :is-loading="isSending"
-            :disabled="isSending"
+            :disabled="isSending || !editableMessage.trim()"
             @click="sendMessage"
           />
         </div>

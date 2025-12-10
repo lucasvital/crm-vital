@@ -417,9 +417,15 @@
     "NO_ASSIGNEE": "No assignee",
     "NO_DATE": "No date",
     "NO_TITLE": "No title",
+    "UPDATE_SUCCESS": "Deal updated successfully!",
+    "UPDATE_ERROR": "Error updating deal. Please try again.",
+    "SAVE": "Save Changes",
+    "CANCEL": "Cancel",
     "SECTIONS": {
       "MAIN_INFO": "Main Information",
-      "NOTES": "Notes"
+      "NOTES": "Notes",
+      "EDIT_INFO": "Edit Information",
+      "CONTACT_INFO": "Contact Information"
     },
     "FIELDS": {
       "TITLE": "Title",
@@ -427,7 +433,13 @@
       "AMOUNT": "Amount",
       "CLOSE_DATE": "Close Date",
       "CONTACT": "Contact",
-      "ASSIGNEE": "Assignee"
+      "ASSIGNEE": "Assignee",
+      "CURRENCY": "Currency",
+      "NOTES": "Notes"
+    },
+    "VALIDATION": {
+      "TITLE_REQUIRED": "Title is required",
+      "AMOUNT_REQUIRED": "Amount is required and must be numeric"
     }
   },
   "DEAL_MANAGE": {
@@ -441,6 +453,9 @@
     "TITLE": "Suggested Activities",
     "NO_ACTIVITIES": "No activities available for this stage.",
     "EXECUTE": "Execute",
+    "EXECUTE_AGAIN": "Execute Again",
+    "COMPLETED": "Completed",
+    "COMPLETED_AT": "Executed at",
     "NO_CONVERSATION_TITLE": "No associated conversation",
     "NO_CONVERSATION_DESC": "This deal has no associated conversation. Activities cannot be executed.",
     "ALERTS": {
@@ -449,7 +464,8 @@
     },
     "CONFIRM_MODAL": {
       "TITLE": "Confirm Send Message",
-      "MESSAGE_PREVIEW": "Message preview:",
+      "MESSAGE_LABEL": "Message:",
+      "MESSAGE_PLACEHOLDER": "Type the message you want to send...",
       "INFO": "This message will be sent to the lead associated with this deal.",
       "CANCEL": "Cancel",
       "SEND": "Send Message"

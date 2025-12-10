@@ -13,6 +13,10 @@ class DealsAPI extends ApiClient {
       },
     });
   }
+
+  update(dealId, payload) {
+    return axios.patch(`${this.url}/${dealId}`, payload);
+  }
 }
 
 export default new DealsAPI();

@@ -440,6 +440,46 @@ const closeDealDetailsView = () => {
   showDealDetailsView.value = false;
   selectedConversation.value = null;
 };
+
+const handleDealUpdate = async updatedData => {
+  // Atualiza o deal no estado local
+  const oldStage = selectedConversation.value?.custom_attributes?.deal_stage || '';
+  const newStageKey = updatedData.stageKey || oldStage;
+  
+  // Remove da coluna antiga se mudou de etapa
+  if (oldStage && oldStage !== newStageKey) {
+    removeFromStage(oldStage, selectedConversation.value.id);
+  }
+  
+  // Atualiza ou adiciona na nova coluna
+  const updatedDeal = {
+    ...selectedConversation.value,
+    custom_attributes: {
+      ...selectedConversation.value.custom_attributes,
+      deal_title: updatedData.title,
+      deal_amount: updatedData.amount,
+      deal_currency: updatedData.currency,
+      deal_close_date: updatedData.closeDate,
+      deal_notes: updatedData.notes,
+      deal_stage: newStageKey,
+    },
+  };
+  
+  if (oldStage !== newStageKey) {
+    addToStage(newStageKey, updatedDeal, true);
+  } else {
+    // Atualiza na mesma coluna
+    const list = state[oldStage]?.items || [];
+    const idx = list.findIndex(c => c.id === selectedConversation.value.id);
+    if (idx >= 0) {
+      list[idx] = updatedDeal;
+    }
+  }
+  
+  selectedConversation.value = updatedDeal;
+  closeDealDetailsView();
+  alert(t('KANBAN.ALERTS.STATUS_UPDATED'));
+};
 </script>
 
 <template>
@@ -700,7 +740,7 @@ const closeDealDetailsView = () => {
             :pipeline-stages="pipelineStages"
             :show-back-button="false"
             @close="closeDealDetailsView"
-            @update-deal="onEditSubmit"
+            @update-deal="handleDealUpdate"
           />
         </div>
       </Transition>
