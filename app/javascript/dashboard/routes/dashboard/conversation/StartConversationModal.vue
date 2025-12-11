@@ -16,6 +16,10 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  contact: {
+    type: Object,
+    default: null,
+  },
 });
 
 const emit = defineEmits(['close', 'conversation-created']);
@@ -24,11 +28,6 @@ const { t } = useI18n();
 const store = useStore();
 const router = useRouter();
 const { accountScopedRoute } = useAccount();
-
-// DEBUG
-console.log('=== StartConversationModal props ===');
-console.log('Contact ID:', props.contactId);
-console.log('Show:', props.show);
 
 const inboxesList = useMapGetter('inboxes/getInboxes');
 const selectedInbox = ref(null);
@@ -54,20 +53,30 @@ const handleClose = () => {
 const handleSend = async () => {
   if (!canSend.value) return;
   
+  if (!props.contactId || !props.contact) {
+    useAlert('Erro: Contato não encontrado');
+    return;
+  }
+  
   isSending.value = true;
   try {
     // Verificar se é WhatsApp para usar o payload correto
     const isWhatsApp = selectedInbox.value.channel_type === 'Channel::Whatsapp';
     
-    // Buscar o contato para pegar o telefone
-    const contact = await store.dispatch('contacts/show', props.contactId);
-    
     // Para WhatsApp, sourceId deve ser o número de telefone (apenas dígitos)
     let sourceId = `contact-${props.contactId}-${Date.now()}`;
-    if (isWhatsApp && contact?.phone_number) {
+    if (isWhatsApp && props.contact.phone_number) {
       // Limpar tudo exceto dígitos
-      sourceId = contact.phone_number.replace(/\D/g, '');
+      sourceId = props.contact.phone_number.replace(/\D/g, '');
+      console.log('WhatsApp sourceId (phone):', sourceId);
     }
+    
+    console.log('Creating conversation with params:', {
+      inboxId: selectedInbox.value.id,
+      contactId: props.contactId,
+      sourceId,
+      isWhatsApp,
+    });
     
     const params = {
       inboxId: selectedInbox.value.id,
@@ -93,6 +102,7 @@ const handleSend = async () => {
     }
   } catch (error) {
     console.error('Error creating conversation:', error);
+    console.error('Error response:', error?.response?.data);
     const errorMsg = error?.response?.data?.message || 'Erro ao criar conversa. Tente novamente.';
     useAlert(errorMsg);
   } finally {

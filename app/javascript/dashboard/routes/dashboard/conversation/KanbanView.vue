@@ -792,9 +792,10 @@ const handleDealUpdate = async updatedData => {
       @submit="onEditSubmit"
     />
     <StartConversationModal
-      v-if="showStartConversationModal"
+      v-if="showStartConversationModal && selectedDealForConversation"
       :show="showStartConversationModal"
-      :contact-id="selectedDealForConversation?.contact?.id?.toString()"
+      :contact-id="String(selectedDealForConversation.contact?.id || '')"
+      :contact="selectedDealForConversation.contact"
       @close="showStartConversationModal = false; selectedDealForConversation = null"
       @conversation-created="handleConversationCreated"
     />
