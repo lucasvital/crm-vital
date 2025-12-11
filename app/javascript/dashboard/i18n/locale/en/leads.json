@@ -75,11 +75,13 @@
         "CONTACT_COMPANY": "Company",
         "CONTACT_CITY": "City",
         "CONTACT_COUNTRY": "Country",
+        "CONTACT_LABELS": "Contact Labels",
         "DEAL_TITLE": "Deal Title",
         "DEAL_AMOUNT": "Deal Amount",
         "DEAL_CURRENCY": "Currency",
         "DEAL_CLOSE_DATE": "Close Date",
-        "DEAL_NOTES": "Notes"
+        "DEAL_NOTES": "Notes",
+        "DEAL_LABELS": "Deal Labels"
       },
       "BUTTONS": {
         "BACK": "Back",

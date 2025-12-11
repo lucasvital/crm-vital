@@ -46,11 +46,13 @@ const systemFields = [
   { value: 'contact_company', label: t('LEADS.IMPORT.FIELDS.CONTACT_COMPANY'), group: 'contact' },
   { value: 'contact_city', label: t('LEADS.IMPORT.FIELDS.CONTACT_CITY'), group: 'contact' },
   { value: 'contact_country', label: t('LEADS.IMPORT.FIELDS.CONTACT_COUNTRY'), group: 'contact' },
+  { value: 'contact_labels', label: t('LEADS.IMPORT.FIELDS.CONTACT_LABELS'), group: 'contact' },
   { value: 'deal_title', label: t('LEADS.IMPORT.FIELDS.DEAL_TITLE'), group: 'deal' },
   { value: 'deal_amount', label: t('LEADS.IMPORT.FIELDS.DEAL_AMOUNT'), group: 'deal' },
   { value: 'deal_currency', label: t('LEADS.IMPORT.FIELDS.DEAL_CURRENCY'), group: 'deal' },
   { value: 'deal_close_date', label: t('LEADS.IMPORT.FIELDS.DEAL_CLOSE_DATE'), group: 'deal' },
   { value: 'deal_notes', label: t('LEADS.IMPORT.FIELDS.DEAL_NOTES'), group: 'deal' },
+  { value: 'deal_labels', label: t('LEADS.IMPORT.FIELDS.DEAL_LABELS'), group: 'deal' },
 ];
 
 const localShow = computed({
@@ -155,6 +157,9 @@ const autoMapColumns = () => {
       mapping[column] = 'contact_city';
     } else if (normalized.includes('país') || normalized.includes('pais') || normalized.includes('country')) {
       mapping[column] = 'contact_country';
+    } else if ((normalized.includes('etiqueta') || normalized.includes('label') || normalized.includes('tag')) && 
+               (normalized.includes('contato') || normalized.includes('contact'))) {
+      mapping[column] = 'contact_labels';
     } else if (normalized.includes('título') || normalized.includes('titulo') || normalized.includes('title')) {
       mapping[column] = 'deal_title';
     } else if (normalized.includes('valor') || normalized.includes('amount') || normalized.includes('price')) {
@@ -165,6 +170,12 @@ const autoMapColumns = () => {
       mapping[column] = 'deal_close_date';
     } else if (normalized.includes('nota') || normalized.includes('observa') || normalized.includes('note')) {
       mapping[column] = 'deal_notes';
+    } else if ((normalized.includes('etiqueta') || normalized.includes('label') || normalized.includes('tag')) && 
+               (normalized.includes('deal') || normalized.includes('negoc'))) {
+      mapping[column] = 'deal_labels';
+    } else if (normalized.includes('etiqueta') || normalized.includes('label') || normalized.includes('tag')) {
+      // Genérico - se só tem "etiqueta" sem contexto, mapeia para contact_labels
+      mapping[column] = 'contact_labels';
     } else {
       mapping[column] = 'skip';
     }

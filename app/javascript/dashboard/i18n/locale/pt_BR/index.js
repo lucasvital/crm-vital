@@ -27,6 +27,7 @@ import labelsMgmt from './labelsMgmt.json';
 import login from './login.json';
 import macros from './macros.json';
 import routines from './routines.json';
+import enablement from './enablement.json';
 import report from './report.json';
 import resetPassword from './resetPassword.json';
 import search from './search.json';
@@ -67,6 +68,7 @@ export default {
   ...login,
   ...macros,
   ...routines,
+  ...enablement,
   ...report,
   ...resetPassword,
   ...search,

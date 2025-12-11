@@ -1,0 +1,122 @@
+{
+  "ENABLEMENT": {
+    "HEADER": {
+      "TITLE": "Call Analysis & Enablement",
+      "DESCRIPTION": "Analyze sales calls and track seller performance"
+    },
+    "ACTIONS": {
+      "NEW_ANALYSIS": "New Analysis",
+      "VIEW_MY_PDI": "My PDI",
+      "CREATE_FIRST_ANALYSIS": "Create First Analysis",
+      "CANCEL": "Cancel",
+      "ANALYZE": "Analyze Call",
+      "ANALYZING": "Analyzing...",
+      "BACK_TO_LIST": "Back to List"
+    },
+    "EMPTY_STATE": {
+      "TITLE": "No analyses yet",
+      "MESSAGE": "Start analyzing your sales calls to get insights and improve performance"
+    },
+    "NEW_ANALYSIS": {
+      "TITLE": "New Call Analysis",
+      "DESCRIPTION": "Paste the meeting transcript to analyze seller performance and extract insights"
+    },
+    "FORM": {
+      "TRANSCRIPT_LABEL": "Meeting Transcript",
+      "TRANSCRIPT_PLACEHOLDER": "Paste the complete meeting transcript here...",
+      "CONTACT_LABEL": "Contact/Lead",
+      "SELECT_CONTACT": "Select a contact",
+      "SELLER_LABEL": "Seller (optional for Admin)",
+      "SELECT_SELLER_SELF": "Myself (default)",
+      "SELLER_HELP": "Leave blank to analyze yourself. Admins can select any agent.",
+      "CHARACTERS": "characters",
+      "ASYNC_PROCESSING": "will be processed in background"
+    },
+    "VALIDATION": {
+      "TRANSCRIPT_REQUIRED": "Transcript is required",
+      "CONTACT_REQUIRED": "Contact is required"
+    },
+    "SUCCESS": {
+      "ANALYSIS_CREATED": "Analysis created successfully",
+      "ANALYSIS_QUEUED": "Analysis queued! Processing will take a few minutes.",
+      "ANALYSIS_COMPLETED": "Analysis completed successfully!"
+    },
+    "ERROR": {
+      "ANALYSIS_FAILED": "Failed to analyze call. Please try again."
+    },
+    "STATUS": {
+      "PROCESSING": "Processing...",
+      "FAILED": "Failed"
+    },
+    "PROCESSING": {
+      "TITLE": "Analyzing your call...",
+      "MESSAGE": "We're processing your transcript with AI. This may take a few minutes for long transcripts.",
+      "HINT": "You can leave this page and come back later. We'll notify you when it's ready.",
+      "FAILED_TITLE": "Analysis failed",
+      "FAILED_MESSAGE": "Something went wrong during analysis. Please try again."
+    },
+    "API": {
+      "ERROR": {
+        "FETCH_ANALYSES": "Failed to fetch analyses",
+        "FETCH_ANALYSIS": "Failed to fetch analysis details",
+        "FETCH_PDI": "Failed to fetch PDI data"
+      }
+    },
+    "NO_CONTACT": "No contact",
+    "NO_SUMMARY": "No summary available",
+    "ANALYZED_BY": "Analyzed by",
+    "OVERALL_SCORE": "Overall Score",
+    "TABS": {
+      "OVERVIEW": "Overview",
+      "PERFORMANCE": "Performance",
+      "PDI": "PDI",
+      "TRANSCRIPT": "Transcript"
+    },
+    "NEXT_STEPS": "Next Steps",
+    "RESPONSIBLE": "Responsible",
+    "OBJECTIONS": "Objections",
+    "RESPONSE": "Response",
+    "COMPETITORS": "Competitors Mentioned",
+    "PERFORMANCE_SCORES": "Performance Scores",
+    "SCORES": {
+      "LANGUAGE_QUALITY": "Language Quality",
+      "COMMUNICATION_CLARITY": "Communication Clarity",
+      "PERSUASION_TECHNIQUES": "Persuasion Techniques",
+      "RAPPORT_EMPATHY": "Rapport & Empathy",
+      "CONVERSATION_CONTROL": "Conversation Control",
+      "OBJECTION_HANDLING": "Objection Handling",
+      "CLOSING": "Closing"
+    },
+    "STRENGTHS": "Strengths",
+    "IMPROVEMENT_AREAS": "Areas for Improvement",
+    "COMPETENCIES": "Competencies",
+    "COMPETENCY": {
+      "COMUNICACAO": "Communication",
+      "PERSUASAO": "Persuasion",
+      "EMPATIA": "Empathy",
+      "TECNICA_VENDAS": "Sales Technique",
+      "GESTAO_OBJECOES": "Objection Management"
+    },
+    "PDI_IMPROVEMENT_AREAS": "Development Areas",
+    "PRIORITY": {
+      "HIGH": "High",
+      "MEDIUM": "Medium",
+      "LOW": "Low"
+    },
+    "ACTION_PLAN": "Action Plan",
+    "PDI": {
+      "TITLE": "Individual Development Plan (PDI)",
+      "ANALYSES": "analyses",
+      "EMPTY_TITLE": "No PDI data yet",
+      "EMPTY_MESSAGE": "Create call analyses to build your development plan",
+      "COMPETENCIES_TITLE": "Your Competencies",
+      "LAST_UPDATED": "Last updated",
+      "NO_COMPETENCIES": "No competencies evaluated yet",
+      "STRENGTHS_TITLE": "Your Strengths",
+      "IMPROVEMENT_AREAS_TITLE": "Development Focus",
+      "EVOLUTION_TITLE": "Performance Evolution",
+      "ACTION_PLAN": "Action Plan"
+    }
+  }
+}
+

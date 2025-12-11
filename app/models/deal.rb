@@ -38,6 +38,8 @@
 #  fk_rails_...  (won_by_user_id => users.id)
 #
 class Deal < ApplicationRecord
+  include Labelable
+
   belongs_to :account
   belongs_to :contact
   belongs_to :pipeline

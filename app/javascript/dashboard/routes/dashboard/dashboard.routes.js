@@ -9,6 +9,7 @@ import helpcenterRoutes from './helpcenter/helpcenter.routes';
 import campaignsRoutes from './campaigns/campaigns.routes';
 import { routes as captainRoutes } from './captain/captain.routes';
 import routinesRoutes from './routines/routines.routes';
+import enablementRoutes from './enablement/routes';
 import AppContainer from './Dashboard.vue';
 import Suspended from './suspended/Index.vue';
 
@@ -28,6 +29,7 @@ export default {
         ...helpcenterRoutes.routes,
         ...campaignsRoutes.routes,
         ...routinesRoutes.routes,
+        ...enablementRoutes.routes,
       ],
     },
     {

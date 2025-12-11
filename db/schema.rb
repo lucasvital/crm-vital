@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_01_120000) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_10_200000) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -258,6 +258,35 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_01_120000) do
     t.datetime "updated_at", precision: nil, null: false
     t.boolean "active", default: true, null: false
     t.index ["account_id"], name: "index_automation_rules_on_account_id"
+  end
+
+  create_table "call_analyses", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "contact_id", null: false
+    t.bigint "user_id", null: false, comment: "Vendedor analisado"
+    t.bigint "created_by_id", null: false, comment: "Quem inseriu a análise"
+    t.bigint "deal_id"
+    t.text "transcript", null: false
+    t.jsonb "analysis_result", default: {}, null: false
+    t.text "summary"
+    t.jsonb "next_steps", default: []
+    t.jsonb "objections", default: []
+    t.jsonb "competitors_mentioned", default: []
+    t.decimal "seller_score", precision: 5, scale: 2
+    t.jsonb "pdi_points", default: []
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "processing_status", default: "completed", null: false
+    t.text "processing_error"
+    t.index ["account_id", "contact_id"], name: "index_call_analyses_on_account_id_and_contact_id"
+    t.index ["account_id", "user_id"], name: "index_call_analyses_on_account_id_and_user_id"
+    t.index ["account_id"], name: "index_call_analyses_on_account_id"
+    t.index ["contact_id"], name: "index_call_analyses_on_contact_id"
+    t.index ["created_at"], name: "index_call_analyses_on_created_at"
+    t.index ["created_by_id"], name: "index_call_analyses_on_created_by_id"
+    t.index ["deal_id"], name: "index_call_analyses_on_deal_id"
+    t.index ["processing_status"], name: "index_call_analyses_on_processing_status"
+    t.index ["user_id"], name: "index_call_analyses_on_user_id"
   end
 
   create_table "campaigns", force: :cascade do |t|
@@ -1225,6 +1254,20 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_01_120000) do
     t.index ["account_id"], name: "index_routines_on_account_id"
   end
 
+  create_table "seller_pdis", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "user_id", null: false, comment: "Vendedor"
+    t.jsonb "competencies", default: {}, null: false
+    t.jsonb "improvement_areas", default: [], null: false
+    t.jsonb "strengths", default: [], null: false
+    t.jsonb "evolution_history", default: [], null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "user_id"], name: "index_seller_pdis_on_account_id_and_user_id", unique: true
+    t.index ["account_id"], name: "index_seller_pdis_on_account_id"
+    t.index ["user_id"], name: "index_seller_pdis_on_user_id"
+  end
+
   create_table "sla_events", force: :cascade do |t|
     t.bigint "applied_sla_id", null: false
     t.bigint "conversation_id", null: false
@@ -1372,6 +1415,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_01_120000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "call_analyses", "accounts"
+  add_foreign_key "call_analyses", "contacts"
+  add_foreign_key "call_analyses", "deals"
+  add_foreign_key "call_analyses", "users"
+  add_foreign_key "call_analyses", "users", column: "created_by_id"
   add_foreign_key "conversations", "pipeline_stages", column: "deal_pipeline_stage_id"
   add_foreign_key "conversations", "pipelines", column: "deal_pipeline_id"
   add_foreign_key "deals", "accounts"
@@ -1389,6 +1437,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_01_120000) do
   add_foreign_key "routine_completions", "routines"
   add_foreign_key "routine_completions", "users"
   add_foreign_key "routines", "accounts"
+  add_foreign_key "seller_pdis", "accounts"
+  add_foreign_key "seller_pdis", "users"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
       on("accounts").
       after(:insert).

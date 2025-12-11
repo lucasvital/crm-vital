@@ -1,8 +1,10 @@
 class Leads::CreatorService
-  def initialize(account:, contact_params:, deal_params:)
+  def initialize(account:, contact_params:, deal_params:, contact_labels: nil, deal_labels: nil)
     @account = account
     @contact_params = contact_params
     @deal_params = deal_params
+    @contact_labels = contact_labels
+    @deal_labels = deal_labels
     @errors = []
   end
 
@@ -11,8 +13,12 @@ class Leads::CreatorService
       find_or_create_contact
       return { success: false, errors: @errors } if @errors.any?
 
+      apply_contact_labels if @contact_labels.present?
+
       create_deal
       return { success: false, errors: @errors } if @errors.any?
+
+      apply_deal_labels if @deal_labels.present?
 
       { success: true, contact: @contact, deal: @deal }
     end
@@ -105,6 +111,30 @@ class Leads::CreatorService
   def format_phone_number(phone_number)
     return nil if phone_number.blank?
     phone_number.start_with?('+') ? phone_number : "+#{phone_number}"
+  end
+
+  def apply_contact_labels
+    labels = parse_labels(@contact_labels)
+    @contact.add_labels(labels) if labels.any?
+  rescue StandardError => e
+    @errors << "Error applying contact labels: #{e.message}"
+  end
+
+  def apply_deal_labels
+    labels = parse_labels(@deal_labels)
+    @deal.add_labels(labels) if labels.any?
+  rescue StandardError => e
+    @errors << "Error applying deal labels: #{e.message}"
+  end
+
+  def parse_labels(labels_input)
+    return [] if labels_input.blank?
+    
+    # Se for array, retorna direto
+    return labels_input if labels_input.is_a?(Array)
+    
+    # Se for string, separa por vírgula e limpa espaços
+    labels_input.to_s.split(',').map(&:strip).reject(&:blank?)
   end
 end
 

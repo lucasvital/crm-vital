@@ -227,6 +227,13 @@ const menuItems = computed(() => {
       activeOn: ['routines_view'],
     },
     {
+      name: 'Enablement',
+      label: t('SIDEBAR.ENABLEMENT'),
+      icon: 'i-lucide-chart-line',
+      to: accountScopedRoute('enablement_index'),
+      activeOn: ['enablement_index', 'enablement_new_analysis', 'enablement_analysis_detail', 'enablement_my_pdi', 'enablement_user_pdi'],
+    },
+    {
       name: 'Captain',
       icon: 'i-woot-captain',
       label: t('SIDEBAR.CAPTAIN'),

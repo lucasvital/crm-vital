@@ -1,0 +1,122 @@
+{
+  "ENABLEMENT": {
+    "HEADER": {
+      "TITLE": "Análise de Calls & Enablement",
+      "DESCRIPTION": "Analise calls de vendas e acompanhe a performance dos vendedores"
+    },
+    "ACTIONS": {
+      "NEW_ANALYSIS": "Nova Análise",
+      "VIEW_MY_PDI": "Meu PDI",
+      "CREATE_FIRST_ANALYSIS": "Criar Primeira Análise",
+      "CANCEL": "Cancelar",
+      "ANALYZE": "Analisar Call",
+      "ANALYZING": "Analisando...",
+      "BACK_TO_LIST": "Voltar para Lista"
+    },
+    "EMPTY_STATE": {
+      "TITLE": "Nenhuma análise ainda",
+      "MESSAGE": "Comece a analisar suas calls de vendas para obter insights e melhorar a performance"
+    },
+    "NEW_ANALYSIS": {
+      "TITLE": "Nova Análise de Call",
+      "DESCRIPTION": "Cole a transcrição da reunião para analisar a performance do vendedor e extrair insights"
+    },
+    "FORM": {
+      "TRANSCRIPT_LABEL": "Transcrição da Reunião",
+      "TRANSCRIPT_PLACEHOLDER": "Cole a transcrição completa da reunião aqui...",
+      "CONTACT_LABEL": "Contato/Lead",
+      "SELECT_CONTACT": "Selecione um contato",
+      "SELLER_LABEL": "Vendedor (opcional para Admin)",
+      "SELECT_SELLER_SELF": "Eu mesmo (padrão)",
+      "SELLER_HELP": "Deixe em branco para analisar você mesmo. Admins podem selecionar qualquer agente.",
+      "CHARACTERS": "caracteres",
+      "ASYNC_PROCESSING": "será processado em segundo plano"
+    },
+    "VALIDATION": {
+      "TRANSCRIPT_REQUIRED": "Transcrição é obrigatória",
+      "CONTACT_REQUIRED": "Contato é obrigatório"
+    },
+    "SUCCESS": {
+      "ANALYSIS_CREATED": "Análise criada com sucesso",
+      "ANALYSIS_QUEUED": "Análise na fila! O processamento levará alguns minutos.",
+      "ANALYSIS_COMPLETED": "Análise concluída com sucesso!"
+    },
+    "ERROR": {
+      "ANALYSIS_FAILED": "Falha ao analisar call. Tente novamente."
+    },
+    "STATUS": {
+      "PROCESSING": "Processando...",
+      "FAILED": "Falhou"
+    },
+    "PROCESSING": {
+      "TITLE": "Analisando sua call...",
+      "MESSAGE": "Estamos processando sua transcrição com IA. Isso pode levar alguns minutos para transcrições longas.",
+      "HINT": "Você pode sair desta página e voltar depois. Avisaremos quando estiver pronto.",
+      "FAILED_TITLE": "Análise falhou",
+      "FAILED_MESSAGE": "Algo deu errado durante a análise. Por favor, tente novamente."
+    },
+    "API": {
+      "ERROR": {
+        "FETCH_ANALYSES": "Falha ao buscar análises",
+        "FETCH_ANALYSIS": "Falha ao buscar detalhes da análise",
+        "FETCH_PDI": "Falha ao buscar dados do PDI"
+      }
+    },
+    "NO_CONTACT": "Sem contato",
+    "NO_SUMMARY": "Nenhum resumo disponível",
+    "ANALYZED_BY": "Analisado por",
+    "OVERALL_SCORE": "Nota Geral",
+    "TABS": {
+      "OVERVIEW": "Visão Geral",
+      "PERFORMANCE": "Performance",
+      "PDI": "PDI",
+      "TRANSCRIPT": "Transcrição"
+    },
+    "NEXT_STEPS": "Próximos Passos",
+    "RESPONSIBLE": "Responsável",
+    "OBJECTIONS": "Objeções",
+    "RESPONSE": "Resposta",
+    "COMPETITORS": "Concorrentes Mencionados",
+    "PERFORMANCE_SCORES": "Notas de Performance",
+    "SCORES": {
+      "LANGUAGE_QUALITY": "Qualidade da Linguagem",
+      "COMMUNICATION_CLARITY": "Clareza na Comunicação",
+      "PERSUASION_TECHNIQUES": "Técnicas de Persuasão",
+      "RAPPORT_EMPATHY": "Rapport e Empatia",
+      "CONVERSATION_CONTROL": "Controle da Conversa",
+      "OBJECTION_HANDLING": "Tratamento de Objeções",
+      "CLOSING": "Fechamento"
+    },
+    "STRENGTHS": "Pontos Fortes",
+    "IMPROVEMENT_AREAS": "Áreas de Melhoria",
+    "COMPETENCIES": "Competências",
+    "COMPETENCY": {
+      "COMUNICACAO": "Comunicação",
+      "PERSUASAO": "Persuasão",
+      "EMPATIA": "Empatia",
+      "TECNICA_VENDAS": "Técnica de Vendas",
+      "GESTAO_OBJECOES": "Gestão de Objeções"
+    },
+    "PDI_IMPROVEMENT_AREAS": "Áreas de Desenvolvimento",
+    "PRIORITY": {
+      "HIGH": "Alta",
+      "MEDIUM": "Média",
+      "LOW": "Baixa"
+    },
+    "ACTION_PLAN": "Plano de Ação",
+    "PDI": {
+      "TITLE": "Plano de Desenvolvimento Individual (PDI)",
+      "ANALYSES": "análises",
+      "EMPTY_TITLE": "Nenhum dado de PDI ainda",
+      "EMPTY_MESSAGE": "Crie análises de call para construir seu plano de desenvolvimento",
+      "COMPETENCIES_TITLE": "Suas Competências",
+      "LAST_UPDATED": "Última atualização",
+      "NO_COMPETENCIES": "Nenhuma competência avaliada ainda",
+      "STRENGTHS_TITLE": "Seus Pontos Fortes",
+      "IMPROVEMENT_AREAS_TITLE": "Foco de Desenvolvimento",
+      "EVOLUTION_TITLE": "Evolução de Performance",
+      "ACTION_PLAN": "Plano de Ação"
+    }
+  }
+}
+

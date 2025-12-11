@@ -138,10 +138,16 @@ class Leads::ImportService
       pipeline_stage_id: pipeline_stage_id
     }.compact
 
+    # Extrair labels
+    contact_labels = mapped_data['contact_labels']
+    deal_labels = mapped_data['deal_labels']
+
     Leads::CreatorService.new(
       account: @account,
       contact_params: contact_params,
-      deal_params: deal_params
+      deal_params: deal_params,
+      contact_labels: contact_labels,
+      deal_labels: deal_labels
     ).perform
   end
 

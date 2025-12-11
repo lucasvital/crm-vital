@@ -252,6 +252,13 @@ Rails.application.routes.draw do
           # Deals
           resources :deals, only: [:index, :create, :update, :destroy]
 
+          # Call Analyses (Enablement)
+          resources :call_analyses, only: [:index, :create, :show, :update, :destroy]
+          
+          # Seller PDI
+          get 'seller_pdis/:user_id', to: 'seller_pdis#show', as: :user_seller_pdi
+          get 'seller_pdis', to: 'seller_pdis#show', as: :my_seller_pdi
+
           # Leads
           resources :leads, only: [:create] do
             collection do
