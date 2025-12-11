@@ -51,16 +51,21 @@ const handleSend = async () => {
   
   isSending.value = true;
   try {
-    const payload = {
-      inbox_id: selectedInbox.value.id,
-      contact_id: props.contactId,
+    // Verificar se é WhatsApp para usar o payload correto
+    const isWhatsApp = selectedInbox.value.channel_type === 'Channel::Whatsapp';
+    
+    const params = {
+      inboxId: selectedInbox.value.id,
+      contactId: props.contactId,
       message: {
         content: message.value,
       },
+      sourceId: `contact-${props.contactId}-${Date.now()}`, // Source ID único
     };
     
     const response = await store.dispatch('contactConversations/create', {
-      params: payload,
+      params,
+      isFromWhatsApp: isWhatsApp,
     });
     
     if (response && response.id) {
