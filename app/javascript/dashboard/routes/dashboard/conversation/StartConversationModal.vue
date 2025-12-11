@@ -54,13 +54,23 @@ const handleSend = async () => {
     // Verificar se é WhatsApp para usar o payload correto
     const isWhatsApp = selectedInbox.value.channel_type === 'Channel::Whatsapp';
     
+    // Buscar o contato para pegar o telefone
+    const contact = await store.dispatch('contacts/show', props.contactId);
+    
+    // Para WhatsApp, sourceId deve ser o número de telefone (apenas dígitos)
+    let sourceId = `contact-${props.contactId}-${Date.now()}`;
+    if (isWhatsApp && contact?.phone_number) {
+      // Limpar tudo exceto dígitos
+      sourceId = contact.phone_number.replace(/\D/g, '');
+    }
+    
     const params = {
       inboxId: selectedInbox.value.id,
       contactId: props.contactId,
       message: {
         content: message.value,
       },
-      sourceId: `contact-${props.contactId}-${Date.now()}`, // Source ID único
+      sourceId,
     };
     
     const response = await store.dispatch('contactConversations/create', {
@@ -78,7 +88,8 @@ const handleSend = async () => {
     }
   } catch (error) {
     console.error('Error creating conversation:', error);
-    useAlert('Erro ao criar conversa. Tente novamente.');
+    const errorMsg = error?.response?.data?.message || 'Erro ao criar conversa. Tente novamente.';
+    useAlert(errorMsg);
   } finally {
     isSending.value = false;
   }
