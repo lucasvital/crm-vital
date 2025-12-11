@@ -13,16 +13,25 @@ class Leads::CreatorService
       find_or_create_contact
       return { success: false, errors: @errors } if @errors.any?
 
-      apply_contact_labels if @contact_labels.present?
-
       create_deal
       return { success: false, errors: @errors } if @errors.any?
 
+      # Aplicar labels DEPOIS de salvar contato e deal
+      apply_contact_labels if @contact_labels.present?
       apply_deal_labels if @deal_labels.present?
+
+      # Recarregar para garantir que labels foram salvas
+      @contact.reload if @contact.persisted?
+      @deal.reload if @deal.persisted?
+
+      Rails.logger.info "=== FINAL - Contact #{@contact.id} labels: #{@contact.label_list.inspect}"
+      Rails.logger.info "=== FINAL - Deal #{@deal.id} labels: #{@deal.label_list.inspect}"
 
       { success: true, contact: @contact, deal: @deal }
     end
   rescue StandardError => e
+    Rails.logger.error "=== ERROR in CreatorService: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
     { success: false, errors: [e.message] }
   end
 
@@ -115,16 +124,71 @@ class Leads::CreatorService
 
   def apply_contact_labels
     labels = parse_labels(@contact_labels)
-    @contact.add_labels(labels) if labels.any?
+    Rails.logger.info "=== Applying contact labels: #{labels.inspect} to contact #{@contact.id}"
+    if labels.any?
+      # Sanitizar labels e garantir que existem
+      sanitized_labels = labels.map { |l| sanitize_label_title(l) }
+      ensure_labels_exist(labels)  # Cria com nome sanitizado
+      
+      @contact.add_labels(sanitized_labels)  # Aplica com nome sanitizado
+      Rails.logger.info "=== Contact labels after apply: #{@contact.label_list.inspect}"
+    end
   rescue StandardError => e
+    Rails.logger.error "=== Error applying contact labels: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
     @errors << "Error applying contact labels: #{e.message}"
   end
 
   def apply_deal_labels
     labels = parse_labels(@deal_labels)
-    @deal.add_labels(labels) if labels.any?
+    Rails.logger.info "=== Applying deal labels: #{labels.inspect} to deal #{@deal.id}"
+    if labels.any?
+      # Sanitizar labels e garantir que existem
+      sanitized_labels = labels.map { |l| sanitize_label_title(l) }
+      ensure_labels_exist(labels)  # Cria com nome sanitizado
+      
+      @deal.add_labels(sanitized_labels)  # Aplica com nome sanitizado
+      Rails.logger.info "=== Deal labels after apply: #{@deal.label_list.inspect}"
+    end
   rescue StandardError => e
+    Rails.logger.error "=== Error applying deal labels: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
     @errors << "Error applying deal labels: #{e.message}"
+  end
+
+  def ensure_labels_exist(label_names)
+    label_names.each do |title|
+      # Sanitizar título: remover/substituir caracteres inválidos
+      # Label aceita apenas: letras unicode, números, hífen e underscore
+      sanitized_title = sanitize_label_title(title)
+      
+      label = @account.labels.find_or_initialize_by(title: sanitized_title)
+      if label.new_record?
+        label.color = generate_random_color
+        label.show_on_sidebar = true
+        label.save!
+        Rails.logger.info "=== Created new label: #{label.title} (#{label.color})"
+      end
+    end
+  end
+
+  def sanitize_label_title(title)
+    # Substituir caracteres inválidos por underscore ou hífen
+    sanitized = title.to_s
+                     .gsub('/', '-')      # Barra vira hífen
+                     .gsub(/[^\p{L}\p{N}\-_]/, '_')  # Outros caracteres inválidos viram underscore
+                     .gsub(/_{2,}/, '_')  # Múltiplos underscores viram um só
+                     .gsub(/-{2,}/, '-')  # Múltiplos hífens viram um só
+                     .downcase
+    
+    Rails.logger.info "=== Sanitized label: '#{title}' -> '#{sanitized}'"
+    sanitized
+  end
+
+  def generate_random_color
+    # Gera cores vibrantes e legíveis
+    colors = ['#1f93ff', '#22c55e', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#10b981']
+    colors.sample
   end
 
   def parse_labels(labels_input)

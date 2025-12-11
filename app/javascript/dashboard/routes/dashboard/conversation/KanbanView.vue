@@ -61,6 +61,18 @@ const fetchColumn = async stage => {
     const pid = selectedPipelineId.value;
     const { data } = await DealsAPI.list({ pipelineId: pid });
     const deals = Array.isArray(data) ? data : [];
+    
+    // DEBUG: Log para verificar labels
+    console.log('=== DEALS CARREGADOS ===', deals.length);
+    deals.forEach(d => {
+      console.log(`Deal ${d.id}:`, {
+        title: d.title,
+        contact: d.contact?.name,
+        contact_labels: d.contact?.label_list,
+        deal_labels: d.label_list
+      });
+    });
+    
     // Buscar info recente de conversa/assignee por contato (cache por chamada)
     const contactIds = [
       ...new Set(deals.map(d => d?.contact?.id).filter(Boolean)),
@@ -113,6 +125,7 @@ const fetchColumn = async stage => {
         };
         return {
           id: d.id, // deal id
+          contact: d.contact, // ← ADICIONAR CONTACT COMPLETO COM LABELS
           custom_attributes: {
             deal_stage: d.pipeline_stage?.key,
             deal_title: d.title,
@@ -622,6 +635,25 @@ const handleDealUpdate = async updatedData => {
               class="mt-1 text-sm font-semibold text-n-slate-12 line-clamp-1"
             >
               {{ getDealTitle(deal) }}
+            </div>
+
+            <!-- DEBUG: Mostrar dados do deal -->
+            <div v-if="false" class="text-[8px] text-n-slate-11 mt-1">
+              Contact: {{ deal.contact?.name }} | Labels: {{ deal.contact?.label_list }}
+            </div>
+
+            <!-- Etiquetas do contato -->
+            <div
+              v-if="deal.contact?.label_list && deal.contact.label_list.length > 0"
+              class="flex flex-wrap gap-1 mt-1"
+            >
+              <span
+                v-for="label in deal.contact.label_list"
+                :key="label"
+                class="inline-flex items-center rounded-full bg-n-solid-3 px-2 py-0.5 text-[10px] font-medium text-n-slate-11 ring-1 ring-n-alpha-1"
+              >
+                {{ label }}
+              </span>
             </div>
 
             <!-- Linha com avatar pequeno e nome (mesmo padrão dos chips pequenos) -->

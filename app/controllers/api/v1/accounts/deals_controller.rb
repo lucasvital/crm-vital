@@ -2,17 +2,30 @@ class Api::V1::Accounts::DealsController < Api::V1::Accounts::BaseController
   before_action :set_deal, only: [:update, :destroy]
 
   def index
-    deals = current_account.deals.includes(:contact, :pipeline, :pipeline_stage)
+    deals = current_account.deals.includes(:contact, :pipeline, :pipeline_stage, :labels)
     deals = deals.where(pipeline_id: params[:pipeline_id]) if params[:pipeline_id].present?
     deals = deals.where(contact_id: params[:contact_id]) if params[:contact_id].present?
-    render json: deals.as_json(
-      only: [:id, :title, :amount, :currency, :close_date, :notes, :pipeline_id],
-      methods: [],
-      include: {
-        contact: { only: [:id, :name, :email, :phone_number] },
-        pipeline_stage: { only: [:id, :name, :key, :position] }
-      }
-    )
+    
+    # Customizar JSON para incluir label_list do contato
+    deals_json = deals.map do |deal|
+      deal.as_json(
+        only: [:id, :title, :amount, :currency, :close_date, :notes, :pipeline_id],
+        methods: [:label_list],
+        include: {
+          pipeline_stage: { only: [:id, :name, :key, :position] }
+        }
+      ).merge(
+        'contact' => {
+          'id' => deal.contact.id,
+          'name' => deal.contact.name,
+          'email' => deal.contact.email,
+          'phone_number' => deal.contact.phone_number,
+          'label_list' => deal.contact.label_list
+        }
+      )
+    end
+    
+    render json: deals_json
   end
 
   def create

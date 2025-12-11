@@ -141,6 +141,13 @@ class Leads::ImportService
     # Extrair labels
     contact_labels = mapped_data['contact_labels']
     deal_labels = mapped_data['deal_labels']
+    
+    # Se não há deal_labels mas há contact_labels, usar as mesmas para o deal
+    deal_labels = contact_labels if deal_labels.blank? && contact_labels.present?
+
+    Rails.logger.info "=== Import: contact_labels = #{contact_labels.inspect}"
+    Rails.logger.info "=== Import: deal_labels = #{deal_labels.inspect}"
+    Rails.logger.info "=== Import: mapped_data keys = #{mapped_data.keys.inspect}"
 
     Leads::CreatorService.new(
       account: @account,
