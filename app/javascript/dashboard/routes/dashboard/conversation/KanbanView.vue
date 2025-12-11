@@ -457,6 +457,16 @@ const handleImportCompleted = async () => {
 
 const openStartConversationModal = (deal, event) => {
   event.stopPropagation(); // Prevenir que abra os detalhes do deal
+  console.log('=== DEBUG CONTACT ===');
+  console.log('Deal completo:', deal);
+  console.log('Deal.contact:', deal.contact);
+  console.log('Deal.contact.id:', deal.contact?.id);
+  
+  if (!deal.contact?.id) {
+    alert('Erro: Contato não encontrado no deal');
+    return;
+  }
+  
   selectedDealForConversation.value = deal;
   showStartConversationModal.value = true;
 };

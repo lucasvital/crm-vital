@@ -25,6 +25,11 @@ const store = useStore();
 const router = useRouter();
 const { accountScopedRoute } = useAccount();
 
+// DEBUG
+console.log('=== StartConversationModal props ===');
+console.log('Contact ID:', props.contactId);
+console.log('Show:', props.show);
+
 const inboxesList = useMapGetter('inboxes/getInboxes');
 const selectedInbox = ref(null);
 const message = ref('');
