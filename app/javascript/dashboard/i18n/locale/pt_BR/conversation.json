@@ -355,7 +355,9 @@
       "SUBMIT": "Criar",
       "UPDATE": "Salvar",
       "CANCEL": "Cancelar"
-    }
+    },
+    "START_CONVERSATION": "Enviar Mensagem",
+    "CONVERSATION_STARTED": "Conversa iniciada com sucesso"
   },
   "KANBAN_A11Y": {
     "DRAG_HINT": "Arraste o cartão para outra coluna para atualizar a etapa.",

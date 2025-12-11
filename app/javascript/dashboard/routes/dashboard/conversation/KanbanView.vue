@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useAlert } from 'dashboard/composables';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
@@ -21,8 +22,11 @@ import TimeAgo from 'dashboard/components/ui/TimeAgo.vue';
 import CardLabels from 'dashboard/components/widgets/conversation/conversationCardComponents/CardLabels.vue';
 import ConversationsApi from 'dashboard/api/conversations';
 import DealManageView from 'dashboard/routes/dashboard/conversation/DealManageView.vue';
+import StartConversationModal from './StartConversationModal.vue';
+import ButtonV4 from 'dashboard/components-next/button/Button.vue';
 
 const { t } = useI18n();
+const router = useRouter();
 const { accountScopedRoute } = useAccount();
 const alert = useAlert;
 const store = useStore();
@@ -200,6 +204,8 @@ const showCreateLeadModal = ref(false);
 const showImportLeadsModal = ref(false);
 const selectedConversation = ref(null);
 const initialValues = ref({});
+const showStartConversationModal = ref(false);
+const selectedDealForConversation = ref(null);
 
 const stageBadgeIconColor = stage => {
   // Removido: cores específicas por etapa
@@ -447,6 +453,19 @@ const handleLeadCreated = async () => {
 const handleImportCompleted = async () => {
   showImportLeadsModal.value = false;
   await refreshBoard();
+};
+
+const openStartConversationModal = (deal, event) => {
+  event.stopPropagation(); // Prevenir que abra os detalhes do deal
+  selectedDealForConversation.value = deal;
+  showStartConversationModal.value = true;
+};
+
+const handleConversationCreated = (conversationId) => {
+  showStartConversationModal.value = false;
+  selectedDealForConversation.value = null;
+  // Redirecionar para a nova conversa
+  router.push(accountScopedRoute(`conversations/${conversationId}`));
 };
 
 const closeDealDetailsView = () => {
@@ -709,6 +728,16 @@ const handleDealUpdate = async updatedData => {
                 <span class="truncate">{{ deal.meta?.assignee?.name || t('KANBAN.CARDS.UNKNOWN_ASSIGNEE') }}</span>
               </div>
               <div class="flex items-center gap-2">
+                <!-- Botao discreto de iniciar conversa (se nao tiver conversa) -->
+                <button
+                  v-if="!deal._conversationId"
+                  type="button"
+                  class="rounded-md p-1 text-n-slate-11 hover:bg-n-alpha-2 hover:text-n-slate-12 transition-colors"
+                  :title="$t('KANBAN.START_CONVERSATION')"
+                  @click.stop="openStartConversationModal(deal, $event)"
+                >
+                  <span class="i-lucide-message-circle-plus size-3.5" />
+                </button>
                 <router-link
                   v-if="deal._conversationId"
                   class="font-medium text-n-brand hover:underline"
@@ -751,6 +780,13 @@ const handleDealUpdate = async updatedData => {
       submit-key="KANBAN.FORM.UPDATE"
       @cancel="() => (showEditDealModal = false)"
       @submit="onEditSubmit"
+    />
+    <StartConversationModal
+      v-if="showStartConversationModal"
+      :show="showStartConversationModal"
+      :contact-id="selectedDealForConversation?.contact?.id?.toString()"
+      @close="showStartConversationModal = false; selectedDealForConversation = null"
+      @conversation-created="handleConversationCreated"
     />
     
     <!-- Deal Details View em tela cheia -->

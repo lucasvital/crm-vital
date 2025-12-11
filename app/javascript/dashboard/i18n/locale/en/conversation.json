@@ -401,7 +401,9 @@
       "SUBMIT": "Create",
       "UPDATE": "Save",
       "CANCEL": "Cancel"
-    }
+    },
+    "START_CONVERSATION": "Send Message",
+    "CONVERSATION_STARTED": "Conversation started successfully"
   },
   "KANBAN_A11Y": {
     "DRAG_HINT": "Drag the card to another stage to update the deal.",
