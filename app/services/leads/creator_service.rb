@@ -208,8 +208,7 @@ class Leads::CreatorService
     return unless @contact.phone_number.present?
     
     # Buscar todos os inboxes de WhatsApp da conta
-    whatsapp_inboxes = @account.inboxes.joins(:channel)
-                                .where(channel: { type: 'Channel::Whatsapp' })
+    whatsapp_inboxes = @account.inboxes.where(channel_type: 'Channel::Whatsapp')
     
     whatsapp_inboxes.each do |inbox|
       begin
