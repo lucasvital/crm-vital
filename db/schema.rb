@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_10_200000) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_12_120000) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -824,6 +824,21 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_10_200000) do
     t.index ["account_id"], name: "index_data_imports_on_account_id"
   end
 
+  create_table "deal_activities", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "pipeline_stage_id", null: false
+    t.string "title", null: false
+    t.text "description"
+    t.integer "position", default: 0
+    t.jsonb "messages", default: []
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "pipeline_stage_id"], name: "index_deal_activities_on_account_id_and_pipeline_stage_id"
+    t.index ["account_id"], name: "index_deal_activities_on_account_id"
+    t.index ["messages"], name: "index_deal_activities_on_messages", using: :gin
+    t.index ["pipeline_stage_id"], name: "index_deal_activities_on_pipeline_stage_id"
+  end
+
   create_table "deals", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "contact_id", null: false
@@ -1422,6 +1437,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_10_200000) do
   add_foreign_key "call_analyses", "users", column: "created_by_id"
   add_foreign_key "conversations", "pipeline_stages", column: "deal_pipeline_stage_id"
   add_foreign_key "conversations", "pipelines", column: "deal_pipeline_id"
+  add_foreign_key "deal_activities", "accounts"
+  add_foreign_key "deal_activities", "pipeline_stages"
   add_foreign_key "deals", "accounts"
   add_foreign_key "deals", "contacts"
   add_foreign_key "deals", "pipeline_stages"

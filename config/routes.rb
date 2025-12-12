@@ -251,6 +251,11 @@ Rails.application.routes.draw do
 
           # Deals
           resources :deals, only: [:index, :create, :update, :destroy]
+          resources :deal_activities, only: [:index, :create, :update, :destroy] do
+            collection do
+              put :reorder
+            end
+          end
 
           # Call Analyses (Enablement)
           resources :call_analyses, only: [:index, :create, :show, :update, :destroy]

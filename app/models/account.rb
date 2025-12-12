@@ -96,6 +96,7 @@ class Account < ApplicationRecord
   has_many :users, through: :account_users
   has_many :pipelines, dependent: :destroy_async
   has_many :deals, dependent: :destroy_async
+  has_many :deal_activities, dependent: :destroy_async
   has_many :call_analyses, dependent: :destroy_async
   has_many :seller_pdis, dependent: :destroy_async
   has_many :goals, dependent: :destroy_async

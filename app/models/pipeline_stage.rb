@@ -24,6 +24,7 @@
 class PipelineStage < ApplicationRecord
   belongs_to :pipeline
   has_many :deals, dependent: :nullify
+  has_many :deal_activities, dependent: :destroy
 
   validates :name, presence: true
   validates :key, presence: true, uniqueness: { scope: :pipeline_id }

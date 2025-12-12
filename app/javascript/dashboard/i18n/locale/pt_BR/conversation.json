@@ -409,19 +409,90 @@
     "EXECUTE_AGAIN": "Executar Novamente",
     "COMPLETED": "Concluída",
     "COMPLETED_AT": "Executada em",
+    "SEQUENTIAL_MESSAGES": "Mensagens sequenciais",
     "NO_CONVERSATION_TITLE": "Sem conversa associada",
     "NO_CONVERSATION_DESC": "Este negócio não possui uma conversa associada. As atividades não podem ser executadas.",
+    "NO_CONVERSATION_TITLE_NEW": "Ainda sem conversa",
+    "NO_CONVERSATION_DESC_NEW": "Uma conversa será criada automaticamente quando você executar uma atividade.",
     "ALERTS": {
       "MESSAGE_SENT": "Mensagem enviada com sucesso!",
-      "MESSAGE_FAILED": "Erro ao enviar mensagem. Tente novamente."
+      "MESSAGE_FAILED": "Erro ao enviar mensagem. Tente novamente.",
+      "ACTIVITY_COMPLETED": "Atividade executada com sucesso!",
+      "ACTIVITY_FAILED": "Erro ao executar atividade. Tente novamente."
+    },
+    "PROGRESS": {
+      "CREATING_CONVERSATION": "Criando conversa...",
+      "SENDING_MESSAGE": "Enviando mensagem {current} de {total}...",
+      "WAITING": "Aguardando {seconds} segundos..."
     },
     "CONFIRM_MODAL": {
-      "TITLE": "Confirmar Envio de Mensagem",
+      "TITLE": "Executar Atividade",
       "MESSAGE_LABEL": "Mensagem:",
+      "MESSAGES_PREVIEW": "Mensagens que serão enviadas:",
       "MESSAGE_PLACEHOLDER": "Digite a mensagem que deseja enviar...",
-      "INFO": "Esta mensagem será enviada para o lead associado a este negócio.",
+      "INFO": "As mensagens serão enviadas para o contato associado a este negócio. As variáveis {nomecompleto} e {primeironome} serão substituídas.",
+      "WILL_CREATE_CONVERSATION": "Uma nova conversa será criada automaticamente.",
+      "DELAY_INFO": "Delay aleatório 0-10 segundos",
       "CANCEL": "Cancelar",
-      "SEND": "Enviar Mensagem"
+      "SEND": "Enviar Mensagem",
+      "EXECUTE": "Executar"
+    }
+  },
+  "DEAL_ACTIVITIES_SETTINGS": {
+    "TITLE": "Atividades de Negócios",
+    "DESCRIPTION": "Configure atividades e mensagens automáticas para cada etapa do pipeline",
+    "ADD": "Adicionar Atividade",
+    "EDIT": "Editar Atividade",
+    "DELETE": "Excluir",
+    "CANCEL": "Cancelar",
+    "SAVE": "Salvar",
+    "LOADING": "Carregando...",
+    "NO_ACTIVITIES": "Nenhuma atividade configurada ainda.",
+    "FILTER_BY_PIPELINE": "Filtrar por Pipeline",
+    "NEW_TITLE": "Nova Atividade",
+    "EDIT_TITLE": "Editar Atividade",
+    "FORM_DESCRIPTION": "Configure atividades com mensagens sequenciais e variáveis",
+    "TABLE": {
+      "PIPELINE": "Pipeline",
+      "STAGE": "Etapa",
+      "TITLE": "Título",
+      "MESSAGES": "Mensagens",
+      "ACTIONS": "Ações"
+    },
+    "FORM": {
+      "PIPELINE": "Pipeline",
+      "STAGE": "Etapa",
+      "TITLE": "Título",
+      "TITLE_PLACEHOLDER": "ex: Enviar mensagem de boas-vindas",
+      "DESCRIPTION": "Descrição",
+      "DESCRIPTION_PLACEHOLDER": "Breve descrição do que esta atividade faz",
+      "MESSAGES": "Mensagens Sequenciais",
+      "ADD_MESSAGE": "Adicionar Mensagem",
+      "MESSAGE_PLACEHOLDER": "Mensagem {number}...",
+      "VARIABLES_HELP": "Clique nas variáveis para inserir:",
+      "DELAY_INFO": "Delay aleatório de 0 a 10 segundos entre mensagens",
+      "DELAY_BETWEEN": "⏱ Delay aleatório 0-10s",
+      "MOVE_UP": "Mover para cima",
+      "MOVE_DOWN": "Mover para baixo",
+      "REMOVE_MESSAGE": "Remover mensagem"
+    },
+    "DELETE_MODAL": {
+      "TITLE": "Excluir Atividade",
+      "MESSAGE": "Tem certeza que deseja excluir esta atividade?",
+      "CONFIRM": "Sim, excluir",
+      "CANCEL": "Cancelar"
+    },
+    "ALERTS": {
+      "CREATE_SUCCESS": "Atividade criada com sucesso!",
+      "CREATE_FAILED": "Erro ao criar atividade. Tente novamente.",
+      "UPDATE_SUCCESS": "Atividade atualizada com sucesso!",
+      "UPDATE_FAILED": "Erro ao atualizar atividade. Tente novamente.",
+      "DELETE_SUCCESS": "Atividade excluída com sucesso!",
+      "DELETE_FAILED": "Erro ao excluir atividade. Tente novamente."
+    },
+    "ERRORS": {
+      "FETCH_FAILED": "Erro ao carregar atividades.",
+      "INVALID_FORM": "Por favor, preencha todos os campos obrigatórios."
     }
   },
   "EMAIL_TRANSCRIPT": {

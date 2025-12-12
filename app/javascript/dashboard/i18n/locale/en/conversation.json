@@ -458,19 +458,95 @@
     "EXECUTE_AGAIN": "Execute Again",
     "COMPLETED": "Completed",
     "COMPLETED_AT": "Executed at",
+    "SEQUENTIAL_MESSAGES": "Sequential messages",
     "NO_CONVERSATION_TITLE": "No associated conversation",
     "NO_CONVERSATION_DESC": "This deal has no associated conversation. Activities cannot be executed.",
+    "NO_CONVERSATION_TITLE_NEW": "No conversation yet",
+    "NO_CONVERSATION_DESC_NEW": "A conversation will be automatically created when you execute an activity.",
+    "RUNNING_SINGLE": "Executing '{title}' in background...",
+    "RUNNING_MULTIPLE": "{count} activities running in background...",
     "ALERTS": {
       "MESSAGE_SENT": "Message sent successfully!",
-      "MESSAGE_FAILED": "Error sending message. Please try again."
+      "MESSAGE_FAILED": "Error sending message. Please try again.",
+      "ACTIVITY_COMPLETED": "Activity executed successfully!",
+      "ACTIVITY_FAILED": "Error executing activity. Please try again.",
+      "ACTIVITY_STARTED": "Activity '{title}' started in background",
+      "ACTIVITY_COMPLETED_BACKGROUND": "Activity '{title}' completed successfully!",
+      "ACTIVITY_FAILED_BACKGROUND": "Error executing activity '{title}'"
+    },
+    "PROGRESS": {
+      "CREATING_CONVERSATION": "Creating conversation...",
+      "SENDING_MESSAGE": "Sending message {current} of {total}...",
+      "WAITING": "Waiting {seconds} seconds..."
     },
     "CONFIRM_MODAL": {
-      "TITLE": "Confirm Send Message",
+      "TITLE": "Execute Activity",
       "MESSAGE_LABEL": "Message:",
+      "MESSAGES_PREVIEW": "Messages to be sent:",
       "MESSAGE_PLACEHOLDER": "Type the message you want to send...",
-      "INFO": "This message will be sent to the lead associated with this deal.",
+      "INFO": "The messages will be sent to the contact associated with this deal. Variables {nomecompleto} and {primeironome} will be replaced.",
+      "WILL_CREATE_CONVERSATION": "A new conversation will be created automatically.",
+      "DELAY_INFO": "Random delay 0-10 seconds",
       "CANCEL": "Cancel",
-      "SEND": "Send Message"
+      "SEND": "Send Message",
+      "EXECUTE": "Execute"
+    }
+  },
+  "DEAL_ACTIVITIES_SETTINGS": {
+    "TITLE": "Deal Activities",
+    "DESCRIPTION": "Configure activities and automatic messages for each pipeline stage",
+    "ADD": "Add Activity",
+    "EDIT": "Edit Activity",
+    "DELETE": "Delete",
+    "CANCEL": "Cancel",
+    "SAVE": "Save",
+    "LOADING": "Loading...",
+    "NO_ACTIVITIES": "No activities configured yet.",
+    "FILTER_BY_PIPELINE": "Filter by Pipeline",
+    "NEW_TITLE": "New Activity",
+    "EDIT_TITLE": "Edit Activity",
+    "FORM_DESCRIPTION": "Configure activities with sequential messages and variables",
+    "TABLE": {
+      "PIPELINE": "Pipeline",
+      "STAGE": "Stage",
+      "TITLE": "Title",
+      "MESSAGES": "Messages",
+      "ACTIONS": "Actions"
+    },
+    "FORM": {
+      "PIPELINE": "Pipeline",
+      "STAGE": "Stage",
+      "TITLE": "Title",
+      "TITLE_PLACEHOLDER": "e.g., Send welcome message",
+      "DESCRIPTION": "Description",
+      "DESCRIPTION_PLACEHOLDER": "Brief description of what this activity does",
+      "MESSAGES": "Sequential Messages",
+      "ADD_MESSAGE": "Add Message",
+      "MESSAGE_PLACEHOLDER": "Message {number}...",
+      "VARIABLES_HELP": "Click on variables to insert:",
+      "DELAY_INFO": "Random delay of 0 to 10 seconds between messages",
+      "DELAY_BETWEEN": "⏱ Random delay 0-10s",
+      "MOVE_UP": "Move up",
+      "MOVE_DOWN": "Move down",
+      "REMOVE_MESSAGE": "Remove message"
+    },
+    "DELETE_MODAL": {
+      "TITLE": "Delete Activity",
+      "MESSAGE": "Are you sure you want to delete this activity?",
+      "CONFIRM": "Yes, delete",
+      "CANCEL": "Cancel"
+    },
+    "ALERTS": {
+      "CREATE_SUCCESS": "Activity created successfully!",
+      "CREATE_FAILED": "Error creating activity. Please try again.",
+      "UPDATE_SUCCESS": "Activity updated successfully!",
+      "UPDATE_FAILED": "Error updating activity. Please try again.",
+      "DELETE_SUCCESS": "Activity deleted successfully!",
+      "DELETE_FAILED": "Error deleting activity. Please try again."
+    },
+    "ERRORS": {
+      "FETCH_FAILED": "Error loading activities.",
+      "INVALID_FORM": "Please fill in all required fields."
     }
   },
   "CONVERSATION_SIDEBAR": {

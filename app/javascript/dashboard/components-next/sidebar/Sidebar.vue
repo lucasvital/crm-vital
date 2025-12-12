@@ -459,6 +459,12 @@ const menuItems = computed(() => {
           to: accountScopedRoute('settings_goals_index'),
         },
         {
+          name: 'Settings Deal Activities',
+          label: t('SIDEBAR.DEAL_ACTIVITIES'),
+          icon: 'i-lucide-activity',
+          to: accountScopedRoute('deal_activities_index'),
+        },
+        {
           name: 'Settings Agents',
           label: t('SIDEBAR.AGENTS'),
           icon: 'i-lucide-square-user',

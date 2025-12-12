@@ -129,6 +129,7 @@ const fetchColumn = async stage => {
         };
         return {
           id: d.id, // deal id
+          pipeline_stage_id: d.pipeline_stage_id,
           contact: d.contact, // ← ADICIONAR CONTACT COMPLETO COM LABELS
           custom_attributes: {
             deal_stage: d.pipeline_stage?.key,
