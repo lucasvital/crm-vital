@@ -122,13 +122,26 @@ module Whatsapp::BaileysHandlers::Helpers # rubocop:disable Metrics/ModuleLength
   end
 
   def phone_number_from_jid
-    reference_field = jid_type == 'lid' ? :senderPn : :remoteJid
-    jid = @raw_message[:key][reference_field]
+    # Priorizar remoteJidAlt quando disponivel, pois contem o numero real
+    # quando remoteJid esta em formato @lid
+    jid = extract_phone_jid
     return unless jid
 
     # NOTE: jid shape is `<user>_<agent>:<device>@<server>`
     # https://github.com/WhiskeySockets/Baileys/blob/v6.7.16/src/WABinary/jid-utils.ts#L19
     jid.split('@').first.split(':').first.split('_').first
+  end
+
+  def extract_phone_jid
+    # Se remoteJidAlt existe e e um numero real (@s.whatsapp.net), usar ele
+    remote_jid_alt = @raw_message[:key][:remoteJidAlt]
+    if remote_jid_alt&.end_with?('@s.whatsapp.net')
+      return remote_jid_alt
+    end
+
+    # Caso contrario, usar a logica atual
+    reference_field = jid_type == 'lid' ? :senderPn : :remoteJid
+    @raw_message[:key][reference_field]
   end
 
   def contact_name
