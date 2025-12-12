@@ -13,6 +13,9 @@ class Leads::CreatorService
       find_or_create_contact
       return { success: false, errors: @errors } if @errors.any?
 
+      # Criar ContactInbox para WhatsApp
+      create_contact_inboxes_for_whatsapp
+
       create_deal
       return { success: false, errors: @errors } if @errors.any?
 
@@ -199,6 +202,28 @@ class Leads::CreatorService
     
     # Se for string, separa por vírgula e limpa espaços
     labels_input.to_s.split(',').map(&:strip).reject(&:blank?)
+  end
+
+  def create_contact_inboxes_for_whatsapp
+    return unless @contact.phone_number.present?
+    
+    # Buscar todos os inboxes de WhatsApp da conta
+    whatsapp_inboxes = @account.inboxes.joins(:channel)
+                                .where(channel: { type: 'Channel::Whatsapp' })
+    
+    whatsapp_inboxes.each do |inbox|
+      begin
+        ContactInboxBuilder.new(
+          contact: @contact,
+          inbox: inbox
+        ).perform
+        
+        Rails.logger.info "=== Created ContactInbox for contact #{@contact.id} in inbox #{inbox.id}"
+      rescue StandardError => e
+        Rails.logger.warn "=== Failed to create ContactInbox: #{e.message}"
+        # Não interromper o processo se falhar
+      end
+    end
   end
 end
 

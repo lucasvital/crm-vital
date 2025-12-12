@@ -9,11 +9,11 @@ class Api::V1::Accounts::DealsController < Api::V1::Accounts::BaseController
     # Customizar JSON para incluir label_list do contato
     deals_json = deals.map do |deal|
       deal.as_json(
-        only: [:id, :title, :amount, :currency, :close_date, :notes, :pipeline_id],
+      only: [:id, :title, :amount, :currency, :close_date, :notes, :pipeline_id],
         methods: [:label_list],
-        include: {
-          pipeline_stage: { only: [:id, :name, :key, :position] }
-        }
+      include: {
+        pipeline_stage: { only: [:id, :name, :key, :position] }
+      }
       ).merge(
         'contact' => {
           'id' => deal.contact.id,
