@@ -50,6 +50,7 @@ Rails.application.routes.draw do
                 put :reorder
               end
             end
+            resources :webhooks, controller: 'pipeline_webhooks'
           end
           resources :goals do
             member do
@@ -588,6 +589,7 @@ Rails.application.routes.draw do
   post 'webhooks/whatsapp/:phone_number', to: 'webhooks/whatsapp#process_payload'
   get 'webhooks/instagram', to: 'webhooks/instagram#verify'
   post 'webhooks/instagram', to: 'webhooks/instagram#events'
+  post 'webhooks/pipelines/:token', to: 'webhooks/pipelines#process_payload'
 
   namespace :twitter do
     resource :callback, only: [:show]

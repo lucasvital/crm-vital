@@ -409,6 +409,9 @@ pt_BR:
       %{format_messages}
   agent_capacity_policy:
     inbox_already_assigned: 'A caixa de entrada já foi atribuída a esta política'
+  pipeline_webhooks:
+    validation:
+      stage_belongs_to_pipeline: 'deve pertencer ao pipeline selecionado'
   portals:
     send_instructions:
       email_required: 'E-mail é obrigatório'

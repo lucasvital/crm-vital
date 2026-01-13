@@ -2,19 +2,28 @@
 #
 # Table name: webhooks
 #
-#  id            :bigint           not null, primary key
-#  name          :string
-#  subscriptions :jsonb
-#  url           :string
-#  webhook_type  :integer          default("account_type")
-#  created_at    :datetime         not null
-#  updated_at    :datetime         not null
-#  account_id    :integer
-#  inbox_id      :integer
+#  id              :bigint           not null, primary key
+#  incoming_config :jsonb
+#  name            :string
+#  subscriptions   :jsonb
+#  url             :string
+#  webhook_token   :string
+#  webhook_type    :integer          default("account_type")
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#  account_id      :integer
+#  inbox_id        :integer
+#  pipeline_id     :bigint
 #
 # Indexes
 #
 #  index_webhooks_on_account_id_and_url  (account_id,url) UNIQUE
+#  index_webhooks_on_pipeline_id         (pipeline_id)
+#  index_webhooks_on_webhook_token       (webhook_token) UNIQUE
+#
+# Foreign Keys
+#
+#  fk_rails_...  (pipeline_id => pipelines.id)
 #
 
 class Webhook < ApplicationRecord

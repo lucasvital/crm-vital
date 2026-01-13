@@ -20,6 +20,7 @@ class Pipeline < ApplicationRecord
   belongs_to :account
   has_many :pipeline_stages, -> { order(position: :asc) }, dependent: :destroy
   has_many :deals, dependent: :destroy
+  has_many :pipeline_webhooks, dependent: :destroy
 
   validates :name, presence: true
 end

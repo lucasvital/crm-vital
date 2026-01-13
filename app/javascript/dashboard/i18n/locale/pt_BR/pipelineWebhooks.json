@@ -1,0 +1,82 @@
+{
+  "PIPELINE_WEBHOOKS": {
+    "TITLE": "Webhooks de Entrada",
+    "CREATE": "Nova Integração",
+    "NO_WEBHOOKS": "Nenhuma integração configurada",
+    "NO_WEBHOOKS_DESC": "Clique em 'Nova Integração' para criar um webhook e receber leads",
+    "WIZARD": {
+      "TITLE_NEW": "Nova Integração Webhook",
+      "TITLE_EDIT": "Editar Integração Webhook",
+      "STEP_1": "Informações Básicas",
+      "STEP_2": "Tags",
+      "STEP_3": "Mapeamento de Campos",
+      "STEP_4": "Sucesso"
+    },
+    "FIELDS": {
+      "NAME": "Nome da Integração",
+      "NAME_PLACEHOLDER": "Ex: RD Station, Facebook Ads, etc.",
+      "STAGE": "Etapa Inicial",
+      "STAGE_SELECT": "Selecione uma etapa",
+      "STAGE_HELP": "Os leads recebidos serão criados nesta etapa",
+      "WEBHOOK_URL": "URL do Webhook",
+      "ACTIVE": "Webhook ativo",
+      "TAGS": "Tags",
+      "ADD_TAG": "Adicionar Tag",
+      "TAG_PLACEHOLDER": "Digite uma tag e pressione Enter",
+      "TAG_HELP": "Tags serão aplicadas automaticamente aos leads recebidos",
+      "SELECTED_TAGS": "Tags Selecionadas"
+    },
+    "MAPPING": {
+      "TITLE": "Mapeamento de Campos",
+      "DESCRIPTION": "Configure como os campos do webhook serão mapeados para os campos do sistema. Use notação de ponto para campos aninhados (ex: lead.name, data.email).",
+      "EXAMPLE_PAYLOAD": "Exemplo de Payload JSON",
+      "CONTACT_NAME": "Nome do Contato",
+      "EMAIL": "Email",
+      "PHONE": "Telefone",
+      "COMPANY": "Empresa",
+      "CITY": "Cidade",
+      "COUNTRY": "País",
+      "DEAL_TITLE": "Título do Negócio",
+      "AMOUNT": "Valor",
+      "CLOSE_DATE": "Data de Fechamento",
+      "NOTES": "Observações"
+    },
+    "SUCCESS": {
+      "TITLE": "Webhook Criado com Sucesso!",
+      "URL_LABEL": "URL do Webhook",
+      "COPY": "Copiar",
+      "HOW_TO_USE": "Como usar:",
+      "STEP_1": "Copie a URL acima",
+      "STEP_2": "Configure no seu sistema de origem (RD Station, etc.)",
+      "STEP_3": "Os leads serão criados automaticamente no CRM"
+    },
+    "STATUS": {
+      "ACTIVE": "Ativo",
+      "INACTIVE": "Inativo"
+    },
+    "ACTIONS": {
+      "TOGGLE": "Alternar status",
+      "EDIT": "Editar",
+      "DELETE": "Excluir",
+      "BACK": "Voltar",
+      "NEXT": "Próximo",
+      "SAVE": "Salvar",
+      "SAVING": "Salvando...",
+      "CLOSE": "Fechar"
+    },
+    "ALERTS": {
+      "LOADING": "Carregando webhooks...",
+      "LOAD_ERROR": "Erro ao carregar webhooks",
+      "SAVE_SUCCESS": "Webhook salvo com sucesso",
+      "SAVE_ERROR": "Erro ao salvar webhook",
+      "UPDATE_SUCCESS": "Status atualizado com sucesso",
+      "UPDATE_ERROR": "Erro ao atualizar status",
+      "DELETE_SUCCESS": "Webhook excluído com sucesso",
+      "DELETE_ERROR": "Erro ao excluir webhook",
+      "DELETE_CONFIRM": "Tem certeza que deseja excluir \"{name}\"?",
+      "COPIED": "URL copiada para a área de transferência!",
+      "FILL_REQUIRED": "Preencha todos os campos obrigatórios"
+    }
+  }
+}
+

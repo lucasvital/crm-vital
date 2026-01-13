@@ -1,0 +1,82 @@
+{
+  "PIPELINE_WEBHOOKS": {
+    "TITLE": "Incoming Webhooks",
+    "CREATE": "New Integration",
+    "NO_WEBHOOKS": "No integrations configured",
+    "NO_WEBHOOKS_DESC": "Click 'New Integration' to create a webhook and receive leads",
+    "WIZARD": {
+      "TITLE_NEW": "New Webhook Integration",
+      "TITLE_EDIT": "Edit Webhook Integration",
+      "STEP_1": "Basic Information",
+      "STEP_2": "Tags",
+      "STEP_3": "Field Mapping",
+      "STEP_4": "Success"
+    },
+    "FIELDS": {
+      "NAME": "Integration Name",
+      "NAME_PLACEHOLDER": "Ex: RD Station, Facebook Ads, etc.",
+      "STAGE": "Initial Stage",
+      "STAGE_SELECT": "Select a stage",
+      "STAGE_HELP": "Received leads will be created in this stage",
+      "WEBHOOK_URL": "Webhook URL",
+      "ACTIVE": "Webhook active",
+      "TAGS": "Tags",
+      "ADD_TAG": "Add Tag",
+      "TAG_PLACEHOLDER": "Type a tag and press Enter",
+      "TAG_HELP": "Tags will be automatically applied to received leads",
+      "SELECTED_TAGS": "Selected Tags"
+    },
+    "MAPPING": {
+      "TITLE": "Field Mapping",
+      "DESCRIPTION": "Configure how webhook fields will be mapped to system fields. Use dot notation for nested fields (e.g., lead.name, data.email).",
+      "EXAMPLE_PAYLOAD": "Example JSON Payload",
+      "CONTACT_NAME": "Contact Name",
+      "EMAIL": "Email",
+      "PHONE": "Phone",
+      "COMPANY": "Company",
+      "CITY": "City",
+      "COUNTRY": "Country",
+      "DEAL_TITLE": "Deal Title",
+      "AMOUNT": "Amount",
+      "CLOSE_DATE": "Close Date",
+      "NOTES": "Notes"
+    },
+    "SUCCESS": {
+      "TITLE": "Webhook Created Successfully!",
+      "URL_LABEL": "Webhook URL",
+      "COPY": "Copy",
+      "HOW_TO_USE": "How to use:",
+      "STEP_1": "Copy the URL above",
+      "STEP_2": "Configure it in your source system (RD Station, etc.)",
+      "STEP_3": "Leads will be automatically created in the CRM"
+    },
+    "STATUS": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive"
+    },
+    "ACTIONS": {
+      "TOGGLE": "Toggle status",
+      "EDIT": "Edit",
+      "DELETE": "Delete",
+      "BACK": "Back",
+      "NEXT": "Next",
+      "SAVE": "Save",
+      "SAVING": "Saving...",
+      "CLOSE": "Close"
+    },
+    "ALERTS": {
+      "LOADING": "Loading webhooks...",
+      "LOAD_ERROR": "Error loading webhooks",
+      "SAVE_SUCCESS": "Webhook saved successfully",
+      "SAVE_ERROR": "Error saving webhook",
+      "UPDATE_SUCCESS": "Status updated successfully",
+      "UPDATE_ERROR": "Error updating status",
+      "DELETE_SUCCESS": "Webhook deleted successfully",
+      "DELETE_ERROR": "Error deleting webhook",
+      "DELETE_CONFIRM": "Are you sure you want to delete \"{name}\"?",
+      "COPIED": "URL copied to clipboard!",
+      "FILL_REQUIRED": "Fill in all required fields"
+    }
+  }
+}
+

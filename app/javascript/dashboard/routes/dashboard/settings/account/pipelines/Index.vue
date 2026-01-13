@@ -6,6 +6,7 @@ import { useAccount } from 'dashboard/composables/useAccount';
 import { useAlert } from 'dashboard/composables';
 import PipelinesAPI from 'dashboard/api/pipelines';
 import BaseSettingsHeader from '../../components/BaseSettingsHeader.vue';
+import WebhookList from './components/WebhookList.vue';
 
 const { t } = useI18n();
 const { accountId } = useAccount();
@@ -22,6 +23,7 @@ const editingStages = ref([]);
 const showDuplicateModal = ref(false);
 const duplicateSourcePipeline = ref(null);
 const duplicatePipelineName = ref('');
+const activeTab = ref('settings'); // 'settings' ou 'webhooks'
 
 const load = async () => {
   const { data } = await PipelinesAPI.get();
@@ -148,6 +150,7 @@ const pipelineHasWonStage = stages =>
   Array.isArray(stages) && stages.some(stage => stage.is_won);
 
 const openModal = async pipe => {
+  activeTab.value = 'settings'; // Reset para aba de configurações
   const pipelineId = pipe.id;
   let { data } = await PipelinesAPI.show(pipelineId);
   editingPipeline.value = data;
@@ -301,7 +304,29 @@ onMounted(load);
     <woot-modal :show="showModal" :on-close="() => (showModal = false)">
       <div class="flex flex-col h-auto overflow-auto">
         <woot-modal-header header-title="Editar Pipeline" />
-        <div class="px-6 py-4 space-y-3">
+        
+        <!-- Tabs -->
+        <div class="flex border-b border-n-alpha-2 px-6">
+          <button
+            type="button"
+            class="px-4 py-3 text-sm font-medium border-b-2 transition-colors"
+            :class="activeTab === 'settings' ? 'border-n-brand text-n-brand' : 'border-transparent text-n-slate-11 hover:text-n-slate-12'"
+            @click="activeTab = 'settings'"
+          >
+            Configurações
+          </button>
+          <button
+            type="button"
+            class="px-4 py-3 text-sm font-medium border-b-2 transition-colors"
+            :class="activeTab === 'webhooks' ? 'border-n-brand text-n-brand' : 'border-transparent text-n-slate-11 hover:text-n-slate-12'"
+            @click="activeTab = 'webhooks'"
+          >
+            Webhooks
+          </button>
+        </div>
+
+        <!-- Tab: Configurações -->
+        <div v-show="activeTab === 'settings'" class="px-6 py-4 space-y-3">
           <div>
             <label class="text-sm text-n-slate-12 mb-1 block">Nome do pipeline</label>
             <input
@@ -370,7 +395,13 @@ onMounted(load);
             </Draggable>
           </div>
         </div>
-        <div class="w-full flex justify-end gap-2 items-center px-6 pb-4">
+
+        <!-- Tab: Webhooks -->
+        <div v-show="activeTab === 'webhooks'" class="px-6 py-4 max-h-[500px] overflow-y-auto">
+          <WebhookList v-if="editingPipeline" :pipeline="editingPipeline" />
+        </div>
+
+        <div v-show="activeTab === 'settings'" class="w-full flex justify-end gap-2 items-center px-6 pb-4 border-t border-n-alpha-2">
           <button
             type="button"
             class="rounded-md border border-n-weak bg-n-solid-1 px-3 py-2 text-sm text-n-slate-12"

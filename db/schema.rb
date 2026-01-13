@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_12_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_01_13_200000) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1160,6 +1160,25 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_12_120000) do
     t.index ["pipeline_id"], name: "index_pipeline_stages_on_pipeline_id"
   end
 
+  create_table "pipeline_webhooks", force: :cascade do |t|
+    t.bigint "pipeline_id", null: false
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.string "token", null: false
+    t.boolean "active", default: true, null: false
+    t.bigint "pipeline_stage_id", null: false
+    t.jsonb "field_mapping", default: {}, null: false
+    t.jsonb "tag_config", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "pipeline_id"], name: "index_pipeline_webhooks_on_account_id_and_pipeline_id"
+    t.index ["account_id"], name: "index_pipeline_webhooks_on_account_id"
+    t.index ["pipeline_id", "name"], name: "index_pipeline_webhooks_on_pipeline_id_and_name"
+    t.index ["pipeline_id"], name: "index_pipeline_webhooks_on_pipeline_id"
+    t.index ["pipeline_stage_id"], name: "index_pipeline_webhooks_on_pipeline_stage_id"
+    t.index ["token"], name: "index_pipeline_webhooks_on_token", unique: true
+  end
+
   create_table "pipelines", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.string "name", null: false
@@ -1409,7 +1428,12 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_12_120000) do
     t.integer "webhook_type", default: 0
     t.jsonb "subscriptions", default: ["conversation_status_changed", "conversation_updated", "conversation_created", "contact_created", "contact_updated", "message_created", "message_updated", "webwidget_triggered"]
     t.string "name"
+    t.bigint "pipeline_id"
+    t.string "webhook_token"
+    t.jsonb "incoming_config", default: {}
     t.index ["account_id", "url"], name: "index_webhooks_on_account_id_and_url", unique: true
+    t.index ["pipeline_id"], name: "index_webhooks_on_pipeline_id"
+    t.index ["webhook_token"], name: "index_webhooks_on_webhook_token", unique: true
   end
 
   create_table "working_hours", force: :cascade do |t|
@@ -1450,12 +1474,16 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_12_120000) do
   add_foreign_key "goals", "users", column: "created_by_id"
   add_foreign_key "inboxes", "portals"
   add_foreign_key "pipeline_stages", "pipelines"
+  add_foreign_key "pipeline_webhooks", "accounts"
+  add_foreign_key "pipeline_webhooks", "pipeline_stages"
+  add_foreign_key "pipeline_webhooks", "pipelines"
   add_foreign_key "pipelines", "accounts"
   add_foreign_key "routine_completions", "routines"
   add_foreign_key "routine_completions", "users"
   add_foreign_key "routines", "accounts"
   add_foreign_key "seller_pdis", "accounts"
   add_foreign_key "seller_pdis", "users"
+  add_foreign_key "webhooks", "pipelines"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
       on("accounts").
       after(:insert).
