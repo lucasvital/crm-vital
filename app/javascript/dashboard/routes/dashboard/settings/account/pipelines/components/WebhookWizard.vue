@@ -1,8 +1,9 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAlert } from 'dashboard/composables';
 import PipelineWebhooksAPI from 'dashboard/api/pipelineWebhooks';
+import AttributeAPI from 'dashboard/api/attributes';
 
 const props = defineProps({
   pipeline: {
@@ -48,6 +49,11 @@ const fieldMapping = ref({
   notes: props.webhook?.field_mapping?.notes || '',
 });
 
+// Atributos Personalizados
+const availableCustomAttributes = ref([]);
+const customAttributeMapping = ref([]);
+const isLoadingAttributes = ref(false);
+
 const stages = computed(() => {
   return props.pipeline?.pipeline_stages || [];
 });
@@ -73,6 +79,8 @@ const systemFields = [
 
 const examplePayload = computed(() => {
   const obj = {};
+  
+  // Adicionar campos do sistema
   Object.entries(fieldMapping.value).forEach(([key, value]) => {
     if (value) {
       const keys = value.split('.');
@@ -87,6 +95,23 @@ const examplePayload = computed(() => {
       });
     }
   });
+  
+  // Adicionar campos personalizados
+  customAttributeMapping.value.forEach(mapping => {
+    if (mapping.attributeKey && mapping.mappingPath) {
+      const keys = mapping.mappingPath.split('.');
+      let current = obj;
+      keys.forEach((k, i) => {
+        if (i === keys.length - 1) {
+          current[k] = `<valor_${mapping.attributeKey}>`;
+        } else {
+          current[k] = current[k] || {};
+          current = current[k];
+        }
+      });
+    }
+  });
+  
   return obj;
 });
 
@@ -131,14 +156,41 @@ const saveWebhook = async () => {
     return;
   }
 
+  // Validar que todos os campos personalizados estão preenchidos
+  const hasInvalidCustomAttributes = customAttributeMapping.value.some(
+    mapping => !mapping.attributeKey || !mapping.mappingPath
+  );
+  
+  if (hasInvalidCustomAttributes) {
+    alert('Preencha todos os campos personalizados ou remova-os');
+    return;
+  }
+
   isSubmitting.value = true;
 
   try {
+    // Montar field_mapping com campos do sistema e personalizados
+    const customAttributes = {};
+    customAttributeMapping.value.forEach(mapping => {
+      if (mapping.attributeKey && mapping.mappingPath) {
+        customAttributes[mapping.attributeKey] = mapping.mappingPath;
+      }
+    });
+
+    const finalFieldMapping = {
+      ...fieldMapping.value,
+    };
+
+    // Adicionar custom_attributes apenas se houver algum
+    if (Object.keys(customAttributes).length > 0) {
+      finalFieldMapping.custom_attributes = customAttributes;
+    }
+
     const payload = {
       name: webhookName.value,
       pipeline_stage_id: selectedStageId.value,
       active: isActive.value,
-      field_mapping: fieldMapping.value,
+      field_mapping: finalFieldMapping,
       tag_config: {
         labels: selectedTags.value,
       },
@@ -176,6 +228,60 @@ const copyToClipboard = text => {
 const close = () => {
   emit('close');
 };
+
+// Carregar atributos personalizados de contato
+const loadCustomAttributes = async () => {
+  isLoadingAttributes.value = true;
+  try {
+    const response = await AttributeAPI.getAttributesByModel();
+    // Filtrar apenas atributos de contato
+    availableCustomAttributes.value = (response.data || []).filter(
+      attr => attr.attribute_model === 1 // 1 = contact_attribute
+    );
+    
+    // Se estiver editando, carregar atributos personalizados salvos
+    if (props.webhook?.field_mapping?.custom_attributes) {
+      const savedCustomAttrs = props.webhook.field_mapping.custom_attributes;
+      customAttributeMapping.value = Object.entries(savedCustomAttrs).map(
+        ([key, value]) => ({
+          attributeKey: key,
+          mappingPath: value,
+        })
+      );
+    }
+  } catch (error) {
+    console.error('Erro ao carregar atributos personalizados:', error);
+  } finally {
+    isLoadingAttributes.value = false;
+  }
+};
+
+// Funções para gerenciar campos personalizados
+const addCustomAttributeField = () => {
+  customAttributeMapping.value.push({
+    attributeKey: '',
+    mappingPath: '',
+  });
+};
+
+const removeCustomAttributeField = index => {
+  customAttributeMapping.value.splice(index, 1);
+};
+
+// Computed para filtrar atributos já selecionados
+const getAvailableAttributesForIndex = index => {
+  const selectedKeys = customAttributeMapping.value
+    .map((m, i) => (i !== index ? m.attributeKey : null))
+    .filter(Boolean);
+  
+  return availableCustomAttributes.value.filter(
+    attr => !selectedKeys.includes(attr.attribute_key)
+  );
+};
+
+onMounted(() => {
+  loadCustomAttributes();
+});
 </script>
 
 <template>
@@ -353,6 +459,62 @@ const close = () => {
               :placeholder="`Ex: ${field.key}`"
             />
           </div>
+        </div>
+
+        <!-- Separador -->
+        <div class="flex items-center gap-3 my-4">
+          <div class="flex-1 h-px bg-n-alpha-2" />
+          <span class="text-xs font-medium text-n-slate-11">Campos Personalizados</span>
+          <div class="flex-1 h-px bg-n-alpha-2" />
+        </div>
+
+        <!-- Campos Personalizados -->
+        <div class="space-y-3">
+          <div
+            v-for="(mapping, index) in customAttributeMapping"
+            :key="index"
+            class="grid grid-cols-[1fr,1fr,auto] gap-2 items-start"
+          >
+            <div>
+              <select
+                v-model="mapping.attributeKey"
+                class="w-full rounded-md border border-n-alpha-2 bg-n-solid-1 px-3 py-2 text-sm"
+              >
+                <option value="" disabled>Selecione um atributo</option>
+                <option
+                  v-for="attr in getAvailableAttributesForIndex(index)"
+                  :key="attr.attribute_key"
+                  :value="attr.attribute_key"
+                >
+                  {{ attr.attribute_display_name }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <input
+                v-model="mapping.mappingPath"
+                type="text"
+                class="w-full rounded-md border border-n-alpha-2 bg-n-solid-1 px-3 py-2 text-sm"
+                placeholder="Ex: custom.campo"
+              />
+            </div>
+            <button
+              type="button"
+              class="rounded-md border border-n-strong bg-n-solid-1 p-2 text-n-ruby-11 hover:bg-n-ruby-3"
+              @click="removeCustomAttributeField(index)"
+            >
+              <span class="i-lucide-x size-4" />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            class="w-full rounded-md border border-dashed border-n-alpha-2 bg-n-solid-1 px-4 py-2 text-sm font-medium text-n-slate-11 hover:bg-n-solid-2 hover:text-n-slate-12 hover:border-n-alpha-3 transition-colors"
+            @click="addCustomAttributeField"
+          >
+            <span class="i-lucide-plus size-4 inline-block mr-1" />
+            Adicionar Campo Personalizado
+          </button>
         </div>
 
         <div class="mt-4 p-3 rounded-md bg-n-solid-2 border border-n-alpha-2">
