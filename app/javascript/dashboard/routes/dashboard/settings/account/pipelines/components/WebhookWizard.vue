@@ -1,3 +1,4 @@
+/* global axios */
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -233,11 +234,25 @@ const close = () => {
 const loadCustomAttributes = async () => {
   isLoadingAttributes.value = true;
   try {
-    const response = await AttributeAPI.getAttributesByModel();
-    // Filtrar apenas atributos de contato
-    availableCustomAttributes.value = (response.data || []).filter(
-      attr => attr.attribute_model === 1 // 1 = contact_attribute
+    console.log('🔍 Carregando atributos personalizados...');
+    
+    // Usar axios diretamente com autenticação (o axios global já tem os headers configurados)
+    const response = await axios.get(
+      `${AttributeAPI.url}`,
+      {
+        params: {
+          attribute_model: 'contact_attribute'
+        }
+      }
     );
+    
+    console.log('✅ Resposta da API:', response);
+    console.log('📦 Dados recebidos:', response.data);
+    
+    // A resposta já vem filtrada pelo backend
+    availableCustomAttributes.value = response.data || [];
+    
+    console.log('📋 Atributos disponíveis:', availableCustomAttributes.value);
     
     // Se estiver editando, carregar atributos personalizados salvos
     if (props.webhook?.field_mapping?.custom_attributes) {
@@ -248,9 +263,11 @@ const loadCustomAttributes = async () => {
           mappingPath: value,
         })
       );
+      console.log('📝 Atributos salvos carregados:', customAttributeMapping.value);
     }
   } catch (error) {
-    console.error('Erro ao carregar atributos personalizados:', error);
+    console.error('❌ Erro ao carregar atributos personalizados:', error);
+    console.error('Detalhes do erro:', error.response);
   } finally {
     isLoadingAttributes.value = false;
   }
