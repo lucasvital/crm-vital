@@ -1,0 +1,99 @@
+{
+  "LEADS": {
+    "CREATE": {
+      "TITLE": "Criar Lead",
+      "DESCRIPTION": "Criar um novo lead com informações de contato e negócio",
+      "CONTACT_INFO": "Informações do Contato",
+      "DEAL_INFO": "Informações do Negócio",
+      "FIELDS": {
+        "NAME": "Nome",
+        "EMAIL": "Email",
+        "PHONE": "Telefone",
+        "COMPANY": "Empresa",
+        "CITY": "Cidade",
+        "COUNTRY": "País",
+        "TITLE": "Título do Negócio",
+        "AMOUNT": "Valor",
+        "CURRENCY": "Moeda",
+        "CLOSE_DATE": "Data Prevista de Fechamento",
+        "NOTES": "Observações",
+        "STAGE": "Etapa Inicial"
+      },
+      "PLACEHOLDERS": {
+        "NAME": "Digite o nome do contato",
+        "EMAIL": "Digite o endereço de email",
+        "PHONE": "Digite o número de telefone",
+        "COMPANY": "Digite o nome da empresa",
+        "CITY": "Digite a cidade",
+        "COUNTRY": "Digite o país",
+        "TITLE": "Digite o título do negócio",
+        "AMOUNT": "Digite o valor",
+        "CLOSE_DATE": "Selecione a data",
+        "NOTES": "Adicione observações sobre este lead"
+      },
+      "SUBMIT": "Criar Lead",
+      "CANCEL": "Cancelar",
+      "SUCCESS": "Lead criado com sucesso!",
+      "ERROR": "Falha ao criar lead. Por favor, tente novamente."
+    },
+    "IMPORT": {
+      "TITLE": "Importar Leads",
+      "DESCRIPTION": "Importar leads de arquivo CSV com mapeamento personalizado de campos",
+      "STEP_1": {
+        "TITLE": "Enviar Arquivo CSV",
+        "DESCRIPTION": "Selecione um arquivo CSV para importar leads",
+        "CHOOSE_FILE": "Escolher Arquivo",
+        "DRAG_DROP": "ou arraste e solte o arquivo CSV aqui",
+        "FILE_REQUIREMENTS": "O arquivo deve estar no formato CSV com cabeçalhos"
+      },
+      "STEP_2": {
+        "TITLE": "Mapear Campos",
+        "DESCRIPTION": "Mapeie as colunas do CSV para os campos do sistema",
+        "COLUMN": "Coluna do CSV",
+        "MAPS_TO": "Mapeia para",
+        "PREVIEW": "Pré-visualização",
+        "REQUIRED_FIELDS": "Campos obrigatórios: Nome, Email ou Telefone",
+        "CONTACT_FIELDS": "Campos do Contato",
+        "DEAL_FIELDS": "Campos do Negócio",
+        "SELECT_FIELD": "Selecione um campo...",
+        "SKIP_COLUMN": "Ignorar esta coluna"
+      },
+      "STEP_3": {
+        "TITLE": "Configuração da Importação",
+        "DESCRIPTION": "Configure as definições da importação",
+        "SELECT_PIPELINE": "Selecione o Pipeline",
+        "SELECT_STAGE": "Selecione a Etapa Inicial",
+        "IMPORT_SUMMARY": "Resumo da Importação",
+        "TOTAL_ROWS": "Total de linhas",
+        "VALID_ROWS": "Linhas válidas",
+        "INVALID_ROWS": "Linhas inválidas"
+      },
+      "FIELDS": {
+        "CONTACT_NAME": "Nome do Contato",
+        "CONTACT_EMAIL": "Email do Contato",
+        "CONTACT_PHONE": "Telefone do Contato",
+        "CONTACT_COMPANY": "Empresa",
+        "CONTACT_CITY": "Cidade",
+        "CONTACT_COUNTRY": "País",
+        "CONTACT_LABELS": "Tags do Contato",
+        "DEAL_TITLE": "Título do Negócio",
+        "DEAL_AMOUNT": "Valor do Negócio",
+        "DEAL_CURRENCY": "Moeda",
+        "DEAL_CLOSE_DATE": "Data de Fechamento",
+        "DEAL_NOTES": "Observações",
+        "DEAL_LABELS": "Tags do Negócio"
+      },
+      "BUTTONS": {
+        "BACK": "Voltar",
+        "NEXT": "Próximo",
+        "IMPORT": "Importar Leads",
+        "CANCEL": "Cancelar"
+      },
+      "SUCCESS": "Leads importados com sucesso!",
+      "ERROR": "Falha ao importar leads. Por favor, verifique o arquivo e tente novamente.",
+      "PROCESSING": "Processando importação...",
+      "COMPLETED": "Importação concluída!"
+    }
+  }
+}
+
