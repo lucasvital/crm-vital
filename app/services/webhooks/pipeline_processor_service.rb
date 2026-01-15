@@ -11,6 +11,7 @@ class Webhooks::PipelineProcessorService
     # 1. Mapear campos do payload
     contact_params = map_contact_fields
     deal_params = map_deal_fields
+    custom_attrs = map_custom_attributes
     
     # 2. Criar lead via Leads::CreatorService
     result = Leads::CreatorService.new(
@@ -18,7 +19,8 @@ class Webhooks::PipelineProcessorService
       contact_params: contact_params,
       deal_params: deal_params,
       contact_labels: extract_labels,
-      deal_labels: extract_labels
+      deal_labels: extract_labels,
+      custom_attributes: custom_attrs
     ).perform
     
     # 3. Log e retorno
@@ -63,6 +65,20 @@ class Webhooks::PipelineProcessorService
       close_date: parse_date(extract_field(mapping['close_date'])),
       notes: extract_field(mapping['notes'])
     }.compact
+  end
+
+  def map_custom_attributes
+    mapping = @webhook.field_mapping || {}
+    custom_mapping = mapping['custom_attributes'] || {}
+    
+    result = {}
+    custom_mapping.each do |attribute_key, field_path|
+      value = extract_field(field_path)
+      result[attribute_key] = value if value.present?
+    end
+    
+    Rails.logger.info "Mapped custom attributes: #{result.inspect}"
+    result
   end
 
   def extract_labels

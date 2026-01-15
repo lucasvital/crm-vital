@@ -1,10 +1,11 @@
 class Leads::CreatorService
-  def initialize(account:, contact_params:, deal_params:, contact_labels: nil, deal_labels: nil)
+  def initialize(account:, contact_params:, deal_params:, contact_labels: nil, deal_labels: nil, custom_attributes: nil)
     @account = account
     @contact_params = contact_params
     @deal_params = deal_params
     @contact_labels = contact_labels
     @deal_labels = deal_labels
+    @custom_attributes = custom_attributes || {}
     @errors = []
   end
 
@@ -12,6 +13,9 @@ class Leads::CreatorService
     ActiveRecord::Base.transaction do
       find_or_create_contact
       return { success: false, errors: @errors } if @errors.any?
+
+      # Aplicar custom attributes DEPOIS de criar/encontrar o contato
+      apply_custom_attributes if @custom_attributes.present?
 
       # Criar ContactInbox para WhatsApp
       create_contact_inboxes_for_whatsapp
@@ -223,6 +227,43 @@ class Leads::CreatorService
         # Não interromper o processo se falhar
       end
     end
+  end
+
+  def apply_custom_attributes
+    return if @custom_attributes.blank? || @contact.nil?
+    
+    Rails.logger.info "=== Applying custom attributes to contact #{@contact.id}: #{@custom_attributes.inspect}"
+    
+    # Inicializar custom_attributes se não existir
+    @contact.custom_attributes ||= {}
+    
+    @custom_attributes.each do |attribute_key, value|
+      # Encontrar a definição do atributo personalizado
+      attr_definition = @account.custom_attribute_definitions
+                                .find_by(attribute_key: attribute_key, 
+                                        attribute_model: 'contact_attribute')
+      
+      if attr_definition
+        @contact.custom_attributes[attribute_key] = value
+        Rails.logger.info "=== Set custom attribute '#{attribute_key}' = '#{value}' for contact #{@contact.id}"
+      else
+        Rails.logger.warn "=== Custom attribute '#{attribute_key}' not found for account #{@account.id}"
+      end
+    end
+    
+    # Salvar os custom attributes se houve mudanças
+    if @contact.custom_attributes_changed?
+      unless @contact.save
+        @errors.concat(@contact.errors.full_messages)
+        Rails.logger.error "=== Failed to save custom attributes: #{@contact.errors.full_messages}"
+      else
+        Rails.logger.info "=== Successfully saved custom attributes for contact #{@contact.id}"
+      end
+    end
+  rescue StandardError => e
+    Rails.logger.error "=== Error applying custom attributes: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    @errors << "Error applying custom attributes: #{e.message}"
   end
 end
 
