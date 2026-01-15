@@ -8,33 +8,52 @@ class Webhooks::PipelineProcessorService
   end
 
   def process
+    Rails.logger.info "📦 PipelineProcessorService - Starting"
+    Rails.logger.info "   Payload received: #{@payload.inspect}"
+    
     # 1. Mapear campos do payload
+    Rails.logger.info "🔍 Step 1: Mapping contact fields..."
     contact_params = map_contact_fields
+    Rails.logger.info "   Contact params: #{contact_params.inspect}"
+    
+    Rails.logger.info "🔍 Step 2: Mapping deal fields..."
     deal_params = map_deal_fields
+    Rails.logger.info "   Deal params: #{deal_params.inspect}"
+    
+    Rails.logger.info "🔍 Step 3: Mapping custom attributes..."
     custom_attrs = map_custom_attributes
+    Rails.logger.info "   Custom attributes: #{custom_attrs.inspect}"
+    
+    Rails.logger.info "🔍 Step 4: Extracting labels..."
+    labels = extract_labels
+    Rails.logger.info "   Labels: #{labels.inspect}"
     
     # 2. Criar lead via Leads::CreatorService
+    Rails.logger.info "🚀 Step 5: Creating lead via CreatorService..."
     result = Leads::CreatorService.new(
       account: @account,
       contact_params: contact_params,
       deal_params: deal_params,
-      contact_labels: extract_labels,
-      deal_labels: extract_labels,
+      contact_labels: labels,
+      deal_labels: labels,
       custom_attributes: custom_attrs
     ).perform
     
     # 3. Log e retorno
     if result[:success]
-      Rails.logger.info "Pipeline Webhook #{@webhook.id} processed successfully"
-      Rails.logger.info "Contact: #{result[:contact].id}, Deal: #{result[:deal].id}"
+      Rails.logger.info "✅ Pipeline Webhook #{@webhook.id} processed successfully"
+      Rails.logger.info "   Contact: #{result[:contact].id}, Deal: #{result[:deal].id}"
     else
-      Rails.logger.error "Pipeline Webhook #{@webhook.id} failed: #{result[:errors]}"
+      Rails.logger.error "❌ Pipeline Webhook #{@webhook.id} failed: #{result[:errors]}"
     end
     
     result
   rescue StandardError => e
-    Rails.logger.error "PipelineProcessorService error: #{e.message}"
-    Rails.logger.error e.backtrace.join("\n")
+    Rails.logger.error "💥 PipelineProcessorService EXCEPTION"
+    Rails.logger.error "   Error: #{e.message}"
+    Rails.logger.error "   Class: #{e.class}"
+    Rails.logger.error "   Backtrace:"
+    e.backtrace.first(10).each { |line| Rails.logger.error "     #{line}" }
     { success: false, errors: [e.message] }
   end
 
@@ -46,7 +65,7 @@ class Webhooks::PipelineProcessorService
     {
       name: extract_field(mapping['name']),
       email: extract_field(mapping['email']),
-      phone_number: extract_field(mapping['phone_number']),
+      phone_number: normalize_phone_number(extract_field(mapping['phone_number'])),
       company_name: extract_field(mapping['company_name']),
       city: extract_field(mapping['city']),
       country: extract_field(mapping['country'])
@@ -98,7 +117,9 @@ class Webhooks::PipelineProcessorService
       break if value.nil?
     end
     
-    value.presence
+    extracted_value = value.presence
+    Rails.logger.debug "   📌 extract_field('#{field_path}') => #{extracted_value.inspect}"
+    extracted_value
   end
 
   def parse_date(date_string)
@@ -124,6 +145,22 @@ class Webhooks::PipelineProcessorService
     rescue ArgumentError, TypeError
       nil
     end
+  end
+
+  def normalize_phone_number(phone)
+    return nil if phone.blank?
+    
+    # Remove todos os caracteres especiais (espaços, parênteses, hífens, pontos)
+    # Mantém apenas números e o sinal de +
+    cleaned = phone.to_s.gsub(/[^\d\+]/, '')
+    
+    # Se não começar com +, adiciona o +
+    cleaned = "+#{cleaned}" unless cleaned.start_with?('+')
+    
+    # Log para debug
+    Rails.logger.info "   📞 Normalized phone: '#{phone}' -> '#{cleaned}'" if phone != cleaned
+    
+    cleaned
   end
 end
 
