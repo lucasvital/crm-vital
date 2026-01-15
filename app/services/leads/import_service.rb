@@ -48,7 +48,9 @@ class Leads::ImportService
       validation_error = validate_required_fields(mapped_data)
       if validation_error
         error_count += 1
-        errors << { row: row_number, error: validation_error }
+        error_detail = { row: row_number, error: validation_error, name: mapped_data['contact_name'] }
+        errors << error_detail
+        Rails.logger.warn "=== Import Row #{row_number} FAILED: #{validation_error} (Name: #{mapped_data['contact_name']})"
         next
       end
 
@@ -57,11 +59,16 @@ class Leads::ImportService
       
       if result[:success]
         success_count += 1
+        Rails.logger.info "=== Import Row #{row_number} SUCCESS: Contact #{result[:contact]&.id}, Deal #{result[:deal]&.id}"
       else
         error_count += 1
-        errors << { row: row_number, error: result[:errors].join(', ') }
+        error_detail = { row: row_number, error: result[:errors].join(', '), name: mapped_data['contact_name'] }
+        errors << error_detail
+        Rails.logger.error "=== Import Row #{row_number} FAILED: #{result[:errors].join(', ')} (Name: #{mapped_data['contact_name']})"
       end
     end
+    
+    Rails.logger.info "=== Import Complete: #{success_count} success, #{error_count} errors"
 
     {
       success: true,
@@ -94,9 +101,26 @@ class Leads::ImportService
       return nil
     end
 
-    # Ensure UTF-8 encoding
+    # Ensure UTF-8 encoding with better handling
+    # Try to detect encoding and convert properly
     utf8_data = data.force_encoding('UTF-8')
-    utf8_data.valid_encoding? ? utf8_data : utf8_data.encode('UTF-16le', invalid: :replace, replace: '').encode('UTF-8')
+    
+    unless utf8_data.valid_encoding?
+      Rails.logger.warn "=== CSV has invalid UTF-8 encoding, attempting to fix..."
+      
+      # Try common encodings
+      ['ISO-8859-1', 'Windows-1252', 'UTF-16LE', 'UTF-16BE'].each do |encoding|
+        begin
+          utf8_data = data.force_encoding(encoding).encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
+          Rails.logger.info "=== Successfully converted from #{encoding} to UTF-8"
+          break
+        rescue Encoding::InvalidByteSequenceError, Encoding::UndefinedConversionError
+          next
+        end
+      end
+    end
+    
+    utf8_data
   end
 
   def map_row_data(row, column_mapping)
@@ -113,8 +137,12 @@ class Leads::ImportService
 
   def validate_required_fields(data)
     return 'Name is required' if data['contact_name'].blank?
-    return 'Email is required' if data['contact_email'].blank?
-    return 'Phone is required' if data['contact_phone'].blank?
+    
+    # Email OU phone é obrigatório (não ambos)
+    if data['contact_email'].blank? && data['contact_phone'].blank?
+      return 'Email or phone is required'
+    end
+    
     nil
   end
 
@@ -122,7 +150,7 @@ class Leads::ImportService
     contact_params = {
       name: mapped_data['contact_name'],
       email: mapped_data['contact_email'],
-      phone_number: mapped_data['contact_phone'],
+      phone_number: normalize_phone_number(mapped_data['contact_phone']),
       company_name: mapped_data['contact_company'],
       city: mapped_data['contact_city'],
       country: mapped_data['contact_country']
@@ -164,6 +192,22 @@ class Leads::ImportService
     Date.parse(date_string.to_s)
   rescue ArgumentError
     nil
+  end
+
+  def normalize_phone_number(phone)
+    return nil if phone.blank?
+    
+    # Remove todos os caracteres especiais (espaços, parênteses, hífens, pontos)
+    # Mantém apenas números e o sinal de +
+    cleaned = phone.to_s.gsub(/[^\d\+]/, '')
+    
+    # Se não começar com +, adiciona o +
+    cleaned = "+#{cleaned}" unless cleaned.start_with?('+')
+    
+    # Log para debug
+    Rails.logger.info "=== Normalized phone: '#{phone}' -> '#{cleaned}'" if phone != cleaned
+    
+    cleaned
   end
 end
 
