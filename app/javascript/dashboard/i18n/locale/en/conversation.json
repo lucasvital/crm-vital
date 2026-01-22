@@ -410,7 +410,36 @@
     "DROP_TO": "Drop here to move to {stage}"
   },
   "KANBAN": {
-    "BADGE_STAGE": "Stage: {stage}"
+    "BADGE_STAGE": "Stage: {stage}",
+    "BATCH": {
+      "SELECT": "Select",
+      "EXIT_SELECTION": "Cancel selection",
+      "SELECTED_COUNT": "{count} selected",
+      "SELECT_ALL": "Select all",
+      "DESELECT_ALL": "Deselect all",
+      "DELETE_SELECTED": "Delete selected",
+      "CONFIRM_DELETE": "Are you sure you want to delete {count} deal(s)? This action cannot be undone.",
+      "DELETE_SUCCESS": "{count} deal(s) deleted successfully.",
+      "DELETE_PARTIAL": "{success} deal(s) deleted, {failed} failed.",
+      "SELECT_FROM": "Select from",
+      "ALL_STAGES": "All stages"
+    },
+    "DISTRIBUTE": {
+      "BUTTON": "Distribute to agents",
+      "TITLE": "Distribute Deals to Agents",
+      "DESCRIPTION": "Distribute {count} selected deal(s) among agents.",
+      "ADD_AGENT": "Add agent",
+      "SELECT_AGENT": "Select an agent...",
+      "TOTAL": "Total",
+      "MUST_BE_100": "The sum of percentages must be 100%.",
+      "CANCEL": "Cancel",
+      "CONFIRM": "Distribute",
+      "NO_AGENTS": "Select at least one agent to distribute.",
+      "INVALID_PERCENTAGE": "The sum of percentages must be exactly 100%.",
+      "NO_DEALS": "No deal selected.",
+      "SUCCESS": "{count} deal(s) distributed successfully!",
+      "PARTIAL_SUCCESS": "{success} deal(s) distributed, {failed} failed."
+    }
   },
   "DEAL_DETAILS": {
     "UNTITLED": "Untitled Deal",

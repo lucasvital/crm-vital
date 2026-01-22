@@ -377,6 +377,7 @@ export default {
         await DealsAPI.create({
           deal: {
             contact_id: contactId,
+            conversation_id: this.currentChat?.id || null,
             pipeline_id: payload.pipelineId,
             pipeline_stage_id: payload.stageId,
             title: payload.title,

@@ -13,7 +13,9 @@
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #  account_id          :bigint           not null
+#  assignee_id         :bigint
 #  contact_id          :bigint           not null
+#  conversation_id     :bigint
 #  pipeline_id         :bigint           not null
 #  pipeline_stage_id   :bigint           not null
 #  won_by_user_id      :bigint
@@ -23,7 +25,9 @@
 #  index_deals_on_account_id                  (account_id)
 #  index_deals_on_account_id_and_contact_id   (account_id,contact_id)
 #  index_deals_on_account_id_and_pipeline_id  (account_id,pipeline_id)
+#  index_deals_on_assignee_id                 (assignee_id)
 #  index_deals_on_contact_id                  (contact_id)
+#  index_deals_on_conversation_id             (conversation_id)
 #  index_deals_on_pipeline_id                 (pipeline_id)
 #  index_deals_on_pipeline_stage_id           (pipeline_stage_id)
 #  index_deals_on_won_at                      (won_at)
@@ -32,7 +36,9 @@
 # Foreign Keys
 #
 #  fk_rails_...  (account_id => accounts.id)
+#  fk_rails_...  (assignee_id => users.id)
 #  fk_rails_...  (contact_id => contacts.id)
+#  fk_rails_...  (conversation_id => conversations.id)
 #  fk_rails_...  (pipeline_id => pipelines.id)
 #  fk_rails_...  (pipeline_stage_id => pipeline_stages.id)
 #  fk_rails_...  (won_by_user_id => users.id)
@@ -45,6 +51,8 @@ class Deal < ApplicationRecord
   belongs_to :pipeline
   belongs_to :pipeline_stage
   belongs_to :won_by_user, class_name: 'User', optional: true
+  belongs_to :assignee, class_name: 'User', optional: true
+  belongs_to :conversation, optional: true
 
   validates :title, presence: true
   validates :currency, presence: true

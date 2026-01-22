@@ -2,14 +2,14 @@ class Api::V1::Accounts::DealsController < Api::V1::Accounts::BaseController
   before_action :set_deal, only: [:update, :destroy]
 
   def index
-    deals = current_account.deals.includes(:contact, :pipeline, :pipeline_stage, :labels)
+    deals = current_account.deals.includes(:contact, :pipeline, :pipeline_stage, :labels, :assignee)
     deals = deals.where(pipeline_id: params[:pipeline_id]) if params[:pipeline_id].present?
     deals = deals.where(contact_id: params[:contact_id]) if params[:contact_id].present?
-    
-    # Customizar JSON para incluir label_list do contato
+
+    # Customizar JSON para incluir label_list do contato, assignee e conversation_id
     deals_json = deals.map do |deal|
       deal.as_json(
-      only: [:id, :title, :amount, :currency, :close_date, :notes, :pipeline_id, :pipeline_stage_id],
+      only: [:id, :title, :amount, :currency, :close_date, :notes, :pipeline_id, :pipeline_stage_id, :assignee_id, :conversation_id],
         methods: [:label_list],
       include: {
         pipeline_stage: { only: [:id, :name, :key, :position] }
@@ -21,10 +21,15 @@ class Api::V1::Accounts::DealsController < Api::V1::Accounts::BaseController
           'email' => deal.contact.email,
           'phone_number' => deal.contact.phone_number,
           'label_list' => deal.contact.label_list
-        }
+        },
+        'assignee' => deal.assignee.present? ? {
+          'id' => deal.assignee.id,
+          'name' => deal.assignee.name,
+          'thumbnail' => deal.assignee.avatar_url
+        } : nil
       )
     end
-    
+
     render json: deals_json
   end
 
@@ -57,7 +62,7 @@ class Api::V1::Accounts::DealsController < Api::V1::Accounts::BaseController
   end
 
   def deal_params
-    params.require(:deal).permit(:contact_id, :pipeline_id, :pipeline_stage_id, :title, :amount, :currency, :close_date, :notes)
+    params.require(:deal).permit(:contact_id, :pipeline_id, :pipeline_stage_id, :title, :amount, :currency, :close_date, :notes, :assignee_id, :conversation_id)
   end
 end
 

@@ -65,72 +65,21 @@ const fetchColumn = async stage => {
     const pid = selectedPipelineId.value;
     const { data } = await DealsAPI.list({ pipelineId: pid });
     const deals = Array.isArray(data) ? data : [];
-    
-    // DEBUG: Log para verificar labels
-    console.log('=== DEALS CARREGADOS ===', deals.length);
-    deals.forEach(d => {
-      console.log(`Deal ${d.id}:`, {
-        title: d.title,
-        contact: d.contact?.name,
-        contact_labels: d.contact?.label_list,
-        deal_labels: d.label_list
-      });
-    });
-    
-    // Buscar info recente de conversa/assignee por contato (cache por chamada)
-    const contactIds = [
-      ...new Set(deals.map(d => d?.contact?.id).filter(Boolean)),
-    ];
-    const contactInfoMap = {};
-    await Promise.all(
-      contactIds.map(async cid => {
-        try {
-          const resp = await ContactAPI.getConversations(cid);
-          const convs = resp?.data?.payload || resp?.data?.data || resp?.data || [];
-          // Pegar a conversa mais recente com mensagem não-atividade
-          const sorted = (convs || []).slice().sort((a, b) => {
-            const ax = a.last_activity_at || a.created_at || 0;
-            const bx = b.last_activity_at || b.created_at || 0;
-            return new Date(bx) - new Date(ax);
-          });
-          const recent = sorted[0] || null;
-          const preview =
-            recent?.last_non_activity_message?.content ||
-            (Array.isArray(recent?.messages)
-              ? (recent.messages.find(m => m.message_type !== 'activity')?.content || '')
-              : '') ||
-            '';
-          const assigneeName = recent?.meta?.assignee?.name || '';
-          const assigneeThumb = recent?.meta?.assignee?.thumbnail || '';
-          const inboxId = recent?.inbox_id || null;
-          const conversationId = recent?.id || null;
-          contactInfoMap[cid] = {
-            preview: String(preview || ''),
-            assigneeName,
-            assigneeThumb,
-            inboxId,
-            conversationId,
-          };
-        } catch (_) {
-          contactInfoMap[cid] = { preview: '', assigneeName: '', assigneeThumb: '', inboxId: null, conversationId: null };
-        }
-      })
-    );
+
+    // Agora usamos conversation_id que vem do deal (sem N+1 queries!)
     state[stage].items = deals
       .filter(d => d?.pipeline_stage?.key === stage)
       .map(d => {
-        const cid = d?.contact?.id;
-        const info = (cid && contactInfoMap[cid]) || {
-          preview: '',
-          assigneeName: '',
-          assigneeThumb: '',
-          inboxId: null,
-          conversationId: null,
-        };
+        // Priorizar assignee do deal
+        const dealAssignee = d.assignee;
+        const assigneeName = dealAssignee?.name || '';
+        const assigneeThumb = dealAssignee?.thumbnail || '';
+
         return {
           id: d.id, // deal id
           pipeline_stage_id: d.pipeline_stage_id,
-          contact: d.contact, // ← ADICIONAR CONTACT COMPLETO COM LABELS
+          assignee_id: d.assignee_id,
+          contact: d.contact,
           custom_attributes: {
             deal_stage: d.pipeline_stage?.key,
             deal_title: d.title,
@@ -141,11 +90,11 @@ const fetchColumn = async stage => {
           },
           meta: {
             sender: { name: d.contact?.name },
-            assignee: { name: info.assigneeName, thumbnail: info.assigneeThumb },
+            assignee: { name: assigneeName, thumbnail: assigneeThumb },
           },
-          _preview: info.preview,
-          _inboxId: info.inboxId,
-          _conversationId: info.conversationId,
+          _preview: d.notes || '',
+          _inboxId: null,
+          _conversationId: d.conversation_id || null,
         };
       });
   } catch (e) {
@@ -162,6 +111,7 @@ const refreshBoard = async () => {
 
 onMounted(async () => {
   await store.dispatch('inboxes/get');
+  await store.dispatch('agents/get');
 // Carrega pipelines e etapas do pipeline selecionado
   const { data: pipes } = await PipelinesAPI.get();
   pipelines.value = pipes || [];
@@ -207,6 +157,269 @@ const selectedConversation = ref(null);
 const initialValues = ref({});
 const showStartConversationModal = ref(false);
 const selectedDealForConversation = ref(null);
+
+// Seleção em lote
+const selectionMode = ref(false);
+const selectedDeals = ref(new Set());
+const isDeletingBatch = ref(false);
+
+const selectedDealsCount = computed(() => selectedDeals.value.size);
+
+const allDealsCount = computed(() => {
+  return STAGES.value.reduce((acc, stage) => acc + (state[stage]?.items?.length || 0), 0);
+});
+
+const isAllSelected = computed(() => {
+  return allDealsCount.value > 0 && selectedDealsCount.value === allDealsCount.value;
+});
+
+const toggleSelectionMode = () => {
+  selectionMode.value = !selectionMode.value;
+  if (!selectionMode.value) {
+    selectedDeals.value = new Set();
+  }
+};
+
+const toggleDealSelection = (dealId, event) => {
+  event.stopPropagation();
+  const newSet = new Set(selectedDeals.value);
+  if (newSet.has(dealId)) {
+    newSet.delete(dealId);
+  } else {
+    newSet.add(dealId);
+  }
+  selectedDeals.value = newSet;
+};
+
+const isDealSelected = (dealId) => selectedDeals.value.has(dealId);
+
+const selectAllDeals = () => {
+  const newSet = new Set();
+  STAGES.value.forEach(stage => {
+    (state[stage]?.items || []).forEach(deal => {
+      newSet.add(deal.id);
+    });
+  });
+  selectedDeals.value = newSet;
+};
+
+const deselectAllDeals = () => {
+  selectedDeals.value = new Set();
+};
+
+const deleteSelectedDeals = async () => {
+  if (selectedDealsCount.value === 0) return;
+
+  const confirmed = window.confirm(
+    t('KANBAN.BATCH.CONFIRM_DELETE', { count: selectedDealsCount.value })
+  );
+  if (!confirmed) return;
+
+  isDeletingBatch.value = true;
+  const idsToDelete = Array.from(selectedDeals.value);
+  const errors = [];
+
+  for (const dealId of idsToDelete) {
+    try {
+      await DealsAPI.delete(dealId);
+      // Remove do estado local
+      STAGES.value.forEach(stage => {
+        const idx = state[stage].items.findIndex(d => d.id === dealId);
+        if (idx >= 0) state[stage].items.splice(idx, 1);
+      });
+    } catch (e) {
+      errors.push(dealId);
+    }
+  }
+
+  selectedDeals.value = new Set();
+  isDeletingBatch.value = false;
+
+  if (errors.length > 0) {
+    alert(t('KANBAN.BATCH.DELETE_PARTIAL', { success: idsToDelete.length - errors.length, failed: errors.length }));
+  } else {
+    alert(t('KANBAN.BATCH.DELETE_SUCCESS', { count: idsToDelete.length }));
+  }
+};
+
+// Agentes e distribuição
+const agents = useMapGetter('agents/getAgents');
+const showDistributeModal = ref(false);
+const isDistributing = ref(false);
+const selectedStageForSelection = ref('all');
+const distributionConfig = ref([]);
+
+const getDealsFromStage = (stageKey) => {
+  if (stageKey === 'all') {
+    return STAGES.value.flatMap(stage => state[stage]?.items || []);
+  }
+  return state[stageKey]?.items || [];
+};
+
+const getStageDealsCount = (stageKey) => {
+  return getDealsFromStage(stageKey).length;
+};
+
+const selectByPercentage = (percentage, stageKey = 'all') => {
+  const deals = getDealsFromStage(stageKey);
+  const count = Math.ceil(deals.length * (percentage / 100));
+  const shuffled = [...deals].sort(() => Math.random() - 0.5);
+  const toSelect = shuffled.slice(0, count);
+
+  const newSet = new Set(selectedDeals.value);
+  toSelect.forEach(deal => newSet.add(deal.id));
+  selectedDeals.value = newSet;
+};
+
+const selectAllFromStage = (stageKey) => {
+  const deals = getDealsFromStage(stageKey);
+  const newSet = new Set(selectedDeals.value);
+  deals.forEach(deal => newSet.add(deal.id));
+  selectedDeals.value = newSet;
+};
+
+const deselectAllFromStage = (stageKey) => {
+  const deals = getDealsFromStage(stageKey);
+  const dealIds = new Set(deals.map(d => d.id));
+  const newSet = new Set([...selectedDeals.value].filter(id => !dealIds.has(id)));
+  selectedDeals.value = newSet;
+};
+
+const openDistributeModal = () => {
+  if (selectedDealsCount.value === 0) return;
+  distributionConfig.value = [];
+  showDistributeModal.value = true;
+};
+
+const addAgentToDistribution = (agentId) => {
+  if (!agentId || distributionConfig.value.find(d => d.agentId === agentId)) return;
+  const agent = (agents.value || []).find(a => a.id === Number(agentId));
+  if (agent) {
+    distributionConfig.value.push({
+      agentId: agent.id,
+      agentName: agent.name,
+      percentage: 0,
+    });
+    recalculatePercentages();
+  }
+};
+
+const removeAgentFromDistribution = (agentId) => {
+  distributionConfig.value = distributionConfig.value.filter(d => d.agentId !== agentId);
+  recalculatePercentages();
+};
+
+const recalculatePercentages = () => {
+  const count = distributionConfig.value.length;
+  if (count === 0) return;
+  const each = Math.floor(100 / count);
+  const remainder = 100 - (each * count);
+  distributionConfig.value.forEach((config, idx) => {
+    config.percentage = each + (idx < remainder ? 1 : 0);
+  });
+};
+
+const updateAgentPercentage = (agentId, percentage) => {
+  const config = distributionConfig.value.find(d => d.agentId === agentId);
+  if (config) {
+    config.percentage = Math.max(0, Math.min(100, Number(percentage) || 0));
+  }
+};
+
+const totalDistributionPercentage = computed(() => {
+  return distributionConfig.value.reduce((acc, d) => acc + d.percentage, 0);
+});
+
+const distributeToAgents = async () => {
+  if (distributionConfig.value.length === 0) {
+    alert(t('KANBAN.DISTRIBUTE.NO_AGENTS'));
+    return;
+  }
+
+  if (totalDistributionPercentage.value !== 100) {
+    alert(t('KANBAN.DISTRIBUTE.INVALID_PERCENTAGE'));
+    return;
+  }
+
+  isDistributing.value = true;
+
+  // Pegar todos os deals selecionados
+  const selectedDealsList = [];
+  STAGES.value.forEach(stage => {
+    (state[stage]?.items || []).forEach(deal => {
+      if (selectedDeals.value.has(deal.id)) {
+        selectedDealsList.push(deal);
+      }
+    });
+  });
+
+  if (selectedDealsList.length === 0) {
+    alert(t('KANBAN.DISTRIBUTE.NO_DEALS'));
+    isDistributing.value = false;
+    return;
+  }
+
+  // Embaralhar para distribuição aleatória
+  const shuffled = [...selectedDealsList].sort(() => Math.random() - 0.5);
+
+  // Calcular quantos deals para cada agente
+  const distribution = [];
+  let startIdx = 0;
+
+  distributionConfig.value.forEach((config, idx) => {
+    const count = idx === distributionConfig.value.length - 1
+      ? shuffled.length - startIdx
+      : Math.round(shuffled.length * (config.percentage / 100));
+
+    const dealsForAgent = shuffled.slice(startIdx, startIdx + count);
+    distribution.push({
+      agentId: config.agentId,
+      agentName: config.agentName,
+      deals: dealsForAgent,
+    });
+    startIdx += count;
+  });
+
+  // Atribuir agentes aos deals
+  let successCount = 0;
+  let errorCount = 0;
+
+  for (const group of distribution) {
+    for (const deal of group.deals) {
+      try {
+        await DealsAPI.update(deal.id, { deal: { assignee_id: group.agentId } });
+
+        // Atualizar o assignee no estado local
+        STAGES.value.forEach(stage => {
+          const dealInState = state[stage].items.find(d => d.id === deal.id);
+          if (dealInState) {
+            dealInState.meta = {
+              ...dealInState.meta,
+              assignee: {
+                name: group.agentName,
+                thumbnail: '',
+              },
+            };
+          }
+        });
+
+        successCount++;
+      } catch (e) {
+        errorCount++;
+      }
+    }
+  }
+
+  selectedDeals.value = new Set();
+  showDistributeModal.value = false;
+  isDistributing.value = false;
+
+  if (errorCount > 0) {
+    alert(t('KANBAN.DISTRIBUTE.PARTIAL_SUCCESS', { success: successCount, failed: errorCount }));
+  } else {
+    alert(t('KANBAN.DISTRIBUTE.SUCCESS', { count: successCount }));
+  }
+};
 
 const stageBadgeIconColor = stage => {
   // Removido: cores específicas por etapa
@@ -590,8 +803,98 @@ const handleDealUpdate = async updatedData => {
           <span class="i-lucide-refresh-cw mr-2 size-4" />
           {{ t('KANBAN.CTA.REFRESH') }}
         </button>
+        <button
+          class="inline-flex items-center justify-center rounded-md border px-3 py-2 h-9 text-sm font-medium transition"
+          :class="selectionMode
+            ? 'border-n-blue-9 bg-n-blue-9 text-white hover:bg-n-blue-10'
+            : 'border-n-strong bg-n-solid-1 text-n-slate-12 hover:bg-n-solid-2'"
+          type="button"
+          @click="toggleSelectionMode"
+        >
+          <span class="i-lucide-check-square mr-2 size-4" />
+          {{ selectionMode ? t('KANBAN.BATCH.EXIT_SELECTION') : t('KANBAN.BATCH.SELECT') }}
+        </button>
       </div>
     </header>
+
+    <!-- Barra de ações em lote -->
+    <div
+      v-if="selectionMode"
+      class="flex flex-col gap-3 rounded-lg bg-n-solid-2 px-4 py-3 ring-1 ring-n-alpha-2"
+    >
+      <!-- Linha 1: Seleção por etapa e porcentagem -->
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="text-sm font-medium text-n-slate-11">{{ t('KANBAN.BATCH.SELECT_FROM') }}:</span>
+        <select
+          v-model="selectedStageForSelection"
+          class="rounded-md border border-n-alpha-3 bg-n-solid-1 px-2 py-1.5 text-sm text-n-slate-12"
+        >
+          <option value="all">{{ t('KANBAN.BATCH.ALL_STAGES') }} ({{ allDealsCount }})</option>
+          <option v-for="stage in STAGES" :key="stage" :value="stage">
+            {{ columnTitle(stage) }} ({{ getStageDealsCount(stage) }})
+          </option>
+        </select>
+        <div class="flex items-center gap-1">
+          <button
+            class="rounded-md bg-n-solid-3 px-2 py-1 text-xs font-medium text-n-slate-12 hover:bg-n-alpha-3 transition"
+            type="button"
+            @click="selectAllFromStage(selectedStageForSelection)"
+          >
+            100%
+          </button>
+          <button
+            class="rounded-md bg-n-solid-3 px-2 py-1 text-xs font-medium text-n-slate-12 hover:bg-n-alpha-3 transition"
+            type="button"
+            @click="selectByPercentage(50, selectedStageForSelection)"
+          >
+            50%
+          </button>
+          <button
+            class="rounded-md bg-n-solid-3 px-2 py-1 text-xs font-medium text-n-slate-12 hover:bg-n-alpha-3 transition"
+            type="button"
+            @click="selectByPercentage(25, selectedStageForSelection)"
+          >
+            25%
+          </button>
+        </div>
+        <button
+          v-if="selectedDealsCount > 0"
+          class="text-sm font-medium text-n-slate-11 hover:underline"
+          type="button"
+          @click="deselectAllDeals"
+        >
+          {{ t('KANBAN.BATCH.DESELECT_ALL') }}
+        </button>
+      </div>
+
+      <!-- Linha 2: Contador e ações -->
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-semibold text-n-slate-12">
+          {{ t('KANBAN.BATCH.SELECTED_COUNT', { count: selectedDealsCount }) }}
+        </span>
+        <div class="flex items-center gap-2">
+          <button
+            class="inline-flex items-center justify-center rounded-md border border-n-brand bg-n-brand px-3 py-2 h-9 text-sm font-medium text-white transition hover:bg-n-blue-10 disabled:opacity-50 disabled:cursor-not-allowed"
+            type="button"
+            :disabled="selectedDealsCount === 0 || isDistributing"
+            @click="openDistributeModal"
+          >
+            <span class="i-lucide-users mr-2 size-4" />
+            {{ t('KANBAN.DISTRIBUTE.BUTTON') }}
+          </button>
+          <button
+            class="inline-flex items-center justify-center rounded-md border border-n-red-9 bg-n-red-9 px-3 py-2 h-9 text-sm font-medium text-white transition hover:bg-n-red-10 disabled:opacity-50 disabled:cursor-not-allowed"
+            type="button"
+            :disabled="selectedDealsCount === 0 || isDeletingBatch"
+            @click="deleteSelectedDeals"
+          >
+            <span v-if="isDeletingBatch" class="i-lucide-loader-2 mr-2 size-4 animate-spin" />
+            <span v-else class="i-lucide-trash-2 mr-2 size-4" />
+            {{ t('KANBAN.BATCH.DELETE_SELECTED') }}
+          </button>
+        </div>
+      </div>
+    </div>
 
     <div
       v-if="isAnyColumnLoading && hasNoData"
@@ -640,11 +943,25 @@ const handleDealUpdate = async updatedData => {
             @dragend="onDragEnd"
             @click.stop="onCardClick(deal, $event)"
           >
-            <!-- Linha superior: tag de etapa + avatar fantasma -->
+            <!-- Linha superior: checkbox + tag de etapa + avatar fantasma -->
             <div class="flex items-center justify-between">
-              <div class="inline-flex items-center gap-1 rounded-full bg-n-solid-1 px-2 py-0.5 text-[11px] font-medium text-n-slate-11 ring-1 ring-n-alpha-1">
-                <span :class="['i-lucide-flag', 'size-3', stageBadgeIconColor(stage)]" />
-                {{ columnTitle(stage) }}
+              <div class="flex items-center gap-2">
+                <!-- Checkbox de seleção em lote -->
+                <button
+                  v-if="selectionMode"
+                  type="button"
+                  class="flex items-center justify-center size-5 rounded border transition-colors"
+                  :class="isDealSelected(deal.id)
+                    ? 'bg-n-blue-9 border-n-blue-9 text-white'
+                    : 'bg-n-solid-1 border-n-alpha-3 hover:border-n-blue-9'"
+                  @click="toggleDealSelection(deal.id, $event)"
+                >
+                  <span v-if="isDealSelected(deal.id)" class="i-lucide-check size-3" />
+                </button>
+                <div class="inline-flex items-center gap-1 rounded-full bg-n-solid-1 px-2 py-0.5 text-[11px] font-medium text-n-slate-11 ring-1 ring-n-alpha-1">
+                  <span :class="['i-lucide-flag', 'size-3', stageBadgeIconColor(stage)]" />
+                  {{ columnTitle(stage) }}
+                </div>
               </div>
               <div class="inline-flex items-center gap-2">
                 <button
@@ -800,7 +1117,131 @@ const handleDealUpdate = async updatedData => {
       @close="showStartConversationModal = false; selectedDealForConversation = null"
       @conversation-created="handleConversationCreated"
     />
-    
+
+    <!-- Modal de Distribuição para Agentes -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition-opacity duration-200"
+        leave-active-class="transition-opacity duration-200"
+        enter-from-class="opacity-0"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="showDistributeModal"
+          class="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50"
+          @click.self="showDistributeModal = false"
+        >
+          <div class="w-full max-w-lg rounded-xl bg-n-solid-1 p-6 shadow-xl ring-1 ring-n-alpha-2">
+            <div class="mb-4 flex items-center justify-between">
+              <h2 class="text-lg font-semibold text-n-slate-12">
+                {{ t('KANBAN.DISTRIBUTE.TITLE') }}
+              </h2>
+              <button
+                type="button"
+                class="rounded-md p-1 text-n-slate-11 hover:bg-n-alpha-2"
+                @click="showDistributeModal = false"
+              >
+                <span class="i-lucide-x size-5" />
+              </button>
+            </div>
+
+            <p class="mb-4 text-sm text-n-slate-11">
+              {{ t('KANBAN.DISTRIBUTE.DESCRIPTION', { count: selectedDealsCount }) }}
+            </p>
+
+            <!-- Seletor de Agente -->
+            <div class="mb-4">
+              <label class="mb-1 block text-sm font-medium text-n-slate-12">
+                {{ t('KANBAN.DISTRIBUTE.ADD_AGENT') }}
+              </label>
+              <select
+                class="w-full rounded-md border border-n-alpha-3 bg-n-solid-2 px-3 py-2 text-sm text-n-slate-12"
+                @change="addAgentToDistribution($event.target.value); $event.target.value = ''"
+              >
+                <option value="">{{ t('KANBAN.DISTRIBUTE.SELECT_AGENT') }}</option>
+                <option
+                  v-for="agent in agents"
+                  :key="agent.id"
+                  :value="agent.id"
+                  :disabled="distributionConfig.find(d => d.agentId === agent.id)"
+                >
+                  {{ agent.name }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Lista de Agentes Selecionados -->
+            <div v-if="distributionConfig.length > 0" class="mb-4 space-y-2">
+              <div
+                v-for="config in distributionConfig"
+                :key="config.agentId"
+                class="flex items-center gap-3 rounded-lg bg-n-solid-2 p-3 ring-1 ring-n-alpha-2"
+              >
+                <Avatar :name="config.agentName" :size="32" rounded-full />
+                <div class="flex-1">
+                  <span class="text-sm font-medium text-n-slate-12">{{ config.agentName }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    :value="config.percentage"
+                    class="w-16 rounded-md border border-n-alpha-3 bg-n-solid-1 px-2 py-1 text-center text-sm text-n-slate-12"
+                    @input="updateAgentPercentage(config.agentId, $event.target.value)"
+                  />
+                  <span class="text-sm text-n-slate-11">%</span>
+                  <button
+                    type="button"
+                    class="rounded-md p-1 text-n-slate-11 hover:bg-n-alpha-2 hover:text-n-red-9"
+                    @click="removeAgentFromDistribution(config.agentId)"
+                  >
+                    <span class="i-lucide-trash-2 size-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Total e Aviso -->
+            <div v-if="distributionConfig.length > 0" class="mb-4">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-n-slate-11">{{ t('KANBAN.DISTRIBUTE.TOTAL') }}:</span>
+                <span
+                  :class="totalDistributionPercentage === 100 ? 'text-n-green-9' : 'text-n-red-9'"
+                  class="font-semibold"
+                >
+                  {{ totalDistributionPercentage }}%
+                </span>
+              </div>
+              <p v-if="totalDistributionPercentage !== 100" class="mt-1 text-xs text-n-red-9">
+                {{ t('KANBAN.DISTRIBUTE.MUST_BE_100') }}
+              </p>
+            </div>
+
+            <!-- Botões -->
+            <div class="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                class="rounded-md border border-n-alpha-3 bg-n-solid-2 px-4 py-2 text-sm font-medium text-n-slate-12 hover:bg-n-solid-3"
+                @click="showDistributeModal = false"
+              >
+                {{ t('KANBAN.DISTRIBUTE.CANCEL') }}
+              </button>
+              <button
+                type="button"
+                class="rounded-md bg-n-brand px-4 py-2 text-sm font-medium text-white hover:bg-n-blue-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                :disabled="distributionConfig.length === 0 || totalDistributionPercentage !== 100 || isDistributing"
+                @click="distributeToAgents"
+              >
+                <span v-if="isDistributing" class="i-lucide-loader-2 mr-2 inline-block size-4 animate-spin" />
+                {{ t('KANBAN.DISTRIBUTE.CONFIRM') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- Deal Details View em tela cheia -->
     <Teleport to="body">
       <Transition

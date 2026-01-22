@@ -70,22 +70,49 @@ class ConfigLoader
     config = InstallationConfig.find_by(name: 'ACCOUNT_LEVEL_FEATURE_DEFAULTS')
 
     if config
-      return false if config.value.to_s == account_features.to_s
+      # Garantir que config.value seja sempre um Array
+      current_value = Array(config.value)
+      return false if current_value == account_features
 
-      compare_and_save_feature(config)
+      compare_and_save_feature(config, current_value)
     else
       save_as_new_config({ name: 'ACCOUNT_LEVEL_FEATURE_DEFAULTS', value: account_features, locked: true })
     end
   end
 
-  def compare_and_save_feature(config)
+  def compare_and_save_feature(config, current_value)
+    # Normalize hashes to have string keys only (avoid HashWithIndifferentAccess and symbol keys)
+    normalized_current = normalize_feature_hashes(current_value)
+    normalized_account = normalize_feature_hashes(account_features)
+    
     features = if @reconcile_only_new
                  # leave the existing feature flag values as it is and add new feature flags with default values
-                 (config.value + account_features).uniq { |h| h['name'] }
+                 (normalized_current + normalized_account).uniq { |h| h['name'] }
                else
                  # update the existing feature flag values with default values and add new feature flags with default values
-                 (account_features + config.value).uniq { |h| h['name'] }
+                 (normalized_account + normalized_current).uniq { |h| h['name'] }
                end
-    config.update!({ name: 'ACCOUNT_LEVEL_FEATURE_DEFAULTS', value: features, locked: true })
+    
+    # If save fails due to serialization issues, destroy and recreate
+    begin
+      config.name = 'ACCOUNT_LEVEL_FEATURE_DEFAULTS'
+      config.value = features
+      config.locked = true
+      config.save!
+    rescue TypeError, ArgumentError => e
+      Rails.logger.warn("Failed to update ACCOUNT_LEVEL_FEATURE_DEFAULTS due to #{e.class}: #{e.message}. Recreating...")
+      config.destroy
+      save_as_new_config({ name: 'ACCOUNT_LEVEL_FEATURE_DEFAULTS', value: features, locked: true })
+    end
+  end
+
+  def normalize_feature_hashes(features)
+    Array(features).map do |feature|
+      # Convert to plain hash with string keys and ensure it's a simple hash
+      next feature unless feature.is_a?(Hash)
+      
+      # Deep convert to plain hash with string keys only
+      JSON.parse(feature.to_json)
+    end
   end
 end

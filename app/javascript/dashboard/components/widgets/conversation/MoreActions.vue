@@ -173,6 +173,7 @@ const onDealSubmit = async payload => {
   await DealsAPI.create({
     deal: {
       contact_id: contactId,
+      conversation_id: currentChat.value?.id || null,
       pipeline_id: payload.pipelineId,
       pipeline_stage_id: payload.stageId,
       title: payload.title,

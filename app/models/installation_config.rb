@@ -36,7 +36,18 @@ class InstallationConfig < ApplicationRecord
     # It was throwing error as the default value of column '{}' was failing in deserialization.
     return {}.with_indifferent_access if new_record? && @attributes['serialized_value']&.value_before_type_cast == '{}'
 
-    serialized_value[:value]
+    # Handle cases where serialized_value might be in an unexpected format or fail to deserialize
+    begin
+      val = serialized_value
+      # If serialized_value itself is the value (not wrapped in a hash with :value key)
+      return val if val.is_a?(Array) || (val.is_a?(Hash) && !val.key?(:value) && !val.key?('value'))
+      
+      val[:value]
+    rescue TypeError, ArgumentError, Psych::SyntaxError => e
+      Rails.logger.error("Error deserializing InstallationConfig '#{name}': #{e.message}")
+      # Return a safe default based on the config name
+      name == 'ACCOUNT_LEVEL_FEATURE_DEFAULTS' ? [] : nil
+    end
   end
 
   def value=(value_to_assigned)

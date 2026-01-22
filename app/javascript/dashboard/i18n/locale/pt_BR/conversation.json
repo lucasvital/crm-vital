@@ -357,7 +357,36 @@
       "CANCEL": "Cancelar"
     },
     "START_CONVERSATION": "Enviar Mensagem",
-    "CONVERSATION_STARTED": "Conversa iniciada com sucesso"
+    "CONVERSATION_STARTED": "Conversa iniciada com sucesso",
+    "BATCH": {
+      "SELECT": "Selecionar",
+      "EXIT_SELECTION": "Cancelar seleção",
+      "SELECTED_COUNT": "{count} selecionado(s)",
+      "SELECT_ALL": "Selecionar todos",
+      "DESELECT_ALL": "Desmarcar todos",
+      "DELETE_SELECTED": "Deletar selecionados",
+      "CONFIRM_DELETE": "Tem certeza que deseja deletar {count} negócio(s)? Esta ação não pode ser desfeita.",
+      "DELETE_SUCCESS": "{count} negócio(s) deletado(s) com sucesso.",
+      "DELETE_PARTIAL": "{success} negócio(s) deletado(s), {failed} falhou(aram).",
+      "SELECT_FROM": "Selecionar de",
+      "ALL_STAGES": "Todas as etapas"
+    },
+    "DISTRIBUTE": {
+      "BUTTON": "Distribuir para agentes",
+      "TITLE": "Distribuir Negócios para Agentes",
+      "DESCRIPTION": "Distribua {count} negócio(s) selecionado(s) entre os agentes.",
+      "ADD_AGENT": "Adicionar agente",
+      "SELECT_AGENT": "Selecione um agente...",
+      "TOTAL": "Total",
+      "MUST_BE_100": "A soma das porcentagens deve ser 100%.",
+      "CANCEL": "Cancelar",
+      "CONFIRM": "Distribuir",
+      "NO_AGENTS": "Selecione pelo menos um agente para distribuir.",
+      "INVALID_PERCENTAGE": "A soma das porcentagens deve ser exatamente 100%.",
+      "NO_DEALS": "Nenhum negócio selecionado.",
+      "SUCCESS": "{count} negócio(s) distribuído(s) com sucesso!",
+      "PARTIAL_SUCCESS": "{success} negócio(s) distribuído(s), {failed} falhou(aram)."
+    }
   },
   "KANBAN_A11Y": {
     "DRAG_HINT": "Arraste o cartão para outra coluna para atualizar a etapa.",
