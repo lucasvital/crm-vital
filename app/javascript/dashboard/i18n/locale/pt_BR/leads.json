@@ -1,8 +1,12 @@
 {
   "LEADS": {
     "CREATE": {
-      "TITLE": "Criar Lead",
-      "DESCRIPTION": "Criar um novo lead com informações de contato e negócio",
+      "TITLE": "Criar Negócio",
+      "DESCRIPTION": "Criar um novo negócio com informações de contato",
+      "SELECT_CONTACT": "Selecionar Contato",
+      "SEARCH_CONTACT": "Buscar contato existente",
+      "CREATE_NEW_CONTACT": "Criar novo contato",
+      "SELECTED_CONTACT": "Contato Selecionado",
       "CONTACT_INFO": "Informações do Contato",
       "DEAL_INFO": "Informações do Negócio",
       "FIELDS": {
@@ -20,6 +24,7 @@
         "STAGE": "Etapa Inicial"
       },
       "PLACEHOLDERS": {
+        "SEARCH_CONTACT": "Digite nome, email ou telefone para buscar...",
         "NAME": "Digite o nome do contato",
         "EMAIL": "Digite o endereço de email",
         "PHONE": "Digite o número de telefone",
@@ -29,12 +34,12 @@
         "TITLE": "Digite o título do negócio",
         "AMOUNT": "Digite o valor",
         "CLOSE_DATE": "Selecione a data",
-        "NOTES": "Adicione observações sobre este lead"
+        "NOTES": "Adicione observações sobre este negócio"
       },
-      "SUBMIT": "Criar Lead",
+      "SUBMIT": "Criar Negócio",
       "CANCEL": "Cancelar",
-      "SUCCESS": "Lead criado com sucesso!",
-      "ERROR": "Falha ao criar lead. Por favor, tente novamente."
+      "SUCCESS": "Negócio criado com sucesso!",
+      "ERROR": "Falha ao criar negócio. Por favor, tente novamente."
     },
     "IMPORT": {
       "TITLE": "Importar Leads",

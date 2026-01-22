@@ -1,8 +1,12 @@
 {
   "LEADS": {
     "CREATE": {
-      "TITLE": "Create Lead",
-      "DESCRIPTION": "Create a new lead with contact and deal information",
+      "TITLE": "Create Deal",
+      "DESCRIPTION": "Create a new deal with contact information",
+      "SELECT_CONTACT": "Select Contact",
+      "SEARCH_CONTACT": "Search for existing contact",
+      "CREATE_NEW_CONTACT": "Create new contact",
+      "SELECTED_CONTACT": "Selected Contact",
       "CONTACT_INFO": "Contact Information",
       "DEAL_INFO": "Deal Information",
       "FIELDS": {
@@ -20,6 +24,7 @@
         "STAGE": "Initial Stage"
       },
       "PLACEHOLDERS": {
+        "SEARCH_CONTACT": "Type name, email or phone to search...",
         "NAME": "Enter contact name",
         "EMAIL": "Enter email address",
         "PHONE": "Enter phone number",
@@ -31,10 +36,10 @@
         "CLOSE_DATE": "Select date",
         "NOTES": "Add notes about this lead"
       },
-      "SUBMIT": "Create Lead",
+      "SUBMIT": "Create Deal",
       "CANCEL": "Cancel",
-      "SUCCESS": "Lead created successfully!",
-      "ERROR": "Failed to create lead. Please try again."
+      "SUCCESS": "Deal created successfully!",
+      "ERROR": "Failed to create deal. Please try again."
     },
     "IMPORT": {
       "TITLE": "Import Leads",
