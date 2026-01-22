@@ -106,7 +106,69 @@ const fetchColumn = async stage => {
 };
 
 const refreshBoard = async () => {
-  await Promise.all(STAGES.value.map(stage => fetchColumn(stage)));
+  // Buscar TODOS os deals do pipeline UMA VEZ (otimização de performance)
+  const pid = selectedPipelineId.value;
+  
+  try {
+    // Marcar todas as colunas como loading
+    STAGES.value.forEach(stage => {
+      state[stage].loading = true;
+    });
+
+    const { data } = await DealsAPI.list({ pipelineId: pid });
+    const deals = Array.isArray(data) ? data : [];
+
+    // Distribuir deals entre as stages (uma passada no array)
+    const dealsByStage = deals.reduce((acc, deal) => {
+      const stageKey = deal?.pipeline_stage?.key;
+      if (stageKey && !acc[stageKey]) {
+        acc[stageKey] = [];
+      }
+      if (stageKey) {
+        acc[stageKey].push(deal);
+      }
+      return acc;
+    }, {});
+
+    // Mapear deals para cada stage
+    STAGES.value.forEach(stage => {
+      const stageDeals = dealsByStage[stage] || [];
+      state[stage].items = stageDeals.map(d => {
+        const dealAssignee = d.assignee;
+        const assigneeName = dealAssignee?.name || '';
+        const assigneeThumb = dealAssignee?.thumbnail || '';
+
+        return {
+          id: d.id,
+          pipeline_stage_id: d.pipeline_stage_id,
+          assignee_id: d.assignee_id,
+          contact: d.contact,
+          custom_attributes: {
+            deal_stage: d.pipeline_stage?.key,
+            deal_title: d.title,
+            deal_amount: d.amount,
+            deal_currency: d.currency,
+            deal_close_date: d.close_date,
+            deal_notes: d.notes,
+          },
+          meta: {
+            sender: { name: d.contact?.name },
+            assignee: { name: assigneeName, thumbnail: assigneeThumb },
+          },
+          _preview: d.notes || '',
+          _inboxId: null,
+          _conversationId: d.conversation_id || null,
+        };
+      });
+      state[stage].loading = false;
+    });
+  } catch (e) {
+    alert(t('KANBAN.ALERTS.FETCH_FAILED'));
+    STAGES.value.forEach(stage => {
+      state[stage].items = [];
+      state[stage].loading = false;
+    });
+  }
 };
 
 onMounted(async () => {
