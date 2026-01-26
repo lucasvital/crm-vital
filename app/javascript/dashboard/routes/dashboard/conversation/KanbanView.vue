@@ -1118,15 +1118,16 @@ const handleDealUpdate = async updatedData => {
                 <span class="truncate">{{ deal.meta?.assignee?.name || t('KANBAN.CARDS.UNKNOWN_ASSIGNEE') }}</span>
               </div>
               <div class="flex items-center gap-2">
-                <!-- Botao discreto de iniciar conversa (se nao tiver conversa) -->
+                <!-- Botao de iniciar conversa (se nao tiver conversa) -->
                 <button
                   v-if="!deal._conversationId"
                   type="button"
-                  class="rounded-md p-1 text-n-slate-11 hover:bg-n-alpha-2 hover:text-n-slate-12 transition-colors"
+                  class="flex items-center gap-1 rounded-md px-2 py-1 text-n-brand hover:bg-n-alpha-2 hover:text-n-brand transition-colors font-medium text-xs"
                   :title="$t('KANBAN.START_CONVERSATION')"
                   @click.stop="openStartConversationModal(deal, $event)"
                 >
-                  <span class="i-lucide-message-circle-plus size-3.5" />
+                  <span class="i-lucide-message-square-plus size-3.5" />
+                  <span>Iniciar Conversa</span>
                 </button>
                 <router-link
                   v-if="deal._conversationId"
