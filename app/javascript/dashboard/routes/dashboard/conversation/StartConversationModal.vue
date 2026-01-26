@@ -6,6 +6,7 @@ import { useRouter } from 'vue-router';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useAlert } from 'dashboard/composables';
 import ButtonV4 from 'dashboard/components-next/button/Button.vue';
+import DealsAPI from 'dashboard/api/deals';
 
 const props = defineProps({
   show: {
@@ -18,6 +19,10 @@ const props = defineProps({
   },
   contact: {
     type: Object,
+    default: null,
+  },
+  dealId: {
+    type: [String, Number],
     default: null,
   },
 });
@@ -93,10 +98,19 @@ const handleSend = async () => {
     });
     
     if (response && response.id) {
+      // Se tiver um dealId, atualizar o deal com a conversa
+      if (props.dealId) {
+        try {
+          await DealsAPI.update(props.dealId, { deal: { conversation_id: response.id } });
+        } catch (error) {
+          console.error('Error updating deal with conversation:', error);
+        }
+      }
+
       useAlert(t('KANBAN.CONVERSATION_STARTED'));
       emit('conversation-created', response.id);
       handleClose();
-      
+
       // Redirecionar para a conversa
       router.push(accountScopedRoute(`conversations/${response.id}`));
     }

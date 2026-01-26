@@ -748,6 +748,19 @@ const openStartConversationModal = (deal, event) => {
 };
 
 const handleConversationCreated = (conversationId) => {
+  // Atualizar o _conversationId no estado local do deal
+  if (selectedDealForConversation.value) {
+    const dealId = selectedDealForConversation.value.id;
+    const stageKey = selectedDealForConversation.value.custom_attributes?.deal_stage;
+
+    if (stageKey && state[stageKey]) {
+      const dealIndex = state[stageKey].items.findIndex(d => d.id === dealId);
+      if (dealIndex !== -1) {
+        state[stageKey].items[dealIndex]._conversationId = conversationId;
+      }
+    }
+  }
+
   showStartConversationModal.value = false;
   selectedDealForConversation.value = null;
   // Redirecionar para a nova conversa
@@ -1177,6 +1190,7 @@ const handleDealUpdate = async updatedData => {
       :show="showStartConversationModal"
       :contact-id="String(selectedDealForConversation.contact?.id || '')"
       :contact="selectedDealForConversation.contact"
+      :deal-id="selectedDealForConversation.id"
       @close="showStartConversationModal = false; selectedDealForConversation = null"
       @conversation-created="handleConversationCreated"
     />
