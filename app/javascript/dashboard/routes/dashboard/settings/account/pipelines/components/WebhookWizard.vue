@@ -32,6 +32,10 @@ const webhookName = ref(props.webhook?.name || '');
 const selectedStageId = ref(props.webhook?.pipeline_stage_id || null);
 const isActive = ref(props.webhook?.active ?? true);
 
+// Configuração de lead existente
+const existingLeadAction = ref(props.webhook?.existing_lead_action || 'create_new');
+const existingLeadStageId = ref(props.webhook?.existing_lead_stage_id || null);
+
 // Passo 2: Tags
 const tagInput = ref('');
 const selectedTags = ref(props.webhook?.tag_config?.labels || []);
@@ -60,7 +64,14 @@ const stages = computed(() => {
 });
 
 const isStep1Valid = computed(() => {
-  return webhookName.value.trim() !== '' && selectedStageId.value !== null;
+  const basicValid = webhookName.value.trim() !== '' && selectedStageId.value !== null;
+
+  // Se a ação for mover para etapa, a etapa deve estar selecionada
+  if (existingLeadAction.value === 'update_move_stage') {
+    return basicValid && existingLeadStageId.value !== null;
+  }
+
+  return basicValid;
 });
 
 const isEditMode = computed(() => !!props.webhook);
@@ -191,6 +202,8 @@ const saveWebhook = async () => {
       name: webhookName.value,
       pipeline_stage_id: selectedStageId.value,
       active: isActive.value,
+      existing_lead_action: existingLeadAction.value,
+      existing_lead_stage_id: existingLeadAction.value === 'update_move_stage' ? existingLeadStageId.value : null,
       field_mapping: finalFieldMapping,
       tag_config: {
         labels: selectedTags.value,
@@ -392,6 +405,65 @@ onMounted(() => {
           <label for="active-checkbox" class="text-sm text-n-slate-12">
             Webhook ativo
           </label>
+        </div>
+
+        <!-- Configuração de lead existente -->
+        <div class="mt-4 p-4 rounded-md bg-n-solid-2 border border-n-alpha-2">
+          <label class="block text-sm font-medium text-n-slate-12 mb-3">
+            Quando o lead já existir na pipeline:
+          </label>
+
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                v-model="existingLeadAction"
+                type="radio"
+                value="create_new"
+                class="text-n-brand"
+              />
+              <span class="text-sm text-n-slate-12">Criar novo lead (duplicar)</span>
+            </label>
+
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                v-model="existingLeadAction"
+                type="radio"
+                value="update_keep_stage"
+                class="text-n-brand"
+              />
+              <span class="text-sm text-n-slate-12">Atualizar lead existente (manter etapa atual)</span>
+            </label>
+
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input
+                v-model="existingLeadAction"
+                type="radio"
+                value="update_move_stage"
+                class="text-n-brand mt-1"
+              />
+              <div class="flex-1">
+                <span class="text-sm text-n-slate-12">Atualizar lead existente e mover para etapa:</span>
+                <select
+                  v-model="existingLeadStageId"
+                  :disabled="existingLeadAction !== 'update_move_stage'"
+                  class="w-full mt-1 rounded-md border border-n-alpha-2 bg-n-solid-1 px-3 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option :value="null" disabled>Selecione uma etapa</option>
+                  <option
+                    v-for="stage in stages"
+                    :key="stage.id"
+                    :value="stage.id"
+                  >
+                    {{ stage.name }}
+                  </option>
+                </select>
+              </div>
+            </label>
+          </div>
+
+          <p class="text-xs text-n-slate-11 mt-3">
+            O lead é identificado pelo número de telefone ou email do contato.
+          </p>
         </div>
       </div>
 

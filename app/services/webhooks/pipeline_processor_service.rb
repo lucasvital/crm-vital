@@ -27,16 +27,21 @@ class Webhooks::PipelineProcessorService
     Rails.logger.info "🔍 Step 4: Extracting labels..."
     labels = extract_labels
     Rails.logger.info "   Labels: #{labels.inspect}"
-    
+
+    Rails.logger.info "🔍 Step 5: Building existing lead config..."
+    existing_lead_config = build_existing_lead_config
+    Rails.logger.info "   Existing lead config: #{existing_lead_config.inspect}"
+
     # 2. Criar lead via Leads::CreatorService
-    Rails.logger.info "🚀 Step 5: Creating lead via CreatorService..."
+    Rails.logger.info "🚀 Step 6: Creating/updating lead via CreatorService..."
     result = Leads::CreatorService.new(
       account: @account,
       contact_params: contact_params,
       deal_params: deal_params,
       contact_labels: labels,
       deal_labels: labels,
-      custom_attributes: custom_attrs
+      custom_attributes: custom_attrs,
+      existing_lead_config: existing_lead_config
     ).perform
     
     # 3. Log e retorno
@@ -103,6 +108,13 @@ class Webhooks::PipelineProcessorService
   def extract_labels
     labels_config = @webhook.tag_config || {}
     labels_config['labels'] || []
+  end
+
+  def build_existing_lead_config
+    {
+      action: @webhook.existing_lead_action || 'create_new',
+      stage_id: @webhook.existing_lead_stage_id
+    }
   end
 
   def extract_field(field_path)

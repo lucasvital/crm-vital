@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_01_22_170000) do
+ActiveRecord::Schema[7.1].define(version: 2026_01_27_180000) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1191,8 +1191,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_22_170000) do
     t.jsonb "tag_config", default: {}, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "existing_lead_action", default: "create_new", null: false
+    t.bigint "existing_lead_stage_id"
     t.index ["account_id", "pipeline_id"], name: "index_pipeline_webhooks_on_account_id_and_pipeline_id"
     t.index ["account_id"], name: "index_pipeline_webhooks_on_account_id"
+    t.index ["existing_lead_action"], name: "index_pipeline_webhooks_on_existing_lead_action"
+    t.index ["existing_lead_stage_id"], name: "index_pipeline_webhooks_on_existing_lead_stage_id"
     t.index ["pipeline_id", "name"], name: "index_pipeline_webhooks_on_pipeline_id_and_name"
     t.index ["pipeline_id"], name: "index_pipeline_webhooks_on_pipeline_id"
     t.index ["pipeline_stage_id"], name: "index_pipeline_webhooks_on_pipeline_stage_id"
@@ -1498,6 +1502,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_22_170000) do
   add_foreign_key "pipeline_stages", "pipelines"
   add_foreign_key "pipeline_webhooks", "accounts"
   add_foreign_key "pipeline_webhooks", "pipeline_stages"
+  add_foreign_key "pipeline_webhooks", "pipeline_stages", column: "existing_lead_stage_id"
   add_foreign_key "pipeline_webhooks", "pipelines"
   add_foreign_key "pipelines", "accounts"
   add_foreign_key "routine_completions", "routines"

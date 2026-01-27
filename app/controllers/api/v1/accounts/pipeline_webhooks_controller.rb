@@ -3,10 +3,11 @@ class Api::V1::Accounts::PipelineWebhooksController < Api::V1::Accounts::BaseCon
   before_action :set_webhook, only: [:show, :update, :destroy]
 
   def index
-    @webhooks = @pipeline.pipeline_webhooks.includes(:pipeline_stage).order(created_at: :desc)
+    @webhooks = @pipeline.pipeline_webhooks.includes(:pipeline_stage, :existing_lead_stage).order(created_at: :desc)
     render json: @webhooks.as_json(
       include: {
-        pipeline_stage: { only: [:id, :name, :key, :position] }
+        pipeline_stage: { only: [:id, :name, :key, :position] },
+        existing_lead_stage: { only: [:id, :name, :key, :position] }
       },
       methods: [:full_webhook_url]
     )
@@ -15,7 +16,8 @@ class Api::V1::Accounts::PipelineWebhooksController < Api::V1::Accounts::BaseCon
   def show
     render json: @webhook.as_json(
       include: {
-        pipeline_stage: { only: [:id, :name, :key, :position] }
+        pipeline_stage: { only: [:id, :name, :key, :position] },
+        existing_lead_stage: { only: [:id, :name, :key, :position] }
       },
       methods: [:full_webhook_url]
     )
@@ -28,7 +30,8 @@ class Api::V1::Accounts::PipelineWebhooksController < Api::V1::Accounts::BaseCon
     if @webhook.save
       render json: @webhook.as_json(
         include: {
-          pipeline_stage: { only: [:id, :name, :key, :position] }
+          pipeline_stage: { only: [:id, :name, :key, :position] },
+          existing_lead_stage: { only: [:id, :name, :key, :position] }
         },
         methods: [:full_webhook_url]
       ), status: :created
@@ -41,7 +44,8 @@ class Api::V1::Accounts::PipelineWebhooksController < Api::V1::Accounts::BaseCon
     if @webhook.update(webhook_params)
       render json: @webhook.as_json(
         include: {
-          pipeline_stage: { only: [:id, :name, :key, :position] }
+          pipeline_stage: { only: [:id, :name, :key, :position] },
+          existing_lead_stage: { only: [:id, :name, :key, :position] }
         },
         methods: [:full_webhook_url]
       )
@@ -66,7 +70,15 @@ class Api::V1::Accounts::PipelineWebhooksController < Api::V1::Accounts::BaseCon
   end
 
   def webhook_params
-    params.require(:webhook).permit(:name, :pipeline_stage_id, :active, field_mapping: {}, tag_config: {})
+    params.require(:webhook).permit(
+      :name,
+      :pipeline_stage_id,
+      :active,
+      :existing_lead_action,
+      :existing_lead_stage_id,
+      field_mapping: {},
+      tag_config: {}
+    )
   end
 end
 

@@ -1,11 +1,12 @@
 class Leads::CreatorService
-  def initialize(account:, contact_params:, deal_params:, contact_labels: nil, deal_labels: nil, custom_attributes: nil)
+  def initialize(account:, contact_params:, deal_params:, contact_labels: nil, deal_labels: nil, custom_attributes: nil, existing_lead_config: nil)
     @account = account
     @contact_params = contact_params
     @deal_params = deal_params
     @contact_labels = contact_labels
     @deal_labels = deal_labels
     @custom_attributes = custom_attributes || {}
+    @existing_lead_config = existing_lead_config || { action: 'create_new' }
     @errors = []
   end
 
@@ -20,7 +21,7 @@ class Leads::CreatorService
       # Criar ContactInbox para WhatsApp
       create_contact_inboxes_for_whatsapp
 
-      create_deal
+      find_or_create_deal
       return { success: false, errors: @errors } if @errors.any?
 
       # Aplicar labels DEPOIS de salvar contato e deal
@@ -107,7 +108,59 @@ class Leads::CreatorService
     end
   end
 
-  def create_deal
+  def find_or_create_deal
+    action = @existing_lead_config[:action] || 'create_new'
+
+    if action != 'create_new'
+      existing_deal = find_existing_deal
+      if existing_deal
+        Rails.logger.info "=== Found existing deal #{existing_deal.id} for contact #{@contact.id}, action: #{action}"
+        update_existing_deal(existing_deal)
+        return
+      else
+        Rails.logger.info "=== No existing deal found for contact #{@contact.id}, creating new"
+      end
+    end
+
+    create_new_deal
+  end
+
+  def find_existing_deal
+    @account.deals.find_by(
+      contact_id: @contact.id,
+      pipeline_id: @deal_params[:pipeline_id]
+    )
+  end
+
+  def update_existing_deal(deal)
+    update_attrs = {}
+
+    # Atualizar TODOS os campos recebidos no payload
+    update_attrs[:title] = @deal_params[:title] if @deal_params[:title].present?
+    update_attrs[:amount] = @deal_params[:amount] if @deal_params[:amount].present?
+    update_attrs[:close_date] = @deal_params[:close_date] if @deal_params[:close_date].present?
+    update_attrs[:notes] = @deal_params[:notes] if @deal_params[:notes].present?
+    update_attrs[:currency] = @deal_params[:currency] if @deal_params[:currency].present?
+
+    # Lógica de etapa baseada na configuração
+    action = @existing_lead_config[:action]
+    if action == 'update_move_stage' && @existing_lead_config[:stage_id].present?
+      update_attrs[:pipeline_stage_id] = @existing_lead_config[:stage_id]
+      Rails.logger.info "=== Moving deal #{deal.id} to stage #{@existing_lead_config[:stage_id]}"
+    end
+    # Se for 'update_keep_stage', não altera pipeline_stage_id
+
+    if update_attrs.any?
+      Rails.logger.info "=== Updating deal #{deal.id} with: #{update_attrs.inspect}"
+      unless deal.update(update_attrs)
+        @errors.concat(deal.errors.full_messages)
+      end
+    end
+
+    @deal = deal
+  end
+
+  def create_new_deal
     @deal = @account.deals.new(
       contact: @contact,
       pipeline_id: @deal_params[:pipeline_id],
@@ -118,7 +171,7 @@ class Leads::CreatorService
       close_date: @deal_params[:close_date],
       notes: @deal_params[:notes]
     )
-    
+
     unless @deal.save
       @errors.concat(@deal.errors.full_messages)
     end
