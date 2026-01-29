@@ -1190,6 +1190,10 @@ const handleDealUpdate = async updatedData => {
     />
     <ImportLeadsModal
       :show="showImportLeadsModal"
+      :default-pipeline-id="selectedPipelineId"
+      :default-stage-id="pipelineStages[0]?.id"
+      :default-pipeline-name="pipelines.find(p => p.id === selectedPipelineId)?.name"
+      :default-stage-name="pipelineStages[0]?.name"
       @cancel="() => (showImportLeadsModal = false)"
       @success="handleImportCompleted"
     />

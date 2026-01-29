@@ -40,31 +40,39 @@ class Leads::ImportService
 
     csv.each_with_index do |row, index|
       row_number = index + 2 # +2 because index is 0-based and we skip header
-      
-      # Mapear colunas para campos
-      mapped_data = map_row_data(row, column_mapping)
-      
-      # Validar dados obrigatórios
-      validation_error = validate_required_fields(mapped_data)
-      if validation_error
-        error_count += 1
-        error_detail = { row: row_number, error: validation_error, name: mapped_data['contact_name'] }
-        errors << error_detail
-        Rails.logger.warn "=== Import Row #{row_number} FAILED: #{validation_error} (Name: #{mapped_data['contact_name']})"
-        next
-      end
+      mapped_data = nil
 
-      # Criar lead
-      result = create_lead(mapped_data, pipeline_id, pipeline_stage_id)
-      
-      if result[:success]
-        success_count += 1
-        Rails.logger.info "=== Import Row #{row_number} SUCCESS: Contact #{result[:contact]&.id}, Deal #{result[:deal]&.id}"
-      else
+      begin
+        # Mapear colunas para campos
+        mapped_data = map_row_data(row, column_mapping)
+
+        # Validar dados obrigatórios
+        validation_error = validate_required_fields(mapped_data)
+        if validation_error
+          error_count += 1
+          errors << { row: row_number, error: validation_error, name: mapped_data['contact_name'] }
+          Rails.logger.warn "=== Import Row #{row_number} FAILED: #{validation_error}"
+          next
+        end
+
+        # Criar lead (pode levantar exceção em caso de erro inesperado)
+        result = create_lead(mapped_data, pipeline_id, pipeline_stage_id)
+
+        if result[:success]
+          success_count += 1
+          Rails.logger.info "=== Import Row #{row_number} SUCCESS" if (row_number % 100).zero?
+        else
+          error_count += 1
+          errors << { row: row_number, error: result[:errors].join(', '), name: mapped_data['contact_name'] }
+          Rails.logger.warn "=== Import Row #{row_number} FAILED: #{result[:errors].join(', ')}"
+        end
+      rescue StandardError => e
         error_count += 1
-        error_detail = { row: row_number, error: result[:errors].join(', '), name: mapped_data['contact_name'] }
-        errors << error_detail
-        Rails.logger.error "=== Import Row #{row_number} FAILED: #{result[:errors].join(', ')} (Name: #{mapped_data['contact_name']})"
+        error_message = e.message.presence || e.class.name
+        name = mapped_data.is_a?(Hash) ? mapped_data['contact_name'] : nil
+        errors << { row: row_number, error: error_message, name: name }
+        Rails.logger.error "=== Import Row #{row_number} EXCEPTION: #{e.class} #{e.message}"
+        Rails.logger.error e.backtrace.first(5).join("\n")
       end
     end
     

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAlert } from 'dashboard/composables';
 import NextButton from 'dashboard/components-next/button/Button.vue';
@@ -8,6 +8,11 @@ import LeadsAPI from 'dashboard/api/leads';
 
 const props = defineProps({
   show: { type: Boolean, default: false },
+  /** Quando aberto do Kanban: pipeline e etapa já definidos (não pergunta de novo) */
+  defaultPipelineId: { type: Number, default: null },
+  defaultStageId: { type: Number, default: null },
+  defaultPipelineName: { type: String, default: '' },
+  defaultStageName: { type: String, default: '' },
 });
 
 const emit = defineEmits(['cancel', 'update:show', 'success']);
@@ -77,9 +82,23 @@ const canProceedStep2 = computed(() => {
   return requiredFields.every(field => mappedValues.includes(field));
 });
 
+const useContextPipeline = computed(
+  () => props.defaultPipelineId && props.defaultStageId
+);
+
 const canProceedStep3 = computed(() => {
   return selectedPipelineId.value && selectedStageId.value;
 });
+
+watch(
+  () => props.show,
+  visible => {
+    if (visible && useContextPipeline.value) {
+      selectedPipelineId.value = props.defaultPipelineId;
+      selectedStageId.value = props.defaultStageId;
+    }
+  }
+);
 
 const validRowsCount = computed(() => {
   // Para simplificar, assumimos que todas as linhas são válidas se os campos obrigatórios estão mapeados
@@ -212,7 +231,9 @@ const onChangePipeline = () => {
 };
 
 const proceedToStep3 = async () => {
-  await loadPipelines();
+  if (!useContextPipeline.value) {
+    await loadPipelines();
+  }
   currentStep.value = 3;
 };
 
@@ -501,11 +522,14 @@ const isFieldRequired = value => {
         <h3 class="text-lg font-semibold text-n-slate-12 mb-2">
           {{ $t('LEADS.IMPORT.STEP_3.TITLE') }}
         </h3>
-        <p class="text-sm text-n-slate-11 mb-4">
+        <p v-if="useContextPipeline" class="text-sm text-n-slate-11 mb-4">
+          {{ $t('LEADS.IMPORT.STEP_3.USE_CURRENT_PIPELINE', { pipeline: defaultPipelineName || $t('LEADS.IMPORT.STEP_3.CURRENT_PIPELINE'), stage: defaultStageName || $t('LEADS.IMPORT.STEP_3.CURRENT_STAGE') }) }}
+        </p>
+        <p v-else class="text-sm text-n-slate-11 mb-4">
           {{ $t('LEADS.IMPORT.STEP_3.DESCRIPTION') }}
         </p>
 
-        <div class="grid grid-cols-2 gap-4 mb-6">
+        <div v-if="!useContextPipeline" class="grid grid-cols-2 gap-4 mb-6">
           <div>
             <label class="text-sm text-n-slate-12 mb-1 block">
               {{ $t('LEADS.IMPORT.STEP_3.SELECT_PIPELINE') }}

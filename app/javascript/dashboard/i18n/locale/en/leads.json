@@ -66,6 +66,9 @@
       "STEP_3": {
         "TITLE": "Import Configuration",
         "DESCRIPTION": "Configure import settings",
+        "USE_CURRENT_PIPELINE": "Leads will be imported to the current pipeline: {pipeline}, stage: {stage}.",
+        "CURRENT_PIPELINE": "Current pipeline",
+        "CURRENT_STAGE": "Current stage",
         "SELECT_PIPELINE": "Select Pipeline",
         "SELECT_STAGE": "Select Initial Stage",
         "IMPORT_SUMMARY": "Import Summary",
