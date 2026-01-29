@@ -35,8 +35,9 @@ module Redis::RedisKeys
   MESSAGE_SOURCE_KEY = 'MESSAGE_SOURCE_KEY::%<id>s'.freeze
   OPENAI_CONVERSATION_KEY = 'OPEN_AI_CONVERSATION_KEY::V1::%<event_name>s::%<conversation_id>d::%<updated_at>d'.freeze
 
-  ## Leads import (background job progress)
+  ## Leads import (background job progress + CSV content for workers)
   LEADS_IMPORT_STATUS = 'LEADS_IMPORT_STATUS::%<job_id>s'.freeze
+  LEADS_IMPORT_FILE = 'LEADS_IMPORT_FILE::%<import_id>s'.freeze
 
   ## Sempahores / Locks
   # We don't want to process messages from the same sender concurrently to prevent creating double conversations

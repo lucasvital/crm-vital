@@ -8,17 +8,19 @@ class Leads::ImportJob < ApplicationJob
   def perform(import_id, account_id, column_mapping, pipeline_id, pipeline_stage_id)
     job_id = self.job_id
     status_key = format(::Redis::RedisKeys::LEADS_IMPORT_STATUS, job_id: job_id)
+    file_key = format(::Redis::RedisKeys::LEADS_IMPORT_FILE, import_id: import_id)
 
-    temp_file_path = Rails.root.join('tmp', 'imports', "#{import_id}.csv")
-    unless File.exist?(temp_file_path)
+    # Em produção o Sidekiq roda em outro processo/container; o CSV vem do Redis (gravado pelo controller)
+    csv_content = Redis::Alfred.get(file_key)
+    unless csv_content.present?
       write_status(status_key, status: 'failed', error_message: 'Invalid CSV file')
       return
     end
+    csv_consumed = true
 
     account = Account.find(account_id)
     column_mapping = column_mapping.to_h.with_indifferent_access if column_mapping.respond_to?(:to_h)
 
-    # Status inicial: running (total_rows será preenchido no primeiro on_progress)
     write_status(status_key, status: 'running', total_rows: 0, processed_rows: 0, success_count: 0, error_count: 0, errors: [])
 
     on_progress = proc do |processed_rows, total_rows, success_count, error_count|
@@ -33,8 +35,14 @@ class Leads::ImportJob < ApplicationJob
       )
     end
 
+    temp_file = Tempfile.create(['leads_import', '.csv'])
+    temp_file.binmode
+    temp_file.write(csv_content)
+    temp_file.rewind
+    temp_file.close
+
     result = Leads::ImportService.new(account).process_import(
-      file: temp_file_path.to_s,
+      file: temp_file.path,
       column_mapping: column_mapping,
       pipeline_id: pipeline_id,
       pipeline_stage_id: pipeline_stage_id,
@@ -64,7 +72,11 @@ class Leads::ImportJob < ApplicationJob
       error_message: e.message.presence || e.class.name
     )
   ensure
-    FileUtils.rm_f(temp_file_path) if temp_file_path && File.exist?(temp_file_path)
+    if defined?(temp_file) && temp_file
+      temp_file.close
+      FileUtils.rm_f(temp_file.path)
+    end
+    Redis::Alfred.delete(file_key) if file_key && defined?(csv_consumed) && csv_consumed
   end
 
   private

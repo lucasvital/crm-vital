@@ -66,6 +66,12 @@ class Api::V1::Accounts::LeadsController < Api::V1::Accounts::BaseController
       return
     end
 
+    # Sidekiq roda em outro processo/container em produção; o job precisa do CSV via Redis
+    file_content = File.binread(temp_file_path)
+    file_key = format(Redis::RedisKeys::LEADS_IMPORT_FILE, import_id: import_id)
+    Redis::Alfred.setex(file_key, file_content, 1.hour)
+    FileUtils.rm_f(temp_file_path)
+
     job = Leads::ImportJob.perform_later(
       import_id,
       current_account.id,
