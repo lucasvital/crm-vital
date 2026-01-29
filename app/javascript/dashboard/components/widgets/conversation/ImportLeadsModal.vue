@@ -19,6 +19,10 @@ const alert = useAlert;
 const currentStep = ref(1);
 const isProcessing = ref(false);
 
+// Import progress and result
+const importInProgress = ref(false);
+const importResult = ref(null); // { success_count, error_count, errors: [{ row, name, error }] }
+
 // Step 1: File upload
 const fileInput = ref(null);
 const selectedFile = ref(null);
@@ -216,7 +220,8 @@ const proceedToStep3 = async () => {
 const processImport = async () => {
   if (!canProceedStep3.value) return;
 
-  isProcessing.value = true;
+  importInProgress.value = true;
+  importResult.value = null;
   try {
     const response = await LeadsAPI.importProcess({
       import_id: importId.value,
@@ -225,26 +230,24 @@ const processImport = async () => {
       pipeline_stage_id: selectedStageId.value,
     });
 
-    const successCount = response.data.success_count || 0;
-    const errorCount = response.data.error_count || 0;
-
-    if (errorCount > 0) {
-      alert(
-        `${t('LEADS.IMPORT.COMPLETED')} ${successCount} ${t('LEADS.IMPORT.SUCCESS')}, ${errorCount} com erros.`
-      );
-    } else {
-      alert(t('LEADS.IMPORT.SUCCESS'));
-    }
-
-    emit('success');
-    onCancel();
+    importResult.value = {
+      success_count: response.data.success_count ?? 0,
+      error_count: response.data.error_count ?? 0,
+      errors: response.data.errors ?? [],
+    };
   } catch (error) {
     const errorMessage =
       error.response?.data?.error || t('LEADS.IMPORT.ERROR');
     alert(errorMessage);
   } finally {
-    isProcessing.value = false;
+    importInProgress.value = false;
   }
+};
+
+const closeAfterResult = () => {
+  importResult.value = null;
+  emit('success');
+  onCancel();
 };
 
 // Navigation
@@ -275,6 +278,8 @@ const onCancel = () => {
   selectedPipelineId.value = null;
   stageOptions.value = [];
   selectedStageId.value = null;
+  importResult.value = null;
+  importInProgress.value = false;
   emit('cancel');
 };
 
@@ -297,8 +302,8 @@ const isFieldRequired = value => {
         :header-content="$t('LEADS.IMPORT.DESCRIPTION')"
       />
 
-      <!-- Progress Indicator -->
-      <div class="flex items-center justify-between mb-6 px-4">
+      <!-- Progress Indicator (hidden during import progress/result) -->
+      <div v-if="!importInProgress && !importResult" class="flex items-center justify-between mb-6 px-4">
         <div
           v-for="step in 3"
           :key="step"
@@ -325,8 +330,61 @@ const isFieldRequired = value => {
         </div>
       </div>
 
+      <!-- Progress: importing -->
+      <div v-if="importInProgress" class="px-4 py-8 flex flex-col items-center justify-center gap-4">
+        <span class="i-lucide-loader-2 size-12 text-n-brand animate-spin" />
+        <h3 class="text-lg font-semibold text-n-slate-12">
+          {{ $t('LEADS.IMPORT.PROGRESS.TITLE') }}
+        </h3>
+        <p class="text-sm text-n-slate-11 text-center max-w-md">
+          {{ $t('LEADS.IMPORT.PROGRESS.MESSAGE') }}
+        </p>
+      </div>
+
+      <!-- Result: import finished -->
+      <div v-else-if="importResult" class="px-4">
+        <h3 class="text-lg font-semibold text-n-slate-12 mb-4">
+          {{ $t('LEADS.IMPORT.RESULT.TITLE') }}
+        </h3>
+        <div class="space-y-3 mb-4">
+          <p v-if="importResult.success_count > 0" class="text-sm text-n-green-11">
+            {{ $t('LEADS.IMPORT.RESULT.SUCCESS_COUNT', { count: importResult.success_count }) }}
+          </p>
+          <p v-if="importResult.error_count > 0" class="text-sm text-n-ruby-11">
+            {{ $t('LEADS.IMPORT.RESULT.ERROR_COUNT', { count: importResult.error_count }) }}
+          </p>
+        </div>
+        <div v-if="importResult.errors && importResult.errors.length > 0" class="mt-4">
+          <h4 class="text-sm font-semibold text-n-slate-12 mb-2">
+            {{ $t('LEADS.IMPORT.RESULT.ERRORS_LIST_TITLE') }}
+          </h4>
+          <div class="max-h-64 overflow-y-auto rounded-md border border-n-alpha-2 bg-n-solid-2">
+            <table class="w-full text-left text-sm">
+              <thead class="sticky top-0 bg-n-solid-2 border-b border-n-alpha-2">
+                <tr>
+                  <th class="px-3 py-2 text-n-slate-11 font-medium">{{ $t('LEADS.IMPORT.RESULT.ROW') }}</th>
+                  <th class="px-3 py-2 text-n-slate-11 font-medium">{{ $t('LEADS.IMPORT.RESULT.CONTACT') }}</th>
+                  <th class="px-3 py-2 text-n-slate-11 font-medium">{{ $t('LEADS.IMPORT.RESULT.REASON') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(err, idx) in importResult.errors"
+                  :key="idx"
+                  class="border-b border-n-alpha-1 last:border-0"
+                >
+                  <td class="px-3 py-2 text-n-slate-12">{{ err.row }}</td>
+                  <td class="px-3 py-2 text-n-slate-12">{{ err.name || '-' }}</td>
+                  <td class="px-3 py-2 text-n-ruby-11">{{ err.error }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- Step 1: Upload -->
-      <div v-if="currentStep === 1" class="px-4">
+      <div v-else-if="currentStep === 1" class="px-4">
         <h3 class="text-lg font-semibold text-n-slate-12 mb-2">
           {{ $t('LEADS.IMPORT.STEP_1.TITLE') }}
         </h3>
@@ -497,47 +555,61 @@ const isFieldRequired = value => {
 
       <!-- Footer -->
       <div class="flex flex-row justify-between w-full gap-2 px-4 py-4 mt-4 border-t border-n-alpha-2">
-        <NextButton
-          v-if="currentStep > 1"
-          faded
-          slate
-          type="button"
-          icon="i-lucide-arrow-left"
-          :label="$t('LEADS.IMPORT.BUTTONS.BACK')"
-          :disabled="isProcessing"
-          @click="goBack"
-        />
-        <div v-else />
-
-        <div class="flex gap-2">
+        <template v-if="importInProgress">
+          <div />
+          <p class="text-sm text-n-slate-11">{{ $t('LEADS.IMPORT.PROCESSING') }}</p>
+        </template>
+        <template v-else-if="importResult">
+          <div />
           <NextButton
+            type="button"
+            :label="$t('LEADS.IMPORT.RESULT.CLOSE')"
+            @click="closeAfterResult"
+          />
+        </template>
+        <template v-else>
+          <NextButton
+            v-if="currentStep > 1"
             faded
             slate
             type="button"
-            :label="$t('LEADS.IMPORT.BUTTONS.CANCEL')"
+            icon="i-lucide-arrow-left"
+            :label="$t('LEADS.IMPORT.BUTTONS.BACK')"
             :disabled="isProcessing"
-            @click="onCancel"
+            @click="goBack"
           />
-          <NextButton
-            v-if="currentStep < 3"
-            type="button"
-            trailing-icon="i-lucide-arrow-right"
-            :label="$t('LEADS.IMPORT.BUTTONS.NEXT')"
-            :disabled="
-              (currentStep === 1 && !canProceedStep1) ||
-              (currentStep === 2 && !canProceedStep2) ||
-              isProcessing
-            "
-            @click="goNext"
-          />
-          <NextButton
-            v-else
-            type="button"
-            :label="$t('LEADS.IMPORT.BUTTONS.IMPORT')"
-            :disabled="!canProceedStep3 || isProcessing"
-            @click="processImport"
-          />
-        </div>
+          <div v-else />
+
+          <div class="flex gap-2">
+            <NextButton
+              faded
+              slate
+              type="button"
+              :label="$t('LEADS.IMPORT.BUTTONS.CANCEL')"
+              :disabled="isProcessing"
+              @click="onCancel"
+            />
+            <NextButton
+              v-if="currentStep < 3"
+              type="button"
+              trailing-icon="i-lucide-arrow-right"
+              :label="$t('LEADS.IMPORT.BUTTONS.NEXT')"
+              :disabled="
+                (currentStep === 1 && !canProceedStep1) ||
+                (currentStep === 2 && !canProceedStep2) ||
+                isProcessing
+              "
+              @click="goNext"
+            />
+            <NextButton
+              v-else
+              type="button"
+              :label="$t('LEADS.IMPORT.BUTTONS.IMPORT')"
+              :disabled="!canProceedStep3 || isProcessing"
+              @click="processImport"
+            />
+          </div>
+        </template>
       </div>
     </div>
   </woot-modal>

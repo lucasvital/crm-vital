@@ -958,7 +958,7 @@ const handleDealUpdate = async updatedData => {
             {{ t('KANBAN.DISTRIBUTE.BUTTON') }}
           </button>
           <button
-            class="inline-flex items-center justify-center rounded-md border border-n-red-9 bg-n-red-9 px-3 py-2 h-9 text-sm font-medium text-white transition hover:bg-n-red-10 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="inline-flex items-center justify-center rounded-md border border-n-ruby-9 bg-n-ruby-9 px-3 py-2 h-9 text-sm font-medium text-white transition hover:bg-n-ruby-10 disabled:opacity-50 disabled:cursor-not-allowed"
             type="button"
             :disabled="selectedDealsCount === 0 || isDeletingBatch"
             @click="deleteSelectedDeals"

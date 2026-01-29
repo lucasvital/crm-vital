@@ -97,7 +97,21 @@
       "SUCCESS": "Leads importados com sucesso!",
       "ERROR": "Falha ao importar leads. Por favor, verifique o arquivo e tente novamente.",
       "PROCESSING": "Processando importação...",
-      "COMPLETED": "Importação concluída!"
+      "COMPLETED": "Importação concluída!",
+      "PROGRESS": {
+        "TITLE": "Importando leads",
+        "MESSAGE": "Isso pode levar alguns minutos para arquivos grandes. Não feche esta janela."
+      },
+      "RESULT": {
+        "TITLE": "Resultado da importação",
+        "SUCCESS_COUNT": "{count} lead(s) importado(s) com sucesso.",
+        "ERROR_COUNT": "{count} linha(s) com erro.",
+        "ERRORS_LIST_TITLE": "Linhas com erro (linha, contato, motivo)",
+        "ROW": "Linha",
+        "CONTACT": "Contato",
+        "REASON": "Motivo",
+        "CLOSE": "Fechar"
+      }
     }
   }
 }
