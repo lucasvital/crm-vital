@@ -999,8 +999,27 @@ const handleDealUpdate = async updatedData => {
               </span>
               <span class="text-[11px] text-n-slate-11">{{ stageTotal(stage) }}</span>
             </div>
-            <div class="inline-flex items-center justify-center rounded-full bg-n-solid-2 text-n-slate-12 size-6 text-xs font-semibold">
-              {{ state[stage].items.length }}
+            <div class="flex items-center gap-2">
+              <template v-if="selectionMode && state[stage].items.length > 0">
+                <button
+                  type="button"
+                  class="text-[11px] font-medium text-n-brand hover:underline"
+                  @click="selectAllFromStage(stage)"
+                >
+                  {{ t('KANBAN.BATCH.SELECT_ALL') }}
+                </button>
+                <span class="text-n-alpha-6">|</span>
+                <button
+                  type="button"
+                  class="text-[11px] font-medium text-n-slate-11 hover:underline"
+                  @click="deselectAllFromStage(stage)"
+                >
+                  {{ t('KANBAN.BATCH.DESELECT_ALL') }}
+                </button>
+              </template>
+              <div class="inline-flex items-center justify-center rounded-full bg-n-solid-2 text-n-slate-12 size-6 text-xs font-semibold">
+                {{ state[stage].items.length }}
+              </div>
             </div>
           </div>
         </div>
