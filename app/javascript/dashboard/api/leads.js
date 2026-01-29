@@ -21,6 +21,10 @@ class LeadsAPI extends ApiClient {
   importProcess(importData) {
     return axios.post(`${this.url}/import/process`, importData);
   }
+
+  importStatus(jobId) {
+    return axios.get(`${this.url}/import/status/${jobId}`);
+  }
 }
 
 export default new LeadsAPI();

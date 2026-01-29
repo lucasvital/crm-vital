@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAlert } from 'dashboard/composables';
 import NextButton from 'dashboard/components-next/button/Button.vue';
@@ -27,6 +27,13 @@ const isProcessing = ref(false);
 // Import progress and result
 const importInProgress = ref(false);
 const importResult = ref(null); // { success_count, error_count, errors: [{ row, name, error }] }
+const importProgress = ref({
+  processed_rows: 0,
+  total_rows: 0,
+  success_count: 0,
+  error_count: 0,
+});
+let importPollingInterval = null;
 
 // Step 1: File upload
 const fileInput = ref(null);
@@ -237,12 +244,50 @@ const proceedToStep3 = async () => {
   currentStep.value = 3;
 };
 
-// Import processing
+function stopImportPolling() {
+  if (importPollingInterval) {
+    clearInterval(importPollingInterval);
+    importPollingInterval = null;
+  }
+}
+
+async function pollImportStatus(jobId) {
+  try {
+    const { data } = await LeadsAPI.importStatus(jobId);
+    if (data.status === 'running') {
+      importProgress.value = {
+        processed_rows: data.processed_rows ?? 0,
+        total_rows: data.total_rows ?? 0,
+        success_count: data.success_count ?? 0,
+        error_count: data.error_count ?? 0,
+      };
+    } else if (data.status === 'completed') {
+      stopImportPolling();
+      importResult.value = {
+        success_count: data.success_count ?? 0,
+        error_count: data.error_count ?? 0,
+        errors: data.errors ?? [],
+      };
+      importInProgress.value = false;
+    } else if (data.status === 'failed') {
+      stopImportPolling();
+      importInProgress.value = false;
+      alert(data.error_message || t('LEADS.IMPORT.FAILED'));
+    }
+  } catch (_) {
+    // Continua polling; o job pode ainda não ter escrito no Redis
+  }
+}
+
+// Import processing (background job + polling)
 const processImport = async () => {
   if (!canProceedStep3.value) return;
 
   importInProgress.value = true;
   importResult.value = null;
+  importProgress.value = { processed_rows: 0, total_rows: 0, success_count: 0, error_count: 0 };
+  stopImportPolling();
+
   try {
     const response = await LeadsAPI.importProcess({
       import_id: importId.value,
@@ -251,16 +296,22 @@ const processImport = async () => {
       pipeline_stage_id: selectedStageId.value,
     });
 
-    importResult.value = {
-      success_count: response.data.success_count ?? 0,
-      error_count: response.data.error_count ?? 0,
-      errors: response.data.errors ?? [],
-    };
+    const jobId = response.data?.job_id;
+    if (jobId) {
+      importPollingInterval = setInterval(() => pollImportStatus(jobId), 1500);
+      pollImportStatus(jobId);
+    } else {
+      importResult.value = {
+        success_count: response.data.success_count ?? 0,
+        error_count: response.data.error_count ?? 0,
+        errors: response.data.errors ?? [],
+      };
+      importInProgress.value = false;
+    }
   } catch (error) {
     const errorMessage =
       error.response?.data?.error || t('LEADS.IMPORT.ERROR');
     alert(errorMessage);
-  } finally {
     importInProgress.value = false;
   }
 };
@@ -287,6 +338,7 @@ const goNext = () => {
 };
 
 const onCancel = () => {
+  stopImportPolling();
   currentStep.value = 1;
   selectedFile.value = null;
   selectedFileName.value = '';
@@ -301,8 +353,13 @@ const onCancel = () => {
   selectedStageId.value = null;
   importResult.value = null;
   importInProgress.value = false;
+  importProgress.value = { processed_rows: 0, total_rows: 0, success_count: 0, error_count: 0 };
   emit('cancel');
 };
+
+onBeforeUnmount(() => {
+  stopImportPolling();
+});
 
 const getFieldLabel = value => {
   const field = systemFields.find(f => f.value === value);
@@ -359,6 +416,17 @@ const isFieldRequired = value => {
         </h3>
         <p class="text-sm text-n-slate-11 text-center max-w-md">
           {{ $t('LEADS.IMPORT.PROGRESS.MESSAGE') }}
+        </p>
+        <p
+          v-if="importProgress.total_rows > 0"
+          class="text-sm font-medium text-n-slate-12"
+        >
+          {{ $t('LEADS.IMPORT.PROGRESS.COUNTS', {
+            processed: importProgress.processed_rows,
+            total: importProgress.total_rows,
+            success: importProgress.success_count,
+            errors: importProgress.error_count,
+          }) }}
         </p>
       </div>
 

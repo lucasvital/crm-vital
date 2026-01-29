@@ -103,8 +103,10 @@
       "COMPLETED": "Import completed!",
       "PROGRESS": {
         "TITLE": "Importing leads",
-        "MESSAGE": "This may take a few minutes for large files. Do not close this window."
+        "MESSAGE": "This may take a few minutes for large files. Do not close this window.",
+        "COUNTS": "{processed} of {total} rows · {success} success, {errors} errors"
       },
+      "FAILED": "Import failed.",
       "RESULT": {
         "TITLE": "Import result",
         "SUCCESS_COUNT": "{count} lead(s) imported successfully.",

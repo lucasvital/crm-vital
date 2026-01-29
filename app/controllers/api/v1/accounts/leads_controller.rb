@@ -54,38 +54,48 @@ class Api::V1::Accounts::LeadsController < Api::V1::Accounts::BaseController
   end
 
   def import_process
-    # Recuperar arquivo temporário usando import_id
     import_id = params[:import_id]
     unless import_id.present?
       render json: { error: 'Import ID is required' }, status: :unprocessable_entity
       return
     end
-    
+
     temp_file_path = Rails.root.join('tmp', 'imports', "#{import_id}.csv")
     unless File.exist?(temp_file_path)
       render json: { error: 'Invalid CSV file' }, status: :unprocessable_entity
       return
     end
 
-    result = Leads::ImportService.new(current_account).process_import(
-      file: temp_file_path.to_s,
-      column_mapping: params[:column_mapping]&.to_unsafe_h || {},
-      pipeline_id: params[:pipeline_id],
-      pipeline_stage_id: params[:pipeline_stage_id]
+    job = Leads::ImportJob.perform_later(
+      import_id,
+      current_account.id,
+      params[:column_mapping]&.to_unsafe_h || {},
+      params[:pipeline_id],
+      params[:pipeline_stage_id]
     )
 
-    # Limpar arquivo temporário
-    FileUtils.rm_f(temp_file_path) if File.exist?(temp_file_path)
+    render json: { job_id: job.job_id }
+  end
 
-    if result[:success]
-      render json: {
-        success_count: result[:success_count],
-        error_count: result[:error_count],
-        errors: result[:errors]
-      }
-    else
-      render json: { error: result[:error] }, status: :unprocessable_entity
+  def import_status
+    job_id = params[:job_id]
+    unless job_id.present?
+      render json: { status: 'pending' }, status: :ok
+      return
     end
+
+    status_key = format(Redis::RedisKeys::LEADS_IMPORT_STATUS, job_id: job_id)
+    raw = Redis::Alfred.get(status_key)
+
+    if raw.blank?
+      render json: { status: 'pending' }, status: :ok
+      return
+    end
+
+    payload = JSON.parse(raw)
+    render json: payload, status: :ok
+  rescue JSON::ParserError
+    render json: { status: 'pending' }, status: :ok
   end
 
   private

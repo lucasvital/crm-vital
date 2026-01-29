@@ -270,6 +270,7 @@ Rails.application.routes.draw do
             collection do
               post 'import/upload', to: 'leads#import_upload'
               post 'import/process', to: 'leads#import_process'
+              get 'import/status/:job_id', to: 'leads#import_status', as: :import_status
             end
           end
 

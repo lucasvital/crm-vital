@@ -24,13 +24,14 @@ class Leads::ImportService
     { success: false, error: e.message }
   end
 
-  def process_import(file:, column_mapping:, pipeline_id:, pipeline_stage_id:)
+  def process_import(file:, column_mapping:, pipeline_id:, pipeline_stage_id:, on_progress: nil)
     csv_data = read_csv_file(file)
     return { success: false, error: 'Invalid CSV file' } unless csv_data
 
     csv = CSV.parse(csv_data, headers: true)
-    
-    if csv.count > MAX_IMPORT_ROWS
+    total_rows = csv.count
+
+    if total_rows > MAX_IMPORT_ROWS
       return { success: false, error: "CSV has too many rows. Maximum is #{MAX_IMPORT_ROWS}" }
     end
 
@@ -73,6 +74,11 @@ class Leads::ImportService
         errors << { row: row_number, error: error_message, name: name }
         Rails.logger.error "=== Import Row #{row_number} EXCEPTION: #{e.class} #{e.message}"
         Rails.logger.error e.backtrace.first(5).join("\n")
+      end
+
+      # Callback de progresso (a cada linha ou a cada 10 para reduzir writes)
+      if on_progress.respond_to?(:call) && ((index + 1) % 10 == 0 || index == total_rows - 1)
+        on_progress.call(index + 1, total_rows, success_count, error_count)
       end
     end
     
