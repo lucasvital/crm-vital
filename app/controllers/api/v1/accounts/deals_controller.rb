@@ -5,6 +5,7 @@ class Api::V1::Accounts::DealsController < Api::V1::Accounts::BaseController
     deals = current_account.deals.includes(:contact, :pipeline, :pipeline_stage, :labels, :assignee)
     deals = deals.where(pipeline_id: params[:pipeline_id]) if params[:pipeline_id].present?
     deals = deals.where(contact_id: params[:contact_id]) if params[:contact_id].present?
+    deals = deals.order(created_at: :desc)
 
     # Customizar JSON para incluir label_list do contato, assignee e conversation_id
     deals_json = deals.map do |deal|
