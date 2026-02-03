@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import DealDetailsLayout from 'dashboard/components-next/Deals/DealDetailsLayout.vue';
+import DealDetails from 'dashboard/components-next/Deals/DealDetails.vue';
 import DealDetailsEdit from 'dashboard/components-next/Deals/DealDetailsEdit.vue';
 import TabBar from 'dashboard/components-next/tabbar/TabBar.vue';
 import DealActivities from 'dashboard/components-next/Deals/DealActivities.vue';
@@ -27,7 +28,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['close', 'goBack', 'updateDeal']);
+const emit = defineEmits(['close', 'goBack', 'updateDeal', 'stageChanged']);
 
 const { t } = useI18n();
 
@@ -68,6 +69,10 @@ const handleBack = () => {
 const handleDealUpdated = updatedData => {
   emit('updateDeal', updatedData);
 };
+
+const handleStageChanged = data => {
+  emit('stageChanged', data);
+};
 </script>
 
 <template>
@@ -95,17 +100,17 @@ const handleDealUpdated = updatedData => {
         />
       </div>
       <div class="mt-4">
-        <template v-if="activeTab === 'details'">
-          <div class="px-6">
-            <p class="text-sm text-n-slate-11">
-              {{ $t('DEAL_MANAGE.DETAILS_TAB_PLACEHOLDER') }}
-            </p>
-          </div>
-        </template>
+        <DealDetails
+          v-if="activeTab === 'details'"
+          :selected-deal="selectedDeal"
+          :pipeline-stages="pipelineStages"
+        />
         <DealActivities
           v-else-if="activeTab === 'activities'"
           :selected-deal="selectedDeal"
           :current-stage="currentStage"
+          :pipeline-stages="pipelineStages"
+          @stage-changed="handleStageChanged"
         />
       </div>
     </template>

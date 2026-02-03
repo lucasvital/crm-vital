@@ -21,7 +21,8 @@ class Api::V1::Accounts::DealsController < Api::V1::Accounts::BaseController
           'name' => deal.contact.name,
           'email' => deal.contact.email,
           'phone_number' => deal.contact.phone_number,
-          'label_list' => deal.contact.label_list
+          'label_list' => deal.contact.label_list,
+          'custom_attributes' => deal.contact.custom_attributes || {}
         },
         'assignee' => deal.assignee.present? ? {
           'id' => deal.assignee.id,

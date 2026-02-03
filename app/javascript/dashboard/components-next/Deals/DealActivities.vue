@@ -8,6 +8,7 @@ import Button from 'dashboard/components-next/button/Button.vue';
 import MessageAPI from 'dashboard/api/inbox/message';
 import ConversationApi from 'dashboard/api/inbox/conversation';
 import DealActivitiesAPI from 'dashboard/api/dealActivities';
+import DealsAPI from 'dashboard/api/deals';
 import { useAlert } from 'dashboard/composables';
 
 const props = defineProps({
@@ -19,7 +20,13 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  pipelineStages: {
+    type: Array,
+    default: () => [],
+  },
 });
+
+const emit = defineEmits(['stage-changed']);
 
 const { t } = useI18n();
 const router = useRouter();
@@ -36,6 +43,8 @@ const completedActivities = ref([]);
 const activities = ref([]);
 const loadingActivities = ref(false);
 const runningActivities = ref([]); // Atividades em execução em background
+const shouldMoveStage = ref(false);
+const selectedTargetStage = ref(null);
 
 // Obter o stage_id atual do deal
 const currentStageId = computed(() => {
@@ -69,6 +78,12 @@ const conversationId = computed(() => {
 
 const hasConversation = computed(() => {
   return !!conversationId.value;
+});
+
+// Obter stages da pipeline atual (excluindo a etapa atual)
+const availableStages = computed(() => {
+  if (!props.pipelineStages || props.pipelineStages.length === 0) return [];
+  return props.pipelineStages.filter(s => s.id !== currentStageId.value);
 });
 
 // Substituir variáveis nas mensagens
@@ -187,11 +202,14 @@ const closeConfirmModal = () => {
   showConfirmModal.value = false;
   selectedActivity.value = null;
   sendingProgress.value = '';
+  shouldMoveStage.value = false;
+  selectedTargetStage.value = null;
 };
 
 // Executar atividade em background
-const executeActivityInBackground = async (activity, dealContact, currentConvId) => {
+const executeActivityInBackground = async (activity, dealContact, currentConvId, shouldMoveToStage = false, targetStageId = null) => {
   const activityId = activity.id;
+  let conversationWasCreated = false;
   
   try {
     // 1. Verificar/criar conversa
@@ -199,6 +217,12 @@ const executeActivityInBackground = async (activity, dealContact, currentConvId)
     
     if (!conversationIdToUse) {
       conversationIdToUse = await createConversationForDeal();
+      conversationWasCreated = true;
+      
+      // Associar conversa ao deal
+      await DealsAPI.update(props.selectedDeal.id, {
+        deal: { conversation_id: conversationIdToUse }
+      });
     }
     
     // 2. Processar cada mensagem sequencialmente
@@ -249,11 +273,23 @@ const executeActivityInBackground = async (activity, dealContact, currentConvId)
       },
     });
     
+    // 4. Mover para nova etapa se solicitado
+    if (shouldMoveToStage && targetStageId) {
+      await DealsAPI.update(props.selectedDeal.id, {
+        deal: { pipeline_stage_id: targetStageId }
+      });
+      
+      useAlert(t('DEAL_ACTIVITIES.ALERTS.STAGE_MOVED'));
+      
+      // Emitir evento para atualizar a UI (ex.: recarregar Kanban)
+      emit('stage-changed', { dealId: props.selectedDeal.id, newStageId: targetStageId });
+    }
+    
     // Notificação de sucesso
     useAlert(t('DEAL_ACTIVITIES.ALERTS.ACTIVITY_COMPLETED_BACKGROUND', { title: activity.title }));
     
     // Redirecionar para a conversa se foi criada
-    if (!currentConvId && conversationIdToUse) {
+    if (conversationWasCreated && conversationIdToUse) {
       router.push(accountScopedUrl(`conversations/${conversationIdToUse}`));
     }
   } catch (error) {
@@ -277,6 +313,8 @@ const executeActivity = () => {
   const activity = { ...selectedActivity.value };
   const contact = props.selectedDeal.contact || {};
   const currentConvId = conversationId.value;
+  const moveStage = shouldMoveStage.value;
+  const targetStage = selectedTargetStage.value;
   
   // Adicionar à lista de atividades em execução
   runningActivities.value.push({
@@ -291,7 +329,7 @@ const executeActivity = () => {
   useAlert(t('DEAL_ACTIVITIES.ALERTS.ACTIVITY_STARTED', { title: activity.title }));
   
   // Executar em background (não aguardar)
-  executeActivityInBackground(activity, contact, currentConvId);
+  executeActivityInBackground(activity, contact, currentConvId, moveStage, targetStage);
 };
 
 onMounted(() => {
@@ -451,7 +489,7 @@ onMounted(() => {
           </div>
 
           <!-- Info -->
-          <div class="rounded-lg bg-n-blue-2 border border-n-blue-6 p-3">
+          <div class="rounded-lg bg-n-blue-2 border border-n-blue-6 p-3 mb-4">
             <div class="flex items-start gap-2">
               <span class="i-lucide-info size-4 text-n-blue-11 flex-shrink-0 mt-0.5" />
               <div class="text-xs text-n-blue-11">
@@ -462,6 +500,39 @@ onMounted(() => {
                   {{ $t('DEAL_ACTIVITIES.CONFIRM_MODAL.WILL_CREATE_CONVERSATION') }}
                 </p>
               </div>
+            </div>
+          </div>
+
+          <!-- Opções adicionais -->
+          <div v-if="availableStages.length > 0" class="mt-4 pt-4 border-t border-n-alpha-2">
+            <label class="flex items-center gap-2 mb-3 cursor-pointer">
+              <input
+                type="checkbox"
+                v-model="shouldMoveStage"
+                class="form-checkbox h-4 w-4 rounded border-n-alpha-3 text-n-brand focus:ring-n-brand focus:ring-offset-0"
+              />
+              <span class="text-sm text-n-slate-12">
+                {{ $t('DEAL_ACTIVITIES.CONFIRM_MODAL.MOVE_STAGE_AFTER') }}
+              </span>
+            </label>
+            
+            <div v-if="shouldMoveStage" class="ml-6">
+              <label class="block text-xs text-n-slate-11 mb-2">
+                {{ $t('DEAL_ACTIVITIES.CONFIRM_MODAL.SELECT_TARGET_STAGE') }}
+              </label>
+              <select
+                v-model="selectedTargetStage"
+                class="w-full rounded-md border border-n-alpha-3 bg-n-solid-2 px-3 py-2 text-sm text-n-slate-12 focus:border-n-brand focus:ring-1 focus:ring-n-brand"
+              >
+                <option :value="null">{{ $t('DEAL_ACTIVITIES.CONFIRM_MODAL.SELECT_STAGE') }}</option>
+                <option
+                  v-for="stage in availableStages"
+                  :key="stage.id"
+                  :value="stage.id"
+                >
+                  {{ stage.name }}
+                </option>
+              </select>
             </div>
           </div>
 

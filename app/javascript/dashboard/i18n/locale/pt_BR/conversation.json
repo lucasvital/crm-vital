@@ -303,6 +303,8 @@
     "TITLE": "Pipelines",
     "DESCRIPTION": "Visualize e gerencie negócios criados a partir das conversas.",
     "CTA": { "REFRESH": "Atualizar" },
+    "VIEW_CONTACT": "Ver Contato",
+    "START_CONVERSATION": "Iniciar Conversa",
     "COLUMNS": {
       "NEW": "Novo",
       "QUALIFIED": "Qualificado",
@@ -315,7 +317,8 @@
       "STATUS_UPDATED": "Etapa atualizada.",
       "STATUS_FAILED": "Não foi possível atualizar a etapa.",
       "REMOVE_SUCCESS": "Removido do Pipelines.",
-      "REMOVE_FAILED": "Não foi possível remover do Pipelines."
+      "REMOVE_FAILED": "Não foi possível remover do Pipelines.",
+      "CONTACT_NOT_FOUND": "Contato não encontrado"
     },
     "CARDS": {
       "NO_NAME": "Contato sem nome",
@@ -399,6 +402,8 @@
     "NO_ASSIGNEE": "Sem responsável",
     "NO_DATE": "Sem data",
     "NO_TITLE": "Sem título",
+    "YES": "Sim",
+    "NO": "Não",
     "UPDATE_SUCCESS": "Negócio atualizado com sucesso!",
     "UPDATE_ERROR": "Erro ao atualizar negócio. Tente novamente.",
     "SAVE": "Salvar Alterações",
@@ -407,7 +412,8 @@
       "MAIN_INFO": "Informações Principais",
       "NOTES": "Notas",
       "EDIT_INFO": "Editar Informações",
-      "CONTACT_INFO": "Informações do Contato"
+      "CONTACT_INFO": "Informações do Contato",
+      "CONTACT_ATTRIBUTES": "Atributos Personalizados do Contato"
     },
     "FIELDS": {
       "TITLE": "Título",
@@ -447,7 +453,11 @@
       "MESSAGE_SENT": "Mensagem enviada com sucesso!",
       "MESSAGE_FAILED": "Erro ao enviar mensagem. Tente novamente.",
       "ACTIVITY_COMPLETED": "Atividade executada com sucesso!",
-      "ACTIVITY_FAILED": "Erro ao executar atividade. Tente novamente."
+      "ACTIVITY_FAILED": "Erro ao executar atividade. Tente novamente.",
+      "ACTIVITY_STARTED": "Executando atividade '{title}' em segundo plano...",
+      "ACTIVITY_COMPLETED_BACKGROUND": "Atividade '{title}' concluída com sucesso!",
+      "ACTIVITY_FAILED_BACKGROUND": "Erro ao executar atividade '{title}'.",
+      "STAGE_MOVED": "Deal movido para nova etapa com sucesso!"
     },
     "PROGRESS": {
       "CREATING_CONVERSATION": "Criando conversa...",
@@ -462,10 +472,15 @@
       "INFO": "As mensagens serão enviadas para o contato associado a este negócio. As variáveis {nomecompleto} e {primeironome} serão substituídas.",
       "WILL_CREATE_CONVERSATION": "Uma nova conversa será criada automaticamente.",
       "DELAY_INFO": "Delay aleatório 0-10 segundos",
+      "MOVE_STAGE_AFTER": "Mover para outra etapa após enviar",
+      "SELECT_TARGET_STAGE": "Etapa de destino",
+      "SELECT_STAGE": "Selecione a etapa...",
       "CANCEL": "Cancelar",
       "SEND": "Enviar Mensagem",
       "EXECUTE": "Executar"
-    }
+    },
+    "RUNNING_SINGLE": "Executando atividade '{title}'...",
+    "RUNNING_MULTIPLE": "Executando {count} atividades..."
   },
   "DEAL_ACTIVITIES_SETTINGS": {
     "TITLE": "Atividades de Negócios",

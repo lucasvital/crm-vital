@@ -350,6 +350,8 @@
     "CTA": {
       "REFRESH": "Refresh board"
     },
+    "VIEW_CONTACT": "View Contact",
+    "START_CONVERSATION": "Start Conversation",
     "COLUMNS": {
       "NEW": "New",
       "QUALIFIED": "Qualified",
@@ -362,7 +364,8 @@
       "STATUS_UPDATED": "Stage updated successfully.",
       "STATUS_FAILED": "Could not update the stage. Please try again.",
       "REMOVE_SUCCESS": "Removed from Kanban.",
-      "REMOVE_FAILED": "Could not remove from Kanban. Please try again."
+      "REMOVE_FAILED": "Could not remove from Kanban. Please try again.",
+      "CONTACT_NOT_FOUND": "Contact not found"
     },
     "CARDS": {
       "NO_NAME": "Unnamed contact",
@@ -448,6 +451,8 @@
     "NO_ASSIGNEE": "No assignee",
     "NO_DATE": "No date",
     "NO_TITLE": "No title",
+    "YES": "Yes",
+    "NO": "No",
     "UPDATE_SUCCESS": "Deal updated successfully!",
     "UPDATE_ERROR": "Error updating deal. Please try again.",
     "SAVE": "Save Changes",
@@ -456,7 +461,8 @@
       "MAIN_INFO": "Main Information",
       "NOTES": "Notes",
       "EDIT_INFO": "Edit Information",
-      "CONTACT_INFO": "Contact Information"
+      "CONTACT_INFO": "Contact Information",
+      "CONTACT_ATTRIBUTES": "Contact Custom Attributes"
     },
     "FIELDS": {
       "TITLE": "Title",
@@ -501,7 +507,8 @@
       "ACTIVITY_FAILED": "Error executing activity. Please try again.",
       "ACTIVITY_STARTED": "Activity '{title}' started in background",
       "ACTIVITY_COMPLETED_BACKGROUND": "Activity '{title}' completed successfully!",
-      "ACTIVITY_FAILED_BACKGROUND": "Error executing activity '{title}'"
+      "ACTIVITY_FAILED_BACKGROUND": "Error executing activity '{title}'",
+      "STAGE_MOVED": "Deal moved to new stage successfully!"
     },
     "PROGRESS": {
       "CREATING_CONVERSATION": "Creating conversation...",
@@ -516,6 +523,9 @@
       "INFO": "The messages will be sent to the contact associated with this deal. Variables {nomecompleto} and {primeironome} will be replaced.",
       "WILL_CREATE_CONVERSATION": "A new conversation will be created automatically.",
       "DELAY_INFO": "Random delay 0-10 seconds",
+      "MOVE_STAGE_AFTER": "Move to another stage after sending",
+      "SELECT_TARGET_STAGE": "Target stage",
+      "SELECT_STAGE": "Select stage...",
       "CANCEL": "Cancel",
       "SEND": "Send Message",
       "EXECUTE": "Execute"

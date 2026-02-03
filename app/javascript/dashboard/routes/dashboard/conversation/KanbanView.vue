@@ -747,6 +747,18 @@ const openStartConversationModal = (deal, event) => {
   showStartConversationModal.value = true;
 };
 
+const openContactView = (deal, event) => {
+  event.stopPropagation(); // Prevenir que abra os detalhes do deal
+  
+  if (!deal.contact?.id) {
+    alert(t('KANBAN.ALERTS.CONTACT_NOT_FOUND'));
+    return;
+  }
+  
+  // Redirecionar para a página de contatos com o contato específico aberto
+  router.push(`/app/accounts/${store.getters.getCurrentAccountId}/contacts/${deal.contact.id}`);
+};
+
 const handleConversationCreated = (conversationId) => {
   // Atualizar o _conversationId no estado local do deal
   if (selectedDealForConversation.value) {
@@ -1149,7 +1161,18 @@ const handleDealUpdate = async updatedData => {
                 />
                 <span class="truncate">{{ deal.meta?.assignee?.name || t('KANBAN.CARDS.UNKNOWN_ASSIGNEE') }}</span>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- Botao de ver contato -->
+                <button
+                  v-if="deal.contact?.id"
+                  type="button"
+                  class="flex items-center gap-1 rounded-md px-2 py-1 text-n-slate-11 hover:bg-n-alpha-2 hover:text-n-slate-12 transition-colors text-xs"
+                  :title="$t('KANBAN.VIEW_CONTACT')"
+                  @click.stop="openContactView(deal, $event)"
+                >
+                  <span class="i-lucide-user size-3.5" />
+                  <span>Ver Contato</span>
+                </button>
                 <!-- Botao de iniciar conversa (se nao tiver conversa) -->
                 <button
                   v-if="!deal._conversationId"
