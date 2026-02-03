@@ -508,7 +508,8 @@
       "ACTIVITY_STARTED": "Activity '{title}' started in background",
       "ACTIVITY_COMPLETED_BACKGROUND": "Activity '{title}' completed successfully!",
       "ACTIVITY_FAILED_BACKGROUND": "Error executing activity '{title}'",
-      "STAGE_MOVED": "Deal moved to new stage successfully!"
+      "STAGE_MOVED": "Deal moved to new stage successfully!",
+      "STAGE_MOVE_FAILED": "Error moving deal to new stage. Check logs."
     },
     "PROGRESS": {
       "CREATING_CONVERSATION": "Creating conversation...",

@@ -50,6 +50,10 @@ class Api::V1::Accounts::DealsController < Api::V1::Accounts::BaseController
     else
       render json: { errors: @deal.errors.full_messages }, status: :unprocessable_entity
     end
+  rescue StandardError => e
+    Rails.logger.error "Erro ao atualizar deal #{@deal.id}: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render json: { error: e.message }, status: :internal_server_error
   end
 
   def destroy

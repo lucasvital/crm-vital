@@ -457,7 +457,8 @@
       "ACTIVITY_STARTED": "Executando atividade '{title}' em segundo plano...",
       "ACTIVITY_COMPLETED_BACKGROUND": "Atividade '{title}' concluída com sucesso!",
       "ACTIVITY_FAILED_BACKGROUND": "Erro ao executar atividade '{title}'.",
-      "STAGE_MOVED": "Deal movido para nova etapa com sucesso!"
+      "STAGE_MOVED": "Deal movido para nova etapa com sucesso!",
+      "STAGE_MOVE_FAILED": "Erro ao mover deal para nova etapa. Verifique os logs."
     },
     "PROGRESS": {
       "CREATING_CONVERSATION": "Criando conversa...",

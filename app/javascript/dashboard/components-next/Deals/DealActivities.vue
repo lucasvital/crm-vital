@@ -275,14 +275,35 @@ const executeActivityInBackground = async (activity, dealContact, currentConvId,
     
     // 4. Mover para nova etapa se solicitado
     if (shouldMoveToStage && targetStageId) {
-      await DealsAPI.update(props.selectedDeal.id, {
-        deal: { pipeline_stage_id: targetStageId }
-      });
-      
-      useAlert(t('DEAL_ACTIVITIES.ALERTS.STAGE_MOVED'));
-      
-      // Emitir evento para atualizar a UI (ex.: recarregar Kanban)
-      emit('stage-changed', { dealId: props.selectedDeal.id, newStageId: targetStageId });
+      try {
+        const stageIdNumber = Number(targetStageId);
+        if (isNaN(stageIdNumber)) {
+          console.error('ID da etapa inválido:', targetStageId);
+          useAlert('ID da etapa inválido');
+          return;
+        }
+        
+        console.log('=== MOVENDO ETAPA ===');
+        console.log('Deal ID:', props.selectedDeal.id);
+        console.log('Target Stage ID:', stageIdNumber);
+        
+        await DealsAPI.update(props.selectedDeal.id, {
+          deal: { pipeline_stage_id: stageIdNumber }
+        });
+        
+        useAlert(t('DEAL_ACTIVITIES.ALERTS.STAGE_MOVED'));
+        
+        // Emitir evento para atualizar a UI (ex.: recarregar Kanban)
+        emit('stage-changed', { dealId: props.selectedDeal.id, newStageId: stageIdNumber });
+      } catch (stageError) {
+        console.error('=== ERRO AO MOVER ETAPA ===');
+        console.error('Erro completo:', stageError);
+        console.error('Response:', stageError.response?.data);
+        console.error('Status:', stageError.response?.status);
+        console.error('Deal ID:', props.selectedDeal.id);
+        console.error('Target Stage ID:', targetStageId);
+        useAlert(t('DEAL_ACTIVITIES.ALERTS.STAGE_MOVE_FAILED') + ': ' + (stageError.response?.data?.error || stageError.message));
+      }
     }
     
     // Notificação de sucesso
