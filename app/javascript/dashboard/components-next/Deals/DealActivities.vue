@@ -107,7 +107,7 @@ const replaceVariables = (message, contact) => {
 };
 
 // Criar conversa para o deal (se não existir)
-const createConversationForDeal = async () => {
+const createConversationForDeal = async (firstMessage = null) => {
   const contact = props.selectedDeal.contact;
   if (!contact) {
     throw new Error('Deal não possui contato associado');
@@ -136,7 +136,7 @@ const createConversationForDeal = async () => {
     inboxId: selectedInbox.id,
     contactId: contact.id,
     message: {
-      content: ' ', // Mensagem inicial vazia (será enviada a primeira mensagem da atividade)
+      content: firstMessage || 'Olá!', // Usar primeira mensagem real da atividade
     },
     sourceId,
   };
@@ -214,30 +214,59 @@ const executeActivityInBackground = async (activity, dealContact, currentConvId,
   try {
     // 1. Verificar/criar conversa
     let conversationIdToUse = currentConvId;
-    
-    if (!conversationIdToUse) {
-      conversationIdToUse = await createConversationForDeal();
-      conversationWasCreated = true;
-      
-      // Associar conversa ao deal
-      await DealsAPI.update(props.selectedDeal.id, {
-        deal: { conversation_id: conversationIdToUse }
-      });
-    }
-    
-    // 2. Processar cada mensagem sequencialmente
     const messages = activity.messages || [];
     
-    for (const [index, msg] of messages.entries()) {
+    if (!conversationIdToUse) {
+      // Obter primeira mensagem e substituir variáveis
+      const firstMessage = messages[0]?.content || 'Olá!';
+      const firstMessageProcessed = replaceVariables(firstMessage, dealContact);
+      
+      // Criar conversa com primeira mensagem
+      conversationIdToUse = await createConversationForDeal(firstMessageProcessed);
+      conversationWasCreated = true;
+      
+      // NÃO atualizar deal aqui - será feito ao final após enviar todas as mensagens
+    }
+    
+    // 2. Processar mensagens sequencialmente
+    // Se criamos conversa, primeira mensagem já foi enviada, então começar da segunda
+    let startIndex = conversationWasCreated ? 1 : 0;
+    
+    for (let index = startIndex; index < messages.length; index++) {
+      const msg = messages[index];
       // Substituir variáveis
       const content = replaceVariables(msg.content, dealContact);
       
-      // Enviar mensagem
-      await MessageAPI.create({
-        conversationId: conversationIdToUse,
-        message: content,
-        private: false,
-      });
+      try {
+        // Enviar mensagem
+        await MessageAPI.create({
+          conversationId: conversationIdToUse,
+          message: content,
+          private: false,
+        });
+      } catch (messageError) {
+        // Se falhar ao enviar mensagem (ex: conversa não existe)
+        // Criar nova conversa e tentar novamente
+        if (messageError.response?.status === 404 || 
+            messageError.response?.data?.message?.includes('not found') ||
+            messageError.response?.data?.message?.includes('Conversation')) {
+          
+          console.warn('⚠️ Conversa não encontrada, criando nova conversa...');
+          
+          // Criar nova conversa com esta mensagem
+          conversationIdToUse = await createConversationForDeal(content);
+          conversationWasCreated = true;
+          
+          // Resetar índice para continuar das próximas mensagens
+          startIndex = index + 1;
+          
+          // Mensagem já foi enviada ao criar conversa, continuar para próxima
+          continue;
+        }
+        
+        // Se for outro erro, propagar
+        throw messageError;
+      }
       
       // Delay aleatório (exceto última mensagem)
       if (index < messages.length - 1) {
@@ -273,7 +302,21 @@ const executeActivityInBackground = async (activity, dealContact, currentConvId,
       },
     });
     
-    // 4. Mover para nova etapa se solicitado
+    // 4. Atualizar deal com conversation_id (se foi criada)
+    if (conversationWasCreated && conversationIdToUse) {
+      try {
+        await DealsAPI.update(props.selectedDeal.id, {
+          deal: { conversation_id: conversationIdToUse }
+        });
+        console.log('✅ Deal associado à conversa:', conversationIdToUse);
+      } catch (error) {
+        console.error('⚠️ Erro ao associar conversa ao deal:', error);
+        console.error('Response:', error.response?.data);
+        // Não falhar a atividade por isso - mensagens já foram enviadas
+      }
+    }
+    
+    // 5. Mover para nova etapa se solicitado
     if (shouldMoveToStage && targetStageId) {
       try {
         const stageIdNumber = Number(targetStageId);
