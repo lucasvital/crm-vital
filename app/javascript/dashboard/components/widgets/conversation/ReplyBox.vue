@@ -34,6 +34,7 @@ import ScheduleMessageModal from './ScheduleMessageModal.vue';
 import ScheduledMessagesAPI from 'dashboard/api/scheduledMessages';
 import { MESSAGE_MAX_LENGTH } from 'shared/helpers/MessageTypeHelper';
 import inboxMixin, { INBOX_FEATURES } from 'shared/mixins/inboxMixin';
+import { emitter as globalEmitter } from 'shared/helpers/mitt';
 import { trimContent, debounce, getRecipients } from '@chatwoot/utils';
 import wootConstants from 'dashboard/constants/globals';
 import {
@@ -737,6 +738,9 @@ export default {
         useAlert(this.$t('SCHEDULED_MESSAGES.SUCCESS'));
         this.message = '';
         this.showScheduleMessageModal = false;
+        
+        // Emit global event to reload scheduled messages list
+        globalEmitter.emit('MESSAGE_SCHEDULED');
       } catch (error) {
         useAlert(this.$t('SCHEDULED_MESSAGES.ERROR'));
         console.error('Failed to schedule message:', error);

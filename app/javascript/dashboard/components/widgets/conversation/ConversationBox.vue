@@ -1,5 +1,7 @@
 <script>
 import { mapGetters } from 'vuex';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { emitter } from 'shared/helpers/mitt';
 import ConversationHeader from './ConversationHeader.vue';
 import DashboardAppFrame from '../DashboardApp/Frame.vue';
 import EmptyState from './EmptyState/EmptyState.vue';
@@ -32,6 +34,25 @@ export default {
       type: Boolean,
       default: true,
     },
+  },
+  setup() {
+    const scheduledMessagesListRef = ref(null);
+
+    const handleMessageScheduled = () => {
+      scheduledMessagesListRef.value?.reload();
+    };
+
+    onMounted(() => {
+      emitter.on('MESSAGE_SCHEDULED', handleMessageScheduled);
+    });
+
+    onBeforeUnmount(() => {
+      emitter.off('MESSAGE_SCHEDULED', handleMessageScheduled);
+    });
+
+    return {
+      scheduledMessagesListRef,
+    };
   },
   data() {
     return { activeIndex: 0 };
@@ -122,6 +143,7 @@ export default {
     <div v-show="!activeIndex" class="flex flex-col h-full min-h-0 m-0">
       <ScheduledMessagesList
         v-if="currentChat.id"
+        ref="scheduledMessagesListRef"
         :conversation-id="currentChat.id"
       />
       <MessagesView

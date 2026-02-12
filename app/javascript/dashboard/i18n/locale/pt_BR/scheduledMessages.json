@@ -13,6 +13,9 @@
     "EMPTY_MESSAGE": "Escreva uma mensagem antes de agendar.",
     "PREVIEW": "Será enviada em: {date}",
     "PENDING_TITLE": "Mensagens Agendadas",
+    "CONFIRM_CANCEL": "Deseja realmente cancelar esta mensagem agendada?",
+    "CANCEL_SUCCESS": "Mensagem agendada cancelada com sucesso!",
+    "CANCEL_ERROR": "Erro ao cancelar mensagem agendada. Tente novamente.",
     "QUICK_OPTIONS": {
       "LABEL": "Opções Rápidas",
       "IN_1_HOUR": "Em 1 hora",

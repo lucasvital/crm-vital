@@ -13,6 +13,9 @@
     "EMPTY_MESSAGE": "Write a message before scheduling.",
     "PREVIEW": "Will be sent at: {date}",
     "PENDING_TITLE": "Scheduled Messages",
+    "CONFIRM_CANCEL": "Are you sure you want to cancel this scheduled message?",
+    "CANCEL_SUCCESS": "Scheduled message cancelled successfully!",
+    "CANCEL_ERROR": "Error cancelling scheduled message. Please try again.",
     "QUICK_OPTIONS": {
       "LABEL": "Quick Options",
       "IN_1_HOUR": "In 1 hour",
