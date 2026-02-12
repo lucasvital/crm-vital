@@ -4,6 +4,7 @@ import ConversationHeader from './ConversationHeader.vue';
 import DashboardAppFrame from '../DashboardApp/Frame.vue';
 import EmptyState from './EmptyState/EmptyState.vue';
 import MessagesView from './MessagesView.vue';
+import ScheduledMessagesList from './ScheduledMessagesList.vue';
 
 export default {
   components: {
@@ -11,6 +12,7 @@ export default {
     DashboardAppFrame,
     EmptyState,
     MessagesView,
+    ScheduledMessagesList,
   },
   props: {
     inboxId: {
@@ -117,7 +119,11 @@ export default {
         class="[&_a]:pt-1"
       />
     </woot-tabs>
-    <div v-show="!activeIndex" class="flex h-full min-h-0 m-0">
+    <div v-show="!activeIndex" class="flex flex-col h-full min-h-0 m-0">
+      <ScheduledMessagesList
+        v-if="currentChat.id"
+        :conversation-id="currentChat.id"
+      />
       <MessagesView
         v-if="currentChat.id"
         :inbox-id="inboxId"

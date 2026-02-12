@@ -30,6 +30,7 @@ import routines from './routines.json';
 import enablement from './enablement.json';
 import report from './report.json';
 import resetPassword from './resetPassword.json';
+import scheduledMessages from './scheduledMessages.json';
 import search from './search.json';
 import setNewPassword from './setNewPassword.json';
 import settings from './settings.json';
@@ -74,6 +75,7 @@ export default {
   ...enablement,
   ...report,
   ...resetPassword,
+  ...scheduledMessages,
   ...search,
   ...setNewPassword,
   ...settings,

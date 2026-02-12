@@ -1,0 +1,24 @@
+{
+  "SCHEDULED_MESSAGES": {
+    "TITLE": "Schedule Message",
+    "DESCRIPTION": "Choose when this message should be sent",
+    "SCHEDULE_BUTTON": "Schedule",
+    "DATE_LABEL": "Date",
+    "TIME_LABEL": "Time",
+    "MESSAGE_PREVIEW": "Message Preview",
+    "CANCEL": "Cancel",
+    "SCHEDULE": "Schedule Send",
+    "SUCCESS": "Message scheduled successfully!",
+    "ERROR": "Error scheduling message. Please try again.",
+    "EMPTY_MESSAGE": "Write a message before scheduling.",
+    "PREVIEW": "Will be sent at: {date}",
+    "PENDING_TITLE": "Scheduled Messages",
+    "QUICK_OPTIONS": {
+      "LABEL": "Quick Options",
+      "IN_1_HOUR": "In 1 hour",
+      "IN_3_HOURS": "In 3 hours",
+      "TOMORROW_9AM": "Tomorrow at 9 AM",
+      "NEXT_MONDAY_9AM": "Next Monday at 9 AM"
+    }
+  }
+}

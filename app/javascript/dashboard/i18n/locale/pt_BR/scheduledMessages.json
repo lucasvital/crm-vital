@@ -1,0 +1,24 @@
+{
+  "SCHEDULED_MESSAGES": {
+    "TITLE": "Agendar Mensagem",
+    "DESCRIPTION": "Escolha quando esta mensagem deve ser enviada",
+    "SCHEDULE_BUTTON": "Agendar",
+    "DATE_LABEL": "Data",
+    "TIME_LABEL": "Hora",
+    "MESSAGE_PREVIEW": "Prévia da Mensagem",
+    "CANCEL": "Cancelar",
+    "SCHEDULE": "Agendar Envio",
+    "SUCCESS": "Mensagem agendada com sucesso!",
+    "ERROR": "Erro ao agendar mensagem. Tente novamente.",
+    "EMPTY_MESSAGE": "Escreva uma mensagem antes de agendar.",
+    "PREVIEW": "Será enviada em: {date}",
+    "PENDING_TITLE": "Mensagens Agendadas",
+    "QUICK_OPTIONS": {
+      "LABEL": "Opções Rápidas",
+      "IN_1_HOUR": "Em 1 hora",
+      "IN_3_HOURS": "Em 3 horas",
+      "TOMORROW_9AM": "Amanhã às 9h",
+      "NEXT_MONDAY_9AM": "Próxima segunda às 9h"
+    }
+  }
+}

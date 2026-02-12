@@ -30,6 +30,8 @@ import {
 } from '@chatwoot/utils';
 import WhatsappTemplates from './WhatsappTemplates/Modal.vue';
 import ContentTemplates from './ContentTemplates/ContentTemplatesModal.vue';
+import ScheduleMessageModal from './ScheduleMessageModal.vue';
+import ScheduledMessagesAPI from 'dashboard/api/scheduledMessages';
 import { MESSAGE_MAX_LENGTH } from 'shared/helpers/MessageTypeHelper';
 import inboxMixin, { INBOX_FEATURES } from 'shared/mixins/inboxMixin';
 import { trimContent, debounce, getRecipients } from '@chatwoot/utils';
@@ -72,6 +74,7 @@ export default {
     WhatsappTemplates,
     WootMessageEditor,
     QuotedEmailPreview,
+    ScheduleMessageModal,
   },
   mixins: [inboxMixin, fileUploadMixin, keyboardEventListenerMixins],
   props: {
@@ -123,6 +126,7 @@ export default {
       doAutoSaveDraft: () => {},
       showWhatsAppTemplatesModal: false,
       showContentTemplatesModal: false,
+      showScheduleMessageModal: false,
       updateEditorSelectionWith: '',
       undefinedVariableMessage: '',
       showMentions: false,
@@ -708,6 +712,35 @@ export default {
     },
     hideContentTemplatesModal() {
       this.showContentTemplatesModal = false;
+    },
+    handleScheduleMessage() {
+      if (!this.message || this.message.trim() === '') {
+        useAlert(this.$t('SCHEDULED_MESSAGES.EMPTY_MESSAGE'));
+        return;
+      }
+      this.showScheduleMessageModal = true;
+    },
+    async scheduleMessage(scheduledAt) {
+      try {
+        const payload = {
+          content: this.message,
+          scheduled_at: scheduledAt,
+          message_type: 'outgoing',
+          content_type: 'text',
+          private: this.isPrivate,
+          content_attributes: {},
+          additional_attributes: {},
+        };
+
+        await ScheduledMessagesAPI.create(this.currentChat.id, payload);
+
+        useAlert(this.$t('SCHEDULED_MESSAGES.SUCCESS'));
+        this.message = '';
+        this.showScheduleMessageModal = false;
+      } catch (error) {
+        useAlert(this.$t('SCHEDULED_MESSAGES.ERROR'));
+        console.error('Failed to schedule message:', error);
+      }
     },
     confirmOnSendReply() {
       if (this.isReplyButtonDisabled) {
@@ -1298,6 +1331,7 @@ export default {
       @replace-text="replaceText"
       @toggle-insert-article="toggleInsertArticle"
       @toggle-quoted-reply="toggleQuotedReply"
+      @schedule-message="handleScheduleMessage"
     />
     <WhatsappTemplates
       :inbox-id="inbox.id"
@@ -1313,6 +1347,14 @@ export default {
       @close="hideContentTemplatesModal"
       @on-send="onSendContentTemplateReply"
       @cancel="hideContentTemplatesModal"
+    />
+
+    <ScheduleMessageModal
+      v-model:show="showScheduleMessageModal"
+      :message-content="message"
+      :is-private-note="isPrivate"
+      @schedule="scheduleMessage"
+      @cancel="showScheduleMessageModal = false"
     />
 
     <woot-confirm-modal

@@ -277,6 +277,9 @@ export default {
     toggleInsertArticle() {
       this.$emit('toggleInsertArticle');
     },
+    handleScheduleMessage() {
+      this.$emit('scheduleMessage');
+    },
   },
 };
 </script>
@@ -415,6 +418,16 @@ export default {
     </div>
     <div class="right-wrap">
       <NextButton
+        v-if="!isNote"
+        v-tooltip.top-end="$t('SCHEDULED_MESSAGES.SCHEDULE_BUTTON')"
+        icon="i-ph-clock"
+        slate
+        faded
+        sm
+        :disabled="isSendDisabled"
+        @click="handleScheduleMessage"
+      />
+      <NextButton
         :label="sendButtonText"
         type="submit"
         sm
@@ -433,7 +446,7 @@ export default {
 }
 
 .right-wrap {
-  @apply flex;
+  @apply flex gap-2;
 }
 
 ::v-deep .file-uploads {
