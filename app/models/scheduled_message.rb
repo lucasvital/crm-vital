@@ -5,8 +5,25 @@ class ScheduledMessage < ApplicationRecord
   belongs_to :sender, polymorphic: true
 
   enum status: { pending: 0, sent: 1, cancelled: 2, failed: 3 }
-  enum content_type: Message.content_types
-  enum message_type: Message.message_types
+  
+  # Copiar os enums do Message model
+  enum content_type: {
+    text: 0,
+    input_text: 1,
+    input_textarea: 2,
+    input_email: 3,
+    input_select: 4,
+    cards: 5,
+    form: 6,
+    article: 7,
+    incoming_email: 8,
+    input_csat: 9,
+    integrations: 10,
+    sticker: 11,
+    voice_call: 12
+  }
+  
+  enum message_type: { incoming: 0, outgoing: 1, activity: 2, template: 3 }
 
   validates :content, presence: true
   validates :scheduled_at, presence: true

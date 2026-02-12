@@ -5,11 +5,23 @@ class Api::V1::Accounts::Conversations::ScheduledMessagesController < Api::V1::A
     @scheduled_messages = conversation.scheduled_messages
                                      .includes(:sender)
                                      .order(scheduled_at: :asc)
-    render json: @scheduled_messages
+    render json: @scheduled_messages.as_json(
+      include: {
+        sender: { only: [:id, :name, :email] }
+      }
+    )
+  rescue StandardError => e
+    Rails.logger.error "Failed to list scheduled messages: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render json: { error: e.message }, status: :internal_server_error
   end
 
   def show
-    render json: @scheduled_message
+    render json: @scheduled_message.as_json(
+      include: {
+        sender: { only: [:id, :name, :email] }
+      }
+    )
   end
 
   def create
@@ -19,20 +31,35 @@ class Api::V1::Accounts::Conversations::ScheduledMessagesController < Api::V1::A
     @scheduled_message.sender = Current.user
 
     if @scheduled_message.save
-      render json: @scheduled_message, status: :created
+      render json: @scheduled_message.as_json(
+        include: {
+          sender: { only: [:id, :name, :email] }
+        }
+      ), status: :created
     else
       render json: { errors: @scheduled_message.errors.full_messages }, status: :unprocessable_entity
     end
+  rescue StandardError => e
+    Rails.logger.error "Failed to create scheduled message: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render json: { error: e.message }, status: :internal_server_error
   end
 
   def update
     # Permite apenas cancelar (mudar status para cancelled)
     if params[:status] == 'cancelled'
       @scheduled_message.update!(status: :cancelled)
-      render json: @scheduled_message
+      render json: @scheduled_message.as_json(
+        include: {
+          sender: { only: [:id, :name, :email] }
+        }
+      )
     else
       render json: { error: 'Only cancellation is allowed' }, status: :unprocessable_entity
     end
+  rescue StandardError => e
+    Rails.logger.error "Failed to update scheduled message: #{e.message}"
+    render json: { error: e.message }, status: :internal_server_error
   end
 
   def destroy
