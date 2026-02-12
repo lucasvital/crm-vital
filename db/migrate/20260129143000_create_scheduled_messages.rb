@@ -19,6 +19,5 @@ class CreateScheduledMessages < ActiveRecord::Migration[7.0]
     end
 
     add_index :scheduled_messages, [:scheduled_at, :status]
-    add_index :scheduled_messages, :conversation_id
   end
 end
