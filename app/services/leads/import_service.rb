@@ -150,8 +150,6 @@ class Leads::ImportService
   end
 
   def validate_required_fields(data)
-    return 'Name is required' if data['contact_name'].blank?
-    
     # Email OU phone é obrigatório (não ambos)
     if data['contact_email'].blank? && data['contact_phone'].blank?
       return 'Email or phone is required'
@@ -161,8 +159,17 @@ class Leads::ImportService
   end
 
   def create_lead(mapped_data, pipeline_id, pipeline_stage_id)
+    # Gerar nome padrão se não fornecido
+    default_name = if mapped_data['contact_email'].present?
+                     mapped_data['contact_email'].split('@').first
+                   elsif mapped_data['contact_phone'].present?
+                     "Contato #{mapped_data['contact_phone']}"
+                   else
+                     "Lead #{Time.current.to_i}"
+                   end
+    
     contact_params = {
-      name: mapped_data['contact_name'],
+      name: mapped_data['contact_name'].presence || default_name,
       email: mapped_data['contact_email'],
       phone_number: normalize_phone_number(mapped_data['contact_phone']),
       company_name: mapped_data['contact_company'],
@@ -171,7 +178,7 @@ class Leads::ImportService
     }.compact
 
     deal_params = {
-      title: mapped_data['deal_title'] || "Lead - #{mapped_data['contact_name']}",
+      title: mapped_data['deal_title'] || "Lead - #{mapped_data['contact_name'] || default_name}",
       amount: mapped_data['deal_amount']&.to_f || 0,
       currency: mapped_data['deal_currency'] || 'BRL',
       close_date: parse_date(mapped_data['deal_close_date']),

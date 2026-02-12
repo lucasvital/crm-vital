@@ -58,6 +58,7 @@
         "MAPS_TO": "Mapeia para",
         "PREVIEW": "Pré-visualização",
         "REQUIRED_FIELDS": "Campos obrigatórios: Nome, Email ou Telefone",
+        "REQUIRED_FIELDS_INFO": "Campos obrigatórios: Email ou Telefone (pelo menos um deles)",
         "CONTACT_FIELDS": "Campos do Contato",
         "DEAL_FIELDS": "Campos do Negócio",
         "SELECT_FIELD": "Selecione um campo...",

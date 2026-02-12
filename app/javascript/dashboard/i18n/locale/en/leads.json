@@ -58,6 +58,7 @@
         "MAPS_TO": "Maps to",
         "PREVIEW": "Preview",
         "REQUIRED_FIELDS": "Required fields: Name, Email, Phone",
+        "REQUIRED_FIELDS_INFO": "Required fields: Email or Phone (at least one of them)",
         "CONTACT_FIELDS": "Contact Fields",
         "DEAL_FIELDS": "Deal Fields",
         "SELECT_FIELD": "Select field...",

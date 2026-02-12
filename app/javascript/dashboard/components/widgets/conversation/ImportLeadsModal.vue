@@ -56,9 +56,9 @@ const selectedStageId = ref(null);
 // Available system fields for mapping
 const systemFields = [
   { value: 'skip', label: t('LEADS.IMPORT.STEP_2.SKIP_COLUMN') },
-  { value: 'contact_name', label: t('LEADS.IMPORT.FIELDS.CONTACT_NAME'), group: 'contact', required: true },
-  { value: 'contact_email', label: t('LEADS.IMPORT.FIELDS.CONTACT_EMAIL'), group: 'contact', required: true },
-  { value: 'contact_phone', label: t('LEADS.IMPORT.FIELDS.CONTACT_PHONE'), group: 'contact', required: true },
+  { value: 'contact_name', label: t('LEADS.IMPORT.FIELDS.CONTACT_NAME'), group: 'contact' },
+  { value: 'contact_email', label: t('LEADS.IMPORT.FIELDS.CONTACT_EMAIL'), group: 'contact', requiredOrGroup: 'contact_identifier' },
+  { value: 'contact_phone', label: t('LEADS.IMPORT.FIELDS.CONTACT_PHONE'), group: 'contact', requiredOrGroup: 'contact_identifier' },
   { value: 'contact_company', label: t('LEADS.IMPORT.FIELDS.CONTACT_COMPANY'), group: 'contact' },
   { value: 'contact_city', label: t('LEADS.IMPORT.FIELDS.CONTACT_CITY'), group: 'contact' },
   { value: 'contact_country', label: t('LEADS.IMPORT.FIELDS.CONTACT_COUNTRY'), group: 'contact' },
@@ -83,10 +83,11 @@ const localShow = computed({
 const canProceedStep1 = computed(() => selectedFile.value !== null);
 
 const canProceedStep2 = computed(() => {
-  // Verificar se os campos obrigatórios foram mapeados
-  const requiredFields = ['contact_name', 'contact_email', 'contact_phone'];
+  // Verificar se email OU telefone foi mapeado
   const mappedValues = Object.values(columnMapping.value);
-  return requiredFields.every(field => mappedValues.includes(field));
+  const hasEmail = mappedValues.includes('contact_email');
+  const hasPhone = mappedValues.includes('contact_phone');
+  return hasEmail || hasPhone;
 });
 
 const useContextPipeline = computed(
@@ -528,7 +529,7 @@ const isFieldRequired = value => {
 
         <div class="mb-4 p-3 bg-n-amber-3 border border-n-amber-7 rounded-md">
           <p class="text-sm text-n-amber-11">
-            {{ $t('LEADS.IMPORT.STEP_2.REQUIRED_FIELDS') }}
+            {{ $t('LEADS.IMPORT.STEP_2.REQUIRED_FIELDS_INFO') }}
           </p>
         </div>
 
@@ -559,7 +560,7 @@ const isFieldRequired = value => {
                     :key="field.value"
                     :value="field.value"
                   >
-                    {{ field.label }}{{ field.required ? ' *' : '' }}
+                    {{ field.label }}{{ field.requiredOrGroup ? ' *' : '' }}
                   </option>
                 </optgroup>
                 <optgroup :label="$t('LEADS.IMPORT.STEP_2.DEAL_FIELDS')">
