@@ -3,11 +3,11 @@ class Api::V1::Accounts::PipelinesController < Api::V1::Accounts::BaseController
 
   def index
     @pipelines = current_account.pipelines.includes(:pipeline_stages).order(:id)
-    render json: @pipelines.as_json(include: { pipeline_stages: { only: [:id, :name, :key, :position] } })
+    render json: @pipelines.as_json(include: { pipeline_stages: { only: [:id, :name, :key, :position, :is_won] } })
   end
 
   def show
-    render json: @pipeline.as_json(include: { pipeline_stages: { only: [:id, :name, :key, :position] } })
+    render json: @pipeline.as_json(include: { pipeline_stages: { only: [:id, :name, :key, :position, :is_won] } })
   end
 
   def create
