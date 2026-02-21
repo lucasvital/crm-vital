@@ -17,10 +17,18 @@ class Api::V1::Accounts::PipelineStagesController < Api::V1::Accounts::BaseContr
   end
 
   def update
-    if @stage.update(stage_update_params)
-      render json: @stage
-    else
-      render json: { errors: @stage.errors.full_messages }, status: :unprocessable_entity
+    PipelineStage.transaction do
+      if ActiveModel::Type::Boolean.new.cast(stage_update_params[:is_won])
+        @pipeline.pipeline_stages.where(is_won: true).where.not(id: @stage.id)
+                 .update_all(is_won: false) # rubocop:disable Rails/SkipsModelValidations
+      end
+
+      if @stage.update(stage_update_params)
+        render json: @stage
+      else
+        render json: { errors: @stage.errors.full_messages }, status: :unprocessable_entity
+        raise ActiveRecord::Rollback
+      end
     end
   end
 

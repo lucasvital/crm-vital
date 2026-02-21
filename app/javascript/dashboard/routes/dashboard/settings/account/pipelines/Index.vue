@@ -226,6 +226,14 @@ const renameStageInModal = async (st, name) => {
   alert(t('GENERAL_SETTINGS.UPDATE.SUCCESS'));
 };
 
+const setWonStage = async st => {
+  if (!editingPipeline.value || st.is_won) return;
+  await PipelinesAPI.updateStage(editingPipeline.value.id, st.id, { is_won: true });
+  const { data } = await PipelinesAPI.show(editingPipeline.value.id);
+  editingStages.value = (data.pipeline_stages || []).slice().sort((a, b) => a.position - b.position);
+  await load();
+};
+
 const deleteStageInModal = async st => {
   if (!editingPipeline.value) return;
   if (st.is_won) {
@@ -376,12 +384,17 @@ onMounted(load);
                     class="flex-1 rounded-md border border-n-alpha-2 bg-n-solid-1 px-2 py-1 text-sm"
                     @change="e => renameStageInModal(st, e.target.value)"
                   />
-                  <span
-                    v-if="st.is_won"
-                    class="rounded-md border border-n-weak bg-n-solid-1 px-2 py-1 text-2xs text-n-grass-11"
+                  <button
+                    type="button"
+                    class="rounded-md border px-2 py-1 text-2xs font-medium transition-colors"
+                    :class="st.is_won
+                      ? 'border-n-grass-7 bg-n-grass-3 text-n-grass-11 cursor-default'
+                      : 'border-n-alpha-2 bg-n-solid-1 text-n-slate-11 hover:border-n-grass-7 hover:text-n-grass-11'"
+                    :title="st.is_won ? 'Esta é a etapa de ganho' : 'Marcar como etapa de ganho'"
+                    @click="setWonStage(st)"
                   >
-                    Etapa de ganho
-                  </span>
+                    {{ st.is_won ? '✓ Ganho' : 'Marcar ganho' }}
+                  </button>
                   <button
                     type="button"
                     class="rounded-md border border-n-strong bg-n-solid-1 px-3 py-1 text-xs font-medium text-n-ruby-11 hover:bg-n-ruby-3"
