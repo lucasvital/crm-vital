@@ -93,7 +93,7 @@ class Leads::CreatorService
 
   def create_new_contact
     @contact = @account.contacts.new(
-      name: @contact_params[:name],
+      name: @contact_params[:name].presence || @contact_params[:phone_number].presence || @contact_params[:email].presence,
       email: @contact_params[:email],
       phone_number: format_phone_number(@contact_params[:phone_number]),
       additional_attributes: {
@@ -319,4 +319,3 @@ class Leads::CreatorService
     @errors << "Error applying custom attributes: #{e.message}"
   end
 end
-

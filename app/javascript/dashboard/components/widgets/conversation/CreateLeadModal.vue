@@ -64,8 +64,8 @@ const validations = computed(() => {
   if (!selectedContact.value && showCreateContactForm.value) {
     return {
       ...baseValidations,
-      contactName: { required, minLength: minLength(2) },
-      contactEmail: { required, email },
+      contactName: { minLength: minLength(2) },
+      contactEmail: { email },
       contactPhone: { required, minLength: minLength(8) },
     };
   }
@@ -104,10 +104,8 @@ const isFormValid = computed(() => {
       selectedStageId.value
     );
   }
-  // Se vai criar contato novo, valida tudo
+  // Se vai criar contato novo, apenas telefone é obrigatório
   return (
-    contactName.value &&
-    contactEmail.value &&
     contactPhone.value &&
     dealTitle.value &&
     amount.value &&
@@ -420,13 +418,11 @@ watch(
               <label>
                 <span class="block text-sm mb-1">
                   {{ $t('LEADS.CREATE.FIELDS.NAME') }}
-                  <span v-if="showCreateContactForm" class="text-red-500">*</span>
                 </span>
                 <input
                   v-model="contactName"
                   type="text"
                   :placeholder="$t('LEADS.CREATE.PLACEHOLDERS.NAME')"
-                  :required="showCreateContactForm"
                 />
               </label>
             </div>
@@ -434,13 +430,11 @@ watch(
               <label>
                 <span class="block text-sm mb-1">
                   {{ $t('LEADS.CREATE.FIELDS.EMAIL') }}
-                  <span v-if="showCreateContactForm" class="text-red-500">*</span>
                 </span>
                 <input
                   v-model="contactEmail"
                   type="email"
                   :placeholder="$t('LEADS.CREATE.PLACEHOLDERS.EMAIL')"
-                  :required="showCreateContactForm"
                 />
               </label>
             </div>
@@ -656,4 +650,3 @@ h3 {
   padding-bottom: 0.5rem;
 }
 </style>
-
