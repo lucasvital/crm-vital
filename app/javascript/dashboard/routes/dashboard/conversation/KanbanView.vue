@@ -1166,6 +1166,21 @@ const handleDealUpdate = async updatedData => {
               </select>
             </div>
 
+            <!-- Telefone e email do contato -->
+            <div
+              v-if="deal.contact?.phone_number || deal.contact?.email"
+              class="flex flex-col gap-0.5 text-[11px] text-n-slate-11"
+            >
+              <span v-if="deal.contact?.phone_number" class="flex items-center gap-1 truncate">
+                <span class="i-lucide-phone size-3 flex-shrink-0" />
+                {{ deal.contact.phone_number }}
+              </span>
+              <span v-if="deal.contact?.email" class="flex items-center gap-1 truncate">
+                <span class="i-lucide-mail size-3 flex-shrink-0" />
+                {{ deal.contact.email }}
+              </span>
+            </div>
+
             <div class="flex items-center justify-between text-xs text-n-slate-11">
               <div class="flex items-center gap-2 min-w-0">
                 <Avatar
