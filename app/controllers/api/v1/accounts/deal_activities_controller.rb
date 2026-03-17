@@ -49,6 +49,7 @@ class Api::V1::Accounts::DealActivitiesController < Api::V1::Accounts::BaseContr
       :title,
       :description,
       :pipeline_stage_id,
+      :move_to_stage_id,
       :position,
       messages: [:content]
     )

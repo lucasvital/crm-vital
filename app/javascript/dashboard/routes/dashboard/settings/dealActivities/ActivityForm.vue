@@ -27,7 +27,13 @@ const form = ref({
   description: '',
   pipeline_id: null,
   pipeline_stage_id: null,
+  move_to_stage_id: null,
   messages: [{ content: '' }],
+});
+
+const availableStagesForMove = computed(() => {
+  if (!form.value.pipeline_stage_id) return stages.value;
+  return stages.value.filter(s => s.id !== form.value.pipeline_stage_id);
 });
 
 const selectedPipeline = computed({
@@ -91,6 +97,7 @@ const fetchActivity = async () => {
         description: activity.description || '',
         pipeline_id: null,
         pipeline_stage_id: activity.pipeline_stage_id,
+        move_to_stage_id: activity.move_to_stage_id || null,
         messages: activity.messages?.length > 0 ? activity.messages : [{ content: '' }],
       };
       
@@ -200,6 +207,7 @@ const handleSubmit = async () => {
         title: form.value.title,
         description: form.value.description,
         pipeline_stage_id: form.value.pipeline_stage_id,
+        move_to_stage_id: form.value.move_to_stage_id || null,
         messages: form.value.messages,
       },
     };
@@ -268,7 +276,7 @@ onMounted(async () => {
 
     <div v-else class="mt-6 px-8 pb-8 max-w-4xl">
       <!-- Pipeline e Stage -->
-      <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block text-sm font-medium text-n-slate-12 mb-2">
             {{ $t('DEAL_ACTIVITIES_SETTINGS.FORM.PIPELINE') }}
@@ -302,6 +310,34 @@ onMounted(async () => {
             </option>
           </select>
         </div>
+      </div>
+
+      <!-- Mover para etapa após enviar -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-n-slate-12 mb-2">
+          {{ $t('DEAL_ACTIVITIES_SETTINGS.FORM.MOVE_TO_STAGE') }}
+          <span class="text-xs font-normal text-n-slate-11 ml-1">
+            {{ $t('DEAL_ACTIVITIES_SETTINGS.FORM.MOVE_TO_STAGE_OPTIONAL') }}
+          </span>
+        </label>
+        <select
+          v-model="form.move_to_stage_id"
+          class="w-full rounded-lg border border-n-alpha-2 bg-n-background px-3 py-2 text-sm text-n-slate-12 focus:outline-none focus:ring-2 focus:ring-n-brand"
+        >
+          <option :value="null">
+            {{ $t('DEAL_ACTIVITIES_SETTINGS.FORM.MOVE_TO_STAGE_NONE') }}
+          </option>
+          <option
+            v-for="stage in availableStagesForMove"
+            :key="stage.id"
+            :value="stage.id"
+          >
+            {{ stage.name }}
+          </option>
+        </select>
+        <p class="mt-1 text-xs text-n-slate-10">
+          {{ $t('DEAL_ACTIVITIES_SETTINGS.FORM.MOVE_TO_STAGE_HELP') }}
+        </p>
       </div>
 
       <!-- Título -->

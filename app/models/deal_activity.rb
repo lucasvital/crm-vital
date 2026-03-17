@@ -28,6 +28,7 @@
 class DealActivity < ApplicationRecord
   belongs_to :account
   belongs_to :pipeline_stage
+  belongs_to :move_to_stage, class_name: 'PipelineStage', optional: true
 
   validates :account, :pipeline_stage, :title, presence: true
   validates :messages, presence: true

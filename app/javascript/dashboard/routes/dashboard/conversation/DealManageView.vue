@@ -26,13 +26,17 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  defaultTab: {
+    type: String,
+    default: 'details',
+  },
 });
 
-const emit = defineEmits(['close', 'goBack', 'updateDeal', 'stageChanged']);
+const emit = defineEmits(['close', 'goBack', 'updateDeal', 'stageChanged', 'activityExecuted']);
 
 const { t } = useI18n();
 
-const activeTab = ref('details');
+const activeTab = ref(props.defaultTab);
 
 const DEAL_TABS_OPTIONS = [
   { key: 'DETAILS', value: 'details' },
@@ -111,6 +115,7 @@ const handleStageChanged = data => {
           :current-stage="currentStage"
           :pipeline-stages="pipelineStages"
           @stage-changed="handleStageChanged"
+          @activity-executed="$emit('activityExecuted')"
         />
       </div>
     </template>

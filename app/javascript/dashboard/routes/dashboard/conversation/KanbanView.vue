@@ -219,6 +219,7 @@ const selectedConversation = ref(null);
 const initialValues = ref({});
 const showStartConversationModal = ref(false);
 const selectedDealForConversation = ref(null);
+const dealDefaultTab = ref('details');
 
 // Seleção em lote
 const selectionMode = ref(false);
@@ -782,6 +783,21 @@ const handleConversationCreated = (conversationId) => {
 const closeDealDetailsView = () => {
   showDealDetailsView.value = false;
   selectedConversation.value = null;
+  dealDefaultTab.value = 'details';
+};
+
+const goToNextDeal = () => {
+  const stageKey = selectedConversation.value?.custom_attributes?.deal_stage;
+  const items = state[stageKey]?.items || [];
+  const idx = items.findIndex(c => c.id === selectedConversation.value?.id);
+  const next = items[idx + 1] || null;
+  if (next) {
+    dealDefaultTab.value = 'activities';
+    selectedConversation.value = next;
+  } else {
+    closeDealDetailsView();
+    alert(t('DEAL_ACTIVITIES.NO_MORE_DEALS'));
+  }
 };
 
 const handleDealUpdate = async updatedData => {
@@ -1380,11 +1396,14 @@ const handleDealUpdate = async updatedData => {
           class="fixed inset-0 z-[9999] bg-n-background"
         >
           <DealManageView
+            :key="`deal-${selectedConversation?.id}-${dealDefaultTab}`"
             :selected-deal="selectedConversation"
             :pipeline-stages="pipelineStages"
             :show-back-button="false"
+            :default-tab="dealDefaultTab"
             @close="closeDealDetailsView"
             @update-deal="handleDealUpdate"
+            @activity-executed="goToNextDeal"
           />
         </div>
       </Transition>

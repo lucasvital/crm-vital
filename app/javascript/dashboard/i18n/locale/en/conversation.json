@@ -500,6 +500,7 @@
     "NO_CONVERSATION_DESC_NEW": "A conversation will be automatically created when you execute an activity.",
     "RUNNING_SINGLE": "Executing '{title}' in background...",
     "RUNNING_MULTIPLE": "{count} activities running in background...",
+    "NO_MORE_DEALS": "No more leads in this stage.",
     "ALERTS": {
       "MESSAGE_SENT": "Message sent successfully!",
       "MESSAGE_FAILED": "Error sending message. Please try again.",
@@ -556,6 +557,10 @@
     "FORM": {
       "PIPELINE": "Pipeline",
       "STAGE": "Stage",
+      "MOVE_TO_STAGE": "Move card to stage after sending",
+      "MOVE_TO_STAGE_OPTIONAL": "(optional)",
+      "MOVE_TO_STAGE_NONE": "Do not move",
+      "MOVE_TO_STAGE_HELP": "If set, the deal will be automatically moved to this stage when the activity is executed.",
       "TITLE": "Title",
       "TITLE_PLACEHOLDER": "e.g., Send welcome message",
       "DESCRIPTION": "Description",

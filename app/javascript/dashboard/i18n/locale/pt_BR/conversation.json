@@ -449,6 +449,7 @@
     "NO_CONVERSATION_DESC": "Este negócio não possui uma conversa associada. As atividades não podem ser executadas.",
     "NO_CONVERSATION_TITLE_NEW": "Ainda sem conversa",
     "NO_CONVERSATION_DESC_NEW": "Uma conversa será criada automaticamente quando você executar uma atividade.",
+    "NO_MORE_DEALS": "Não há mais leads nesta etapa.",
     "ALERTS": {
       "MESSAGE_SENT": "Mensagem enviada com sucesso!",
       "MESSAGE_FAILED": "Erro ao enviar mensagem. Tente novamente.",
@@ -507,6 +508,10 @@
     "FORM": {
       "PIPELINE": "Pipeline",
       "STAGE": "Etapa",
+      "MOVE_TO_STAGE": "Mover card para etapa após enviar",
+      "MOVE_TO_STAGE_OPTIONAL": "(opcional)",
+      "MOVE_TO_STAGE_NONE": "Não mover",
+      "MOVE_TO_STAGE_HELP": "Se definido, o deal será movido automaticamente para esta etapa ao executar a atividade.",
       "TITLE": "Título",
       "TITLE_PLACEHOLDER": "ex: Enviar mensagem de boas-vindas",
       "DESCRIPTION": "Descrição",

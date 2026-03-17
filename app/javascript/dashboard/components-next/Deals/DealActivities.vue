@@ -1,9 +1,7 @@
 <script setup>
 import { computed, ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
 import { useStore, useStoreGetters } from 'dashboard/composables/store';
-import { useAccount } from 'dashboard/composables/useAccount';
 import Button from 'dashboard/components-next/button/Button.vue';
 import MessageAPI from 'dashboard/api/inbox/message';
 import ConversationApi from 'dashboard/api/inbox/conversation';
@@ -26,13 +24,11 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['stage-changed']);
+const emit = defineEmits(['stage-changed', 'activity-executed']);
 
 const { t } = useI18n();
-const router = useRouter();
 const store = useStore();
 const getters = useStoreGetters();
-const { accountScopedUrl } = useAccount();
 const alert = useAlert;
 
 const showConfirmModal = ref(false);
@@ -195,6 +191,13 @@ watch(
 
 const openConfirmModal = activity => {
   selectedActivity.value = activity;
+  if (activity.move_to_stage_id) {
+    shouldMoveStage.value = true;
+    selectedTargetStage.value = activity.move_to_stage_id;
+  } else {
+    shouldMoveStage.value = false;
+    selectedTargetStage.value = null;
+  }
   showConfirmModal.value = true;
 };
 
@@ -351,11 +354,6 @@ const executeActivityInBackground = async (activity, dealContact, currentConvId,
     
     // Notificação de sucesso
     useAlert(t('DEAL_ACTIVITIES.ALERTS.ACTIVITY_COMPLETED_BACKGROUND', { title: activity.title }));
-    
-    // Redirecionar para a conversa se foi criada
-    if (conversationWasCreated && conversationIdToUse) {
-      router.push(accountScopedUrl(`conversations/${conversationIdToUse}`));
-    }
   } catch (error) {
     console.error('Error executing activity in background:', error);
     useAlert(
@@ -388,6 +386,9 @@ const executeActivity = () => {
   
   // Fechar modal imediatamente
   closeConfirmModal();
+
+  // Emitir evento para o pai navegar para o próximo lead
+  emit('activity-executed');
   
   // Mostrar notificação de início
   useAlert(t('DEAL_ACTIVITIES.ALERTS.ACTIVITY_STARTED', { title: activity.title }));
