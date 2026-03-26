@@ -68,16 +68,14 @@ const handleSend = async () => {
   try {
     // Verificar se é WhatsApp para usar o payload correto
     const isWhatsApp = selectedInbox.value.channel_type === 'Channel::Whatsapp';
-    const isBaileys = isWhatsApp && selectedInbox.value.provider === 'baileys';
 
     // Para WhatsApp, sourceId deve ser o número de telefone (apenas dígitos)
     let sourceId = `contact-${props.contactId}-${Date.now()}`;
     if (isWhatsApp && props.contact.phone_number) {
       const rawDigits = props.contact.phone_number.replace(/\D/g, '');
-      // Para Baileys: valida o número via onWhatsApp (resolve variante com/sem 9)
-      sourceId = isBaileys
-        ? await resolveWhatsAppPhone(selectedInbox.value.id, rawDigits)
-        : rawDigits;
+      // Consulta onWhatsApp para confirmar o número correto (com ou sem 9)
+      // Se o inbox não suportar (não-Baileys), retorna o número original sem bloquear
+      sourceId = await resolveWhatsAppPhone(selectedInbox.value.id, rawDigits);
     }
 
     const response = await store.dispatch('contactConversations/create', {

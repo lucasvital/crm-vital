@@ -121,20 +121,14 @@ const createConversationForDeal = async (firstMessage = null) => {
   }
 
   const isWhatsApp = selectedInbox.channel_type === 'Channel::Whatsapp';
-  const isBaileys = selectedInbox.channel_type === 'Channel::Whatsapp' &&
-    selectedInbox.provider === 'baileys';
 
   let sourceId = `contact-${contact.id}-${Date.now()}`;
 
   if (isWhatsApp && contact.phone_number) {
     const rawDigits = contact.phone_number.replace(/\D/g, '');
-
-    // Para Baileys: consulta onWhatsApp para confirmar o número correto (com ou sem 9)
-    if (isBaileys) {
-      sourceId = await resolveWhatsAppPhone(selectedInbox.id, rawDigits);
-    } else {
-      sourceId = rawDigits;
-    }
+    // Consulta onWhatsApp para confirmar o número correto (com ou sem 9)
+    // Se o inbox não suportar (não-Baileys), retorna o número original sem bloquear
+    sourceId = await resolveWhatsAppPhone(selectedInbox.id, rawDigits);
   }
 
   const response = await store.dispatch('contactConversations/create', {
