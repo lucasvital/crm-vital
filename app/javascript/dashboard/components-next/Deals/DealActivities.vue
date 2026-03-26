@@ -8,6 +8,7 @@ import ConversationApi from 'dashboard/api/inbox/conversation';
 import DealActivitiesAPI from 'dashboard/api/dealActivities';
 import DealsAPI from 'dashboard/api/deals';
 import { useAlert } from 'dashboard/composables';
+import { resolveWhatsAppPhone } from 'dashboard/utils/whatsappPhoneUtils';
 
 const props = defineProps({
   selectedDeal: {
@@ -103,45 +104,49 @@ const replaceVariables = (message, contact) => {
 };
 
 // Criar conversa para o deal (se não existir)
+// Para WhatsApp Baileys: valida o número via onWhatsApp antes de criar,
+// tentando o variante brasileiro (com/sem 9) se necessário.
 const createConversationForDeal = async (firstMessage = null) => {
   const contact = props.selectedDeal.contact;
   if (!contact) {
     throw new Error('Deal não possui contato associado');
   }
-  
-  // Buscar inboxes disponíveis
+
   const inboxes = getters['inboxes/getInboxes'].value || [];
-  
-  // Preferir WhatsApp se disponível, senão usar primeiro inbox
   const whatsappInbox = inboxes.find(i => i.channel_type === 'Channel::Whatsapp');
   const selectedInbox = whatsappInbox || inboxes[0];
-  
+
   if (!selectedInbox) {
     throw new Error('Nenhum inbox disponível');
   }
-  
+
   const isWhatsApp = selectedInbox.channel_type === 'Channel::Whatsapp';
-  
-  // Para WhatsApp, sourceId deve ser o número de telefone (apenas dígitos)
+  const isBaileys = selectedInbox.channel_type === 'Channel::Whatsapp' &&
+    selectedInbox.provider === 'baileys';
+
   let sourceId = `contact-${contact.id}-${Date.now()}`;
+
   if (isWhatsApp && contact.phone_number) {
-    sourceId = contact.phone_number.replace(/\D/g, '');
+    const rawDigits = contact.phone_number.replace(/\D/g, '');
+
+    // Para Baileys: consulta onWhatsApp para confirmar o número correto (com ou sem 9)
+    if (isBaileys) {
+      sourceId = await resolveWhatsAppPhone(selectedInbox.id, rawDigits);
+    } else {
+      sourceId = rawDigits;
+    }
   }
-  
-  const params = {
-    inboxId: selectedInbox.id,
-    contactId: contact.id,
-    message: {
-      content: firstMessage || 'Olá!', // Usar primeira mensagem real da atividade
-    },
-    sourceId,
-  };
-  
+
   const response = await store.dispatch('contactConversations/create', {
-    params,
+    params: {
+      inboxId: selectedInbox.id,
+      contactId: contact.id,
+      message: { content: firstMessage || 'Olá!' },
+      sourceId,
+    },
     isFromWhatsApp: isWhatsApp,
   });
-  
+
   return response.id;
 };
 

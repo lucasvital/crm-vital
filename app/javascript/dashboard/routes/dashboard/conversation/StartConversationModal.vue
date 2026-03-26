@@ -7,6 +7,7 @@ import { useAccount } from 'dashboard/composables/useAccount';
 import { useAlert } from 'dashboard/composables';
 import ButtonV4 from 'dashboard/components-next/button/Button.vue';
 import DealsAPI from 'dashboard/api/deals';
+import { resolveWhatsAppPhone } from 'dashboard/utils/whatsappPhoneUtils';
 
 const props = defineProps({
   show: {
@@ -67,33 +68,25 @@ const handleSend = async () => {
   try {
     // Verificar se é WhatsApp para usar o payload correto
     const isWhatsApp = selectedInbox.value.channel_type === 'Channel::Whatsapp';
-    
+    const isBaileys = isWhatsApp && selectedInbox.value.provider === 'baileys';
+
     // Para WhatsApp, sourceId deve ser o número de telefone (apenas dígitos)
     let sourceId = `contact-${props.contactId}-${Date.now()}`;
     if (isWhatsApp && props.contact.phone_number) {
-      // Limpar tudo exceto dígitos
-      sourceId = props.contact.phone_number.replace(/\D/g, '');
-      console.log('WhatsApp sourceId (phone):', sourceId);
+      const rawDigits = props.contact.phone_number.replace(/\D/g, '');
+      // Para Baileys: valida o número via onWhatsApp (resolve variante com/sem 9)
+      sourceId = isBaileys
+        ? await resolveWhatsAppPhone(selectedInbox.value.id, rawDigits)
+        : rawDigits;
     }
-    
-    console.log('Creating conversation with params:', {
-      inboxId: selectedInbox.value.id,
-      contactId: props.contactId,
-      sourceId,
-      isWhatsApp,
-    });
-    
-    const params = {
-      inboxId: selectedInbox.value.id,
-      contactId: props.contactId,
-      message: {
-        content: message.value,
-      },
-      sourceId,
-    };
-    
+
     const response = await store.dispatch('contactConversations/create', {
-      params,
+      params: {
+        inboxId: selectedInbox.value.id,
+        contactId: props.contactId,
+        message: { content: message.value },
+        sourceId,
+      },
       isFromWhatsApp: isWhatsApp,
     });
     

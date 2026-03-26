@@ -40,6 +40,12 @@ class Inboxes extends CacheEnabledApiClient {
   disconnectChannelProvider(inboxId) {
     return axios.post(`${this.url}/${inboxId}/disconnect_channel_provider`);
   }
+
+  checkOnWhatsApp(inboxId, phoneNumber) {
+    return axios.post(`${this.url}/${inboxId}/on_whatsapp`, {
+      phone_number: phoneNumber,
+    });
+  }
 }
 
 export default new Inboxes();
