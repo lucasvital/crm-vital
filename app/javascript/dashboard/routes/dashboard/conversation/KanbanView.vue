@@ -777,7 +777,7 @@ const handleConversationCreated = (conversationId) => {
   showStartConversationModal.value = false;
   selectedDealForConversation.value = null;
   // Redirecionar para a nova conversa
-  router.push(accountScopedRoute(`conversations/${conversationId}`));
+  router.push(getConversationRoute(conversationId));
 };
 
 const closeDealDetailsView = () => {

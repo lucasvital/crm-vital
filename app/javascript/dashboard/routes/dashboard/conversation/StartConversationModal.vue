@@ -2,8 +2,6 @@
 import { ref, computed, onMounted } from 'vue';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
-import { useAccount } from 'dashboard/composables/useAccount';
 import { useAlert } from 'dashboard/composables';
 import ButtonV4 from 'dashboard/components-next/button/Button.vue';
 import DealsAPI from 'dashboard/api/deals';
@@ -32,8 +30,6 @@ const emit = defineEmits(['close', 'conversation-created']);
 
 const { t } = useI18n();
 const store = useStore();
-const router = useRouter();
-const { accountScopedRoute } = useAccount();
 
 const inboxesList = useMapGetter('inboxes/getInboxes');
 const selectedInbox = ref(null);
@@ -101,9 +97,6 @@ const handleSend = async () => {
       useAlert(t('KANBAN.CONVERSATION_STARTED'));
       emit('conversation-created', response.id);
       handleClose();
-
-      // Redirecionar para a conversa
-      router.push(accountScopedRoute(`conversations/${response.id}`));
     }
   } catch (error) {
     console.error('Error creating conversation:', error);

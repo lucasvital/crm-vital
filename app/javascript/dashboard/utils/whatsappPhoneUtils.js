@@ -33,15 +33,13 @@ const checkExists = async (inboxId, digits) => {
 /**
  * Verifica qual variante do número está registrada no WhatsApp via Baileys onWhatsApp.
  *
- * Estratégia para números brasileiros com 13 dígitos (armazenados COM o 9):
- *   1. Testa PRIMEIRO o variante SEM o 9 (problema mais comum: salvo com 9 mas WA é sem 9)
- *   2. Se não encontrar, testa o original COM o 9
+ * Estratégia: CONFIAR no número armazenado primeiro.
+ *   1. Testa o número ORIGINAL (como salvo no contato)
+ *   2. Se não encontrar no WhatsApp, testa o variante (com/sem 9)
+ *   3. Se nenhum for encontrado ou a API falhar, usa o original
  *
- * Para números com 12 dígitos (sem o 9) ou não-brasileiros:
- *   1. Testa o original
- *   2. Se não encontrar, testa com o 9
- *
- * Se o endpoint falhar (não-Baileys ou erro de rede), retorna o número original.
+ * Isso garante que números salvos corretamente (com ou sem 9) funcionem sem alteração,
+ * e apenas faz a troca quando o número salvo definitivamente não existe no WhatsApp.
  *
  * @param {number} inboxId  - ID da inbox WhatsApp
  * @param {string} phoneNumber - número (com ou sem +, com ou sem formatação)
@@ -56,22 +54,18 @@ export const resolveWhatsAppPhone = async (inboxId, phoneNumber) => {
     return digits;
   }
 
-  // Para números COM o 9 (13 dígitos): testa SEM o 9 primeiro
-  // Razão: a maioria dos problemas é "salvo com 9 mas WA cadastrado sem 9"
-  const isWith9 = digits.length === 13;
-  const first = isWith9 ? alternate : digits;
-  const second = isWith9 ? digits : alternate;
-
-  const firstExists = await checkExists(inboxId, first);
-  if (firstExists === null) {
+  // Testa PRIMEIRO o número original (como salvo no contato)
+  const originalExists = await checkExists(inboxId, digits);
+  if (originalExists === null) {
     // API indisponível (inbox não é Baileys ou erro de rede) → usa original
     return digits;
   }
-  if (firstExists) return first;
+  if (originalExists) return digits;
 
-  const secondExists = await checkExists(inboxId, second);
-  if (secondExists) return second;
+  // Original não existe no WhatsApp → tenta o variante (com/sem 9)
+  const alternateExists = await checkExists(inboxId, alternate);
+  if (alternateExists) return alternate;
 
-  // Nenhum encontrado no WhatsApp → usa o original para não bloquear
+  // Nenhum encontrado → usa o original para não bloquear
   return digits;
 };
