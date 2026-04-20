@@ -69,6 +69,7 @@ const fetchColumn = async stage => {
     // Agora usamos conversation_id que vem do deal (sem N+1 queries!)
     state[stage].items = deals
       .filter(d => d?.pipeline_stage?.key === stage)
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       .map(d => {
         // Priorizar assignee do deal
         const dealAssignee = d.assignee;
@@ -132,7 +133,8 @@ const refreshBoard = async () => {
 
     // Mapear deals para cada stage
     STAGES.value.forEach(stage => {
-      const stageDeals = dealsByStage[stage] || [];
+      const stageDeals = (dealsByStage[stage] || [])
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       state[stage].items = stageDeals.map(d => {
         const dealAssignee = d.assignee;
         const assigneeName = dealAssignee?.name || '';
@@ -643,6 +645,8 @@ const onDrop = async (toStage, event) => {
       await DealsAPI.update(id, { deal: { pipeline_stage_id: stage.id } });
     }
     alert(t('KANBAN.ALERTS.STATUS_UPDATED'));
+    // Recarrega para garantir ordenação por created_at dentro da coluna destino
+    await refreshBoard();
   } catch (e) {
     alert(t('KANBAN.ALERTS.STATUS_FAILED'));
     await refreshBoard();
