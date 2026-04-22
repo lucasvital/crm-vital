@@ -11,6 +11,7 @@ import DealsAPI from 'dashboard/api/deals';
 import ContactAPI from 'dashboard/api/contacts';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import DropdownMenu from 'dashboard/components-next/dropdown-menu/DropdownMenu.vue';
+import DateRangePicker from 'dashboard/components/ui/DateRangePicker.vue';
 import wootConstants from 'dashboard/constants/globals';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 import Avatar from 'next/avatar/Avatar.vue';
@@ -38,6 +39,20 @@ const selectedPipelineId = ref(null);
 const pipelineStages = ref([]); // [{id, name, key, position}]
 const showPipelineMenu = ref(false);
 
+// Filtro por data de criação
+const dateFilter = ref([]);
+const hasDateFilter = computed(() => dateFilter.value && dateFilter.value.length === 2 && dateFilter.value[0]);
+
+const handleDateFilterChange = async value => {
+  dateFilter.value = value;
+  await refreshBoard();
+};
+
+const clearDateFilter = async () => {
+  dateFilter.value = [];
+  await refreshBoard();
+};
+
 const DEFAULT_STAGE_KEYS = ['new', 'qualified', 'proposal', 'won', 'lost'];
 const STAGES = ref([...DEFAULT_STAGE_KEYS]);
 
@@ -63,7 +78,9 @@ const fetchColumn = async stage => {
   try {
     // Busca deals do pipeline selecionado e mapeia para a estrutura usada na UI
     const pid = selectedPipelineId.value;
-    const { data } = await DealsAPI.list({ pipelineId: pid });
+    const createdAtFrom = hasDateFilter.value ? dateFilter.value[0]?.toISOString?.()?.split('T')[0] : undefined;
+    const createdAtTo = hasDateFilter.value ? dateFilter.value[1]?.toISOString?.()?.split('T')[0] : undefined;
+    const { data } = await DealsAPI.list({ pipelineId: pid, createdAtFrom, createdAtTo });
     const deals = Array.isArray(data) ? data : [];
 
     // Agora usamos conversation_id que vem do deal (sem N+1 queries!)
@@ -116,7 +133,9 @@ const refreshBoard = async () => {
       state[stage].loading = true;
     });
 
-    const { data } = await DealsAPI.list({ pipelineId: pid });
+    const createdAtFrom = hasDateFilter.value ? dateFilter.value[0]?.toISOString?.()?.split('T')[0] : undefined;
+    const createdAtTo = hasDateFilter.value ? dateFilter.value[1]?.toISOString?.()?.split('T')[0] : undefined;
+    const { data } = await DealsAPI.list({ pipelineId: pid, createdAtFrom, createdAtTo });
     const deals = Array.isArray(data) ? data : [];
 
     // Distribuir deals entre as stages (uma passada no array)
@@ -885,6 +904,33 @@ const handleDealUpdate = async updatedData => {
             }"
           />
         </div>
+
+        <!-- Filtro por data de criação -->
+        <div class="relative flex items-center gap-1">
+          <div
+            class="flex h-9 items-center gap-1.5 rounded-md border px-3 text-sm font-medium transition"
+            :class="hasDateFilter
+              ? 'border-n-blue-8 bg-n-blue-2 text-n-blue-11'
+              : 'border-n-strong bg-n-solid-1 text-n-slate-11'"
+          >
+            <span class="i-lucide-calendar size-4 shrink-0" />
+            <DateRangePicker
+              :value="dateFilter"
+              placeholder="Filtrar por data"
+              confirm-text="Aplicar"
+              @change="handleDateFilterChange"
+            />
+            <button
+              v-if="hasDateFilter"
+              type="button"
+              class="ml-1 flex items-center text-n-blue-11 hover:text-n-blue-12"
+              @click.stop="clearDateFilter"
+            >
+              <span class="i-lucide-x size-3.5" />
+            </button>
+          </div>
+        </div>
+
         <button
           class="inline-flex items-center justify-center rounded-md border border-n-strong bg-n-blue-9 px-3 py-2 h-9 text-sm font-medium text-white transition hover:bg-n-blue-10"
           type="button"
