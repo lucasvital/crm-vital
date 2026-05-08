@@ -25,6 +25,7 @@ import ConversationsApi from 'dashboard/api/conversations';
 import DealManageView from 'dashboard/routes/dashboard/conversation/DealManageView.vue';
 import StartConversationModal from './StartConversationModal.vue';
 import ButtonV4 from 'dashboard/components-next/button/Button.vue';
+import { copyTextToClipboard } from 'shared/helpers/clipboard';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -51,6 +52,18 @@ const handleDateFilterChange = async value => {
 const clearDateFilter = async () => {
   dateFilter.value = [];
   await refreshBoard();
+};
+
+// Copiar telefone
+const copiedPhoneId = ref(null);
+const copyPhone = async (deal, phone) => {
+  try {
+    await copyTextToClipboard(phone);
+    copiedPhoneId.value = deal.id;
+    setTimeout(() => { copiedPhoneId.value = null; }, 1500);
+  } catch {
+    // silencioso se falhar
+  }
 };
 
 const DEFAULT_STAGE_KEYS = ['new', 'qualified', 'proposal', 'won', 'lost'];
@@ -1221,10 +1234,24 @@ const handleDealUpdate = async updatedData => {
               v-if="deal.contact?.phone_number || deal.contact?.email"
               class="flex flex-col gap-0.5 text-[11px] text-n-slate-11"
             >
-              <span v-if="deal.contact?.phone_number" class="flex items-center gap-1 truncate">
-                <span class="i-lucide-phone size-3 flex-shrink-0" />
-                {{ deal.contact.phone_number }}
-              </span>
+              <button
+                v-if="deal.contact?.phone_number"
+                type="button"
+                class="group flex items-center gap-1 truncate rounded px-1 -mx-1 transition-colors hover:bg-n-alpha-2"
+                :title="copiedPhoneId === deal.id ? 'Copiado!' : 'Clique para copiar'"
+                @click.stop="copyPhone(deal, deal.contact.phone_number)"
+              >
+                <span
+                  class="size-3 flex-shrink-0 transition-all"
+                  :class="copiedPhoneId === deal.id ? 'i-lucide-check text-n-green-9' : 'i-lucide-phone'"
+                />
+                <span
+                  class="truncate transition-colors"
+                  :class="copiedPhoneId === deal.id ? 'text-n-green-9' : ''"
+                >
+                  {{ deal.contact.phone_number }}
+                </span>
+              </button>
               <span v-if="deal.contact?.email" class="flex items-center gap-1 truncate">
                 <span class="i-lucide-mail size-3 flex-shrink-0" />
                 {{ deal.contact.email }}
